@@ -24,19 +24,20 @@ class CommentField extends StatelessWidget {
         controller: controller,
         minLines: 1,
         maxLines: 2,
-        maxLength: 35, // Limite de 30 caractères
+        maxLength: 45, // Limite de 30 caractères
         textAlign: TextAlign.center,
         style: const TextStyle(
           fontFamily: 'AvenirNext',
           fontWeight: FontWeight.w900,
-          fontSize: 26, // Taille augmentée
+          fontSize: 22, // Taille augmentée
         ),
         decoration: InputDecoration(
-          hintText: hintText ?? 'Texte ici...',
+          hintText: hintText ?? 'Que veux-tu dire ?',
           hintStyle: const TextStyle(
             fontFamily: 'AvenirNext',
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w100,
             fontSize: 26,
+            color: Color(0xFFacacad),
           ),
           border: InputBorder.none,
           //contentPadding: const EdgeInsets.all(16.0),

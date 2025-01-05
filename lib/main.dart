@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'navBar.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:vote_app/INSCRIPTION/connexion.dart'; // Import localization package
+//import 'package:vote_app/INSCRIPTION/inscription.dart';
+
+//import 'navBar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,8 +21,21 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Firebase Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        fontFamily: 'AvenirNext', // Ajout de la police par défaut
+        colorScheme: const ColorScheme.light(
+          primary: Colors.black38,
+          secondary: Colors.white,
+          surface: Colors.white,
+          background: Colors.white,
+          error: Colors.black,
+          onPrimary: Colors.black,
+          onSecondary: Colors.black,
+          onSurface: Colors.black,
+          onBackground: Colors.black,
+          onError: Colors.black,
+          brightness: Brightness.light,
+        ),
+        scaffoldBackgroundColor: Colors.white,
+        fontFamily: 'AvenirNext',
         textTheme: const TextTheme(
           bodyLarge: TextStyle(fontFamily: 'AvenirNext'),
           bodyMedium: TextStyle(fontFamily: 'AvenirNext'),
@@ -27,7 +44,11 @@ class MyApp extends StatelessWidget {
           titleSmall: TextStyle(fontFamily: 'AvenirNext'),
         ),
       ),
-      home: const NavBar(),
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      supportedLocales: const [
+        Locale('fr', 'FR'), // Add French locale
+      ],
+      home: const ConnexionPage(), // Set NavBar as the home widget
     );
   }
 }

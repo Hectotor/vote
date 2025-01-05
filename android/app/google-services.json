@@ -12,7 +12,12 @@
           "package_name": "com.vote.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "954363815798-o10dojgvssqeraf3jcahirremumh09sc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBbfMpDXnyAChCS8fr2jLiPFPE6mK43hkU"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "954363815798-o10dojgvssqeraf3jcahirremumh09sc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "954363815798-gf08e3rd8r19m6tr9afll5bnfl2rks2b.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.vote.app"
+              }
+            }
+          ]
         }
       }
     }

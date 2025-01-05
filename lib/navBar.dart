@@ -33,56 +33,59 @@ class _NavBarState extends State<NavBar> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_selectedIndex],
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Divider(
-            height: 1,
-            color: Colors.grey[50], // Thin gray line
-          ),
-          Theme(
-            data: Theme.of(context).copyWith(
-              splashFactory:
-                  NoSplash.splashFactory, // Supprime l'effet de vague
-              highlightColor:
-                  Colors.transparent, // Supprime l'effet de surbrillance
-            ),
-            child: BottomNavigationBar(
-              backgroundColor: Colors.white, // Set background color to white
-              enableFeedback: false,
-              items: const <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home, size: 30),
-                  label: '',
+      bottomNavigationBar: _selectedIndex == 2
+          ? null // Hide the navigation bar when on the AddPage
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Divider(
+                  height: 1,
+                  color: Colors.grey[50], // Thin gray line
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.search, size: 30),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.add_box_outlined, size: 30),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.notifications, size: 30),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline, size: 30),
-                  label: '',
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    splashFactory:
+                        NoSplash.splashFactory, // Supprime l'effet de vague
+                    highlightColor:
+                        Colors.transparent, // Supprime l'effet de surbrillance
+                  ),
+                  child: BottomNavigationBar(
+                    backgroundColor:
+                        Colors.white, // Set background color to white
+                    enableFeedback: false,
+                    items: const <BottomNavigationBarItem>[
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.home, size: 30),
+                        label: '',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.search, size: 30),
+                        label: '',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.add_box_outlined, size: 30),
+                        label: '',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.notifications, size: 30),
+                        label: '',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.person_outline, size: 30),
+                        label: '',
+                      ),
+                    ],
+                    currentIndex: _selectedIndex,
+                    selectedItemColor: Colors.black,
+                    unselectedItemColor: Colors.grey,
+                    onTap: _onItemTapped,
+                    showSelectedLabels: false,
+                    showUnselectedLabels: false,
+                    type: BottomNavigationBarType.fixed,
+                  ),
                 ),
               ],
-              currentIndex: _selectedIndex,
-              selectedItemColor: Colors.black,
-              unselectedItemColor: Colors.grey,
-              onTap: _onItemTapped,
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
-              type: BottomNavigationBarType.fixed,
             ),
-          ),
-        ],
-      ),
     );
   }
 }

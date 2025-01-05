@@ -42,8 +42,8 @@ class BlocGrid extends StatelessWidget {
           ),
           if (showDeleteButton)
             Positioned(
-              top: 6,
-              right: 6,
+              top: 0,
+              right: 0,
               child: GestureDetector(
                 onTap: onDelete,
                 child: Container(
@@ -55,7 +55,7 @@ class BlocGrid extends StatelessWidget {
                   child: const Icon(
                     Icons.close,
                     color: Colors.redAccent,
-                    size: 20,
+                    size: 12,
                   ),
                 ),
               ),
@@ -68,7 +68,7 @@ class BlocGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white, // Set background color to white
+      color: Colors.transparent, // Set background color to white
       child: Column(
         children: [
           // Première rangée avec blocs 1 et 2
@@ -106,13 +106,13 @@ class BlocGrid extends StatelessWidget {
                       children: [
                         Expanded(
                           child: _buildBloc(
-                            showDeleteButton: true,
+                            showDeleteButton: numberOfBlocs == 4 ? false : true,
                           ),
                         ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: _buildBloc(
-                            showDeleteButton: true,
+                            showDeleteButton: numberOfBlocs == 4 ? true : false,
                           ),
                         ),
                       ],
