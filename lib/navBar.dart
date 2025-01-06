@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vote_app/main.dart';
 import 'home/home_page.dart';
 import 'search/search_page.dart';
 import 'add/add_page.dart';
@@ -31,61 +32,64 @@ class _NavBarState extends State<NavBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: _selectedIndex == 2
-          ? null // Hide the navigation bar when on the AddPage
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Divider(
-                  height: 1,
-                  color: Colors.grey[50], // Thin gray line
+    return GradientBackground(
+      child: Scaffold(
+        body: _pages[_selectedIndex],
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(
+            border: Border(
+              top: BorderSide(
+                color: Colors.grey,
+                width: 0.2,
+              ),
+            ),
+          ),
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              splashFactory: NoSplash.splashFactory,
+              highlightColor: Colors.transparent,
+            ),
+            child: BottomNavigationBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              items: const <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home_outlined),
+                  activeIcon: Icon(Icons.home),
+                  label: 'Accueil',
                 ),
-                Theme(
-                  data: Theme.of(context).copyWith(
-                    splashFactory:
-                        NoSplash.splashFactory, // Supprime l'effet de vague
-                    highlightColor:
-                        Colors.transparent, // Supprime l'effet de surbrillance
-                  ),
-                  child: BottomNavigationBar(
-                    backgroundColor:
-                        Colors.white, // Set background color to white
-                    enableFeedback: false,
-                    items: const <BottomNavigationBarItem>[
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.home, size: 30),
-                        label: '',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.search, size: 30),
-                        label: '',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.add_box_outlined, size: 30),
-                        label: '',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.notifications, size: 30),
-                        label: '',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.person_outline, size: 30),
-                        label: '',
-                      ),
-                    ],
-                    currentIndex: _selectedIndex,
-                    selectedItemColor: Colors.black,
-                    unselectedItemColor: Colors.grey,
-                    onTap: _onItemTapped,
-                    showSelectedLabels: false,
-                    showUnselectedLabels: false,
-                    type: BottomNavigationBarType.fixed,
-                  ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.search_outlined),
+                  activeIcon: Icon(Icons.search),
+                  label: 'Recherche',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.add_circle_outline, size: 40),
+                  activeIcon: Icon(Icons.add_circle, size: 40),
+                  label: '',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.notifications_outlined),
+                  activeIcon: Icon(Icons.notifications),
+                  label: 'Alertes',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline),
+                  activeIcon: Icon(Icons.person),
+                  label: 'Profil',
                 ),
               ],
+              currentIndex: _selectedIndex,
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.grey,
+              onTap: _onItemTapped,
+              type: BottomNavigationBarType.fixed,
+              showSelectedLabels: false,
+              showUnselectedLabels: false,
             ),
+          ),
+        ),
+      ),
     );
   }
 }

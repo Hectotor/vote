@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:vote_app/main.dart';
 
 class InscriptionPage extends StatefulWidget {
   const InscriptionPage({super.key});
@@ -125,8 +126,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
     if (value == null || value.isEmpty) {
       return 'Veuillez entrer une adresse e-mail';
     }
-    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-    if (!emailRegex.hasMatch(value)) {
+    if (!value.contains('@')) {
       return 'Veuillez entrer une adresse e-mail valide';
     }
     return null;
@@ -134,31 +134,38 @@ class _InscriptionPageState extends State<InscriptionPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white, // Couleur neutre pour le fond
-      appBar: AppBar(
-        title: const Text(
-          'Inscription',
-          style: TextStyle(
-            color: Colors.black,
-            fontFamily: 'AvenirNext', // Updated font family
+    return GradientBackground(
+      child: Scaffold(
+        extendBodyBehindAppBar: true, // Étend le corps sous l'AppBar
+        appBar: AppBar(
+          backgroundColor:
+              Colors.transparent, // Fond transparent pour le dégradé
+          elevation: 0, // Retire l'ombre
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: Center(
-        // Center the body content vertically
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Center(
-              // Added Center widget
+        body: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
               child: Column(
-                mainAxisSize: MainAxisSize.min, // Center the column vertically
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  const Text(
+                    'Inscription',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontFamily: 'AvenirNext',
+                    ),
+                  ),
+                  const SizedBox(height: 30),
                   _buildTextField(
                     controller: _pseudoController,
                     label: 'Pseudo',
@@ -201,7 +208,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
                         _errorMessage!,
                         style: const TextStyle(
                           color: Colors.red,
-                          fontFamily: 'AvenirNext', // Updated font family
+                          fontFamily: 'AvenirNext',
                         ),
                       ),
                     ),
@@ -211,20 +218,23 @@ class _InscriptionPageState extends State<InscriptionPage> {
                         ? _register
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black87, // Couleur neutre sombre
+                      backgroundColor: Colors.white,
+                      disabledBackgroundColor: Colors.grey,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(15),
                       ),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 16),
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'S\'inscrire',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.grey.shade900,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        fontFamily: 'AvenirNext', // Updated font family
+                        fontFamily: 'AvenirNext',
                       ),
                     ),
                   ),
@@ -235,7 +245,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
                         _pseudoErrorMessage!,
                         style: const TextStyle(
                           color: Colors.red,
-                          fontFamily: 'AvenirNext', // Updated font family
+                          fontFamily: 'AvenirNext',
                         ),
                       ),
                     ),
@@ -253,6 +263,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
     required String label,
     required IconData icon,
     bool obscureText = false,
+    Widget? suffixIcon,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
@@ -261,36 +272,29 @@ class _InscriptionPageState extends State<InscriptionPage> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: Colors.black54), // Couleur neutre
+        labelStyle: const TextStyle(color: Colors.grey),
+        prefixIcon: Icon(icon, color: Colors.grey.shade300),
+        suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: Colors.white.withOpacity(0.1),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Colors.black12), // Bordure douce
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Colors.black12), // Bordure douce
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.grey.shade700),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide:
-              const BorderSide(color: Colors.black54), // Surlignage neutre
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.grey.shade400),
         ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Colors.red), // Bordure d'erreur
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Colors.red), // Bordure d'erreur
-        ),
+        errorStyle:
+            const TextStyle(color: Colors.white), // Error message in white
       ),
       style: const TextStyle(
-        fontFamily: 'AvenirNext', // Updated font family
-        fontWeight: FontWeight.w500,
-        fontSize: 16,
-        color: Colors.black,
+        color: Colors.white,
+        fontFamily: 'AvenirNext',
       ),
     );
   }

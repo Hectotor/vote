@@ -17,10 +17,10 @@ class BlocGrid extends StatelessWidget {
     bool isSingle = false,
   }) {
     return Card(
-      //elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
+      elevation: 4,
       child: Stack(
         children: [
           ClipRRect(
@@ -28,13 +28,23 @@ class BlocGrid extends StatelessWidget {
             child: GestureDetector(
               onTap: onTap,
               child: Container(
-                color:
-                    const Color(0xFFf7f7f8), // Set background color to #F7F7F8
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF2C2C54), // Teinte sombre du dégradé
+                      Color(0xFF4B6CB7), // Teinte légèrement plus claire
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(color: Colors.grey.shade800, width: 0.5),
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Center(
                   child: Icon(
                     Icons.add_photo_alternate_outlined,
-                    size: isSingle ? 40 : 40,
-                    color: Color(0xFFacacad),
+                    size: isSingle ? 50 : 40,
+                    color: Colors.grey.shade300, // Icône avec contraste doux
                   ),
                 ),
               ),
@@ -42,20 +52,20 @@ class BlocGrid extends StatelessWidget {
           ),
           if (showDeleteButton)
             Positioned(
-              top: 0,
-              right: 0,
+              top: 4,
+              right: 4,
               child: GestureDetector(
                 onTap: onDelete,
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.redAccent,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.close,
-                    color: Colors.redAccent,
-                    size: 12,
+                    color: Colors.white,
+                    size: 14,
                   ),
                 ),
               ),
@@ -68,7 +78,7 @@ class BlocGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.transparent, // Set background color to white
+      color: Colors.transparent,
       child: Column(
         children: [
           // Première rangée avec blocs 1 et 2
@@ -81,7 +91,7 @@ class BlocGrid extends StatelessWidget {
                     isSingle: numberOfBlocs == 2,
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 Expanded(
                   child: _buildBloc(
                     isSingle: numberOfBlocs == 2,
@@ -90,7 +100,7 @@ class BlocGrid extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           // Deuxième rangée avec bloc 3 (centré) ou blocs 3 et 4
           if (numberOfBlocs >= 3)
             SizedBox(
@@ -109,7 +119,7 @@ class BlocGrid extends StatelessWidget {
                             showDeleteButton: numberOfBlocs == 4 ? false : true,
                           ),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: _buildBloc(
                             showDeleteButton: numberOfBlocs == 4 ? true : false,

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vote_app/INSCRIPTION/inscription.dart';
-import 'package:vote_app/navBar.dart'; // Import navbar.dart
+import 'package:vote_app/main.dart';
+import 'package:vote_app/navBar.dart'; // Add this import
 
 class ConnexionPage extends StatefulWidget {
   const ConnexionPage({super.key});
@@ -24,10 +25,6 @@ class _ConnexionPageState extends State<ConnexionPage> {
     _passwordController.addListener(_updateButtonState);
   }
 
-  void _updateButtonState() {
-    setState(() {});
-  }
-
   @override
   void dispose() {
     _emailController.removeListener(_updateButtonState);
@@ -37,9 +34,34 @@ class _ConnexionPageState extends State<ConnexionPage> {
     super.dispose();
   }
 
-  bool get _isFormValid {
+  void _updateButtonState() {
+    setState(() {});
+  }
+
+  bool _isFormValid() {
     return _emailController.text.isNotEmpty &&
         _passwordController.text.isNotEmpty;
+  }
+
+  void _showErrorMessage(String message) {
+    setState(() {
+      _errorMessage = message;
+    });
+    Future.delayed(const Duration(seconds: 3), () {
+      setState(() {
+        _errorMessage = null;
+      });
+    });
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Veuillez entrer une adresse e-mail';
+    }
+    if (!value.contains('@')) {
+      return 'Veuillez entrer une adresse e-mail valide';
+    }
+    return null;
   }
 
   void _login() async {
@@ -49,15 +71,15 @@ class _ConnexionPageState extends State<ConnexionPage> {
           email: _emailController.text,
           password: _passwordController.text,
         );
-        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const NavBar()),
+        );
       } on FirebaseAuthException catch (e) {
-        setState(() {
-          if (e.code == 'user-not-found' || e.code == 'wrong-password') {
-            _errorMessage = 'Adresse e-mail ou mot de passe invalide.';
-          } else {
-            _errorMessage = e.message;
-          }
-        });
+        _showErrorMessage(
+            e.code == 'user-not-found' || e.code == 'wrong-password'
+                ? 'Adresse e-mail ou mot de passe invalide.'
+                : e.message!);
       }
     }
   }
@@ -68,61 +90,54 @@ class _ConnexionPageState extends State<ConnexionPage> {
         await FirebaseAuth.instance.sendPasswordResetEmail(
           email: _emailController.text,
         );
-        setState(() {
-          _errorMessage = 'Un email de réinitialisation a été envoyé.';
-        });
+        _showErrorMessage('Un email de réinitialisation a été envoyé.');
       } on FirebaseAuthException catch (e) {
-        setState(() {
-          _errorMessage = e.message;
-        });
+        _showErrorMessage(e.message!);
       }
     } else {
-      setState(() {
-        _errorMessage = 'Veuillez entrer votre adresse e-mail.';
-      });
+      _showErrorMessage('Veuillez entrer votre adresse e-mail.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white, // Couleur neutre pour le fond
-      appBar: AppBar(
-        title: const Text(
-          'Connexion',
-          style: TextStyle(
-            color: Colors.black,
-            fontFamily: 'AvenirNext', // Updated font family
+    return GradientBackground(
+      child: Scaffold(
+        extendBodyBehindAppBar: true, // Étend le corps sous l'AppBar
+        appBar: AppBar(
+          backgroundColor:
+              Colors.transparent, // Fond transparent pour le dégradé
+          elevation: 0, // Retire l'ombre
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const NavBar()),
-            );
-          },
-        ),
-      ),
-      body: Center(
-        // Center the body content vertically
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Center(
-              // Added Center widget
+        body: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
               child: Column(
-                mainAxisSize: MainAxisSize.min, // Center the column vertically
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  const Text(
+                    'Connexion',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontFamily: 'AvenirNext',
+                    ),
+                  ),
+                  const SizedBox(height: 30),
                   _buildTextField(
                     controller: _emailController,
                     label: 'Adresse e-mail',
                     icon: Icons.email_outlined,
+                    validator: _validateEmail,
                   ),
                   const SizedBox(height: 20),
                   _buildTextField(
@@ -135,7 +150,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
                         _isPasswordVisible
                             ? Icons.visibility
                             : Icons.visibility_off,
-                        color: Colors.black54,
+                        color: Colors.grey.shade300,
                       ),
                       onPressed: () {
                         setState(() {
@@ -151,44 +166,44 @@ class _ConnexionPageState extends State<ConnexionPage> {
                       child: const Text(
                         'Mot de passe oublié ?',
                         style: TextStyle(
-                          color: Colors.red,
-                          fontFamily: 'AvenirNext', // Updated font family
+                          color: Color(0xFF6A82FB),
+                          fontFamily: 'AvenirNext',
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
                   if (_errorMessage != null)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 20.0),
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
                       child: Text(
                         _errorMessage!,
                         style: const TextStyle(
-                          color: Colors.red,
-                          fontFamily: 'AvenirNext', // Updated font family
+                          color: Colors.redAccent,
+                          fontFamily: 'AvenirNext',
                         ),
                       ),
                     ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: _isFormValid ? _login : null,
+                    onPressed: _isFormValid() ? _login : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _isFormValid
-                          ? Colors.black87
-                          : Colors.grey, // Couleur neutre sombre ou grise
+                      backgroundColor: Colors.white,
+                      disabledBackgroundColor: Colors.grey,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 16),
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
                     ),
-                    child: const Text(
-                      'Connexion',
+                    child: Text(
+                      'Se connecter',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.grey.shade900,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        fontFamily: 'AvenirNext', // Updated font family
+                        fontFamily: 'AvenirNext',
                       ),
                     ),
                   ),
@@ -203,10 +218,11 @@ class _ConnexionPageState extends State<ConnexionPage> {
                       );
                     },
                     child: const Text(
-                      'S\'inscrire',
+                      'Créer un compte',
                       style: TextStyle(
-                        color: Colors.black54,
-                        fontFamily: 'AvenirNext', // Updated font family
+                        color: Colors.grey,
+                        fontFamily: 'AvenirNext',
+                        fontSize: 16,
                       ),
                     ),
                   ),
@@ -233,37 +249,29 @@ class _ConnexionPageState extends State<ConnexionPage> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: Colors.black54), // Couleur neutre
+        labelStyle: const TextStyle(color: Colors.grey),
+        prefixIcon: Icon(icon, color: Colors.grey.shade300),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: Colors.white.withOpacity(0.1),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Colors.black12), // Bordure douce
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Colors.black12), // Bordure douce
+          borderSide: BorderSide(color: Colors.grey.shade700),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide:
-              const BorderSide(color: Colors.black54), // Surlignage neutre
+          borderSide: BorderSide(color: Colors.grey.shade400),
         ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Colors.red), // Bordure d'erreur
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Colors.red), // Bordure d'erreur
-        ),
+        errorStyle:
+            const TextStyle(color: Colors.white), // Error message in white
       ),
       style: const TextStyle(
-        fontFamily: 'AvenirNext', // Updated font family
-        fontWeight: FontWeight.w500,
-        fontSize: 16,
-        color: Colors.black,
+        color: Colors.white,
+        fontFamily: 'AvenirNext',
       ),
     );
   }

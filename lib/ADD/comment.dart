@@ -12,38 +12,38 @@ class CommentField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(
-          bottom: 8.0), // Réduit la marge, uniquement en bas
-      width: 350, // Limite la largeur
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8.0),
+    return TextFormField(
+      controller: controller,
+      minLines: 1,
+      maxLines: 1, // Limit to a single line
+      maxLength: 45, // Limit to 45 characters
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        fontFamily: 'AvenirNext',
+        fontWeight: FontWeight.w700,
+        fontSize: 20,
+        color: Colors.white, // Text in white
       ),
-      child: TextFormField(
-        controller: controller,
-        minLines: 1,
-        maxLines: 2,
-        maxLength: 45, // Limite de 30 caractères
-        textAlign: TextAlign.center,
-        style: const TextStyle(
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.transparent, // Transparent background
+        hintText: hintText ?? 'Que veux-tu dire ?',
+        hintStyle: const TextStyle(
           fontFamily: 'AvenirNext',
-          fontWeight: FontWeight.w900,
-          fontSize: 22, // Taille augmentée
+          fontWeight: FontWeight.w100,
+          fontSize: 20,
+          color: Colors.grey, // Hint text color
         ),
-        decoration: InputDecoration(
-          hintText: hintText ?? 'Que veux-tu dire ?',
-          hintStyle: const TextStyle(
-            fontFamily: 'AvenirNext',
-            fontWeight: FontWeight.w100,
-            fontSize: 26,
-            color: Color(0xFFacacad),
-          ),
-          border: InputBorder.none,
-          //contentPadding: const EdgeInsets.all(16.0),
-          counterText: '', // Cache le compteur de caractères
+        counterText: '', // Hide character counter
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16.0,
+          horizontal: 12.0,
         ),
+        border: InputBorder.none, // Remove border
       ),
+      onFieldSubmitted: (text) {
+        // Prevent new lines by doing nothing on Enter
+      },
     );
   }
 }

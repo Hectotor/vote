@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-//import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firebase Firestore
 
 class Description extends StatelessWidget {
   final TextEditingController controller;
@@ -20,42 +19,37 @@ class Description extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
-      width: 350, // Largeur fixe pour harmoniser le design
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8.0),
+    return TextFormField(
+      controller: controller,
+      minLines: 1,
+      maxLines: 1, // Limit to a single line
+      maxLength: 200, // Limit the text to 200 characters
+      textAlign: TextAlign.start,
+      style: const TextStyle(
+        fontFamily: 'AvenirNext',
+        fontWeight: FontWeight.w500,
+        fontSize: 18,
+        color: Colors.white, // Text in white for good contrast
       ),
-      child: TextFormField(
-        controller: controller,
-        minLines: 1,
-        maxLines: 5, // Permet plusieurs lignes pour la description
-        maxLength: 200, // Limite le texte à 150 caractères
-        textAlign: TextAlign.start,
-        style: const TextStyle(
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.transparent, // Transparent background
+        hintText: 'Ajoute un commentaire ou des hashtags...',
+        hintStyle: const TextStyle(
           fontFamily: 'AvenirNext',
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w100,
           fontSize: 18,
-          color: Colors.black,
+          color: Colors.grey, // Hint text in grey
         ),
-        decoration: InputDecoration(
-          hintText: 'Ajoute un commentaire ou des hashtags...',
-          hintStyle: const TextStyle(
-            fontFamily: 'AvenirNext',
-            fontWeight: FontWeight.w100,
-            fontSize: 18,
-            color: Color(0xFFacacad),
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(8.0),
-          counterText: '', // Cache le compteur de caractères
-        ),
-        onChanged: (text) {
-          _logHashtags(); // Log hashtags whenever the text changes
-        },
+        border: InputBorder.none, // Remove border
+        counterText: '', // Hide character counter
       ),
+      onChanged: (text) {
+        _logHashtags(); // Log hashtags whenever the text changes
+      },
+      onFieldSubmitted: (text) {
+        // Prevent new lines by doing nothing on Enter
+      },
     );
   }
 }
