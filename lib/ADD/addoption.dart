@@ -20,9 +20,20 @@ class AddOption extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      backgroundColor: Colors.white, // Set background color to white
-      child: Padding(
+      backgroundColor: Colors.transparent, // Laisse le dégradé visible
+      child: Container(
         padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1D1D2C), // Dégradé sombre
+              Color(0xFF1D1D2C),
+            ],
+          ),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -31,35 +42,64 @@ class AddOption extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF08004D),
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 20),
-            ListTile(
-              leading: const Icon(Icons.text_fields, color: Color(0xFF08004D)),
-              title: const Text('Ajouter un texte'),
+            _buildOption(
+              icon: Icons.text_fields,
+              color: Colors.white,
+              title: "Ajouter un texte",
               onTap: onAddText,
             ),
-            ListTile(
-              leading:
-                  const Icon(Icons.photo_library, color: Color(0xFF08004D)),
-              title: const Text('Choisir une image'),
+            _buildOption(
+              icon: Icons.photo_library,
+              color: Colors.white,
+              title: "Ajouter une image",
               onTap: onAddPhoto,
             ),
-            ListTile(
-              leading: const Icon(Icons.photo_camera, color: Color(0xFF08004D)),
-              title: const Text('Prendre une photo'),
+            _buildOption(
+              icon: Icons.photo_camera,
+              color: Colors.white,
+              title: "Prendre une photo",
               onTap: onTakePhoto,
             ),
             if (onDeleteContent != null)
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.redAccent),
-                title: const Text('Supprimer le contenu'),
-                onTap: onDeleteContent,
+              _buildOption(
+                icon: Icons.delete,
+                color: Colors.redAccent,
+                title: "Supprimer le contenu",
+                onTap: onDeleteContent!,
               ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildOption({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: color),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white, // Texte en blanc
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+        ],
+      ),
+      onTap: onTap,
     );
   }
 }

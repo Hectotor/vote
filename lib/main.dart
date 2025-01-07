@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Firebase Demo',
       theme: ThemeData(
         colorScheme: const ColorScheme.light(
-          primary: Colors.black38,
+          primary: Colors.white,
           secondary: Colors.white,
           surface: Colors.white,
           background: Colors.white,
@@ -36,14 +36,14 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
         scaffoldBackgroundColor: Colors.transparent, // Set to transparent
-        fontFamily: 'AvenirNext',
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(fontFamily: 'AvenirNext'),
-          bodyMedium: TextStyle(fontFamily: 'AvenirNext'),
-          titleLarge: TextStyle(fontFamily: 'AvenirNext'),
-          titleMedium: TextStyle(fontFamily: 'AvenirNext'),
-          titleSmall: TextStyle(fontFamily: 'AvenirNext'),
-        ),
+        //fontFamily: 'AvenirNext',
+        //textTheme: const TextTheme(
+        //bodyLarge: TextStyle(fontFamily: 'AvenirNext'),
+        //bodyMedium: TextStyle(fontFamily: 'AvenirNext'),
+        //titleLarge: TextStyle(fontFamily: 'AvenirNext'),
+        //titleMedium: TextStyle(fontFamily: 'AvenirNext'),
+        //titleSmall: TextStyle(fontFamily: 'AvenirNext'),
+        //),
       ),
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: const [
@@ -68,7 +68,8 @@ class GradientBackground extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: [
             Color(0xFF1D1D2C), // Dégradé sombre
-            Color(0xFF24243E),
+            Color(0xFF1D1D2C),
+            //Color(0xFF24243E),
           ],
         ),
       ),

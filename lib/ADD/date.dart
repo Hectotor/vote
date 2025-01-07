@@ -24,7 +24,7 @@ class _DateSelectorState extends State<DateSelector> {
     _selectedDate = widget.selectedDate;
   }
 
-  void _showDatePicker() async {
+  void _showDatePicker(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -101,15 +101,11 @@ class _DateSelectorState extends State<DateSelector> {
       children: [
         if (_selectedDate == null)
           GestureDetector(
-            onTap: _showDatePicker,
-            child: Text(
-              'Fin du vote...',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w300,
-                fontFamily: 'AvenirNext',
-                color: Colors.grey[400],
-              ),
+            onTap: () => _showDatePicker(context),
+            child: Icon(
+              Icons.calendar_today, // Replace text with calendar icon
+              color: Colors.grey[400],
+              size: 24,
             ),
           )
         else
@@ -117,7 +113,7 @@ class _DateSelectorState extends State<DateSelector> {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: _showDatePicker,
+                  onTap: () => _showDatePicker(context),
                   child: Text(
                     'Fin du vote dans: ${widget.formatDuration(_selectedDate!.difference(DateTime.now()))}',
                     style: const TextStyle(

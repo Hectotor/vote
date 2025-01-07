@@ -6,7 +6,7 @@ import 'bloc.dart';
 import 'addoption.dart'; // Importer le nouveau fichier
 import 'package:image_picker/image_picker.dart';
 import 'description.dart'; // Ajouter l'import
-import 'date.dart'; // Import the new file
+//import 'date.dart'; // Import the new file
 import 'package:flutter_localizations/flutter_localizations.dart'; // Import localization package
 import 'dart:async'; // Import the dart:async package for Timer
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firebase Firestore
@@ -43,6 +43,7 @@ class _AddPageState extends State<AddPage> {
       TextEditingController(); // nouveau controller
   int _numberOfBlocs = 2;
   Timer? _timer; // Add a Timer variable
+  DateTime? _selectedDate; // Add a DateTime variable
 
   @override
   void initState() {
@@ -152,6 +153,68 @@ class _AddPageState extends State<AddPage> {
     );
   }
 
+  void _showDatePicker() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2101),
+      locale: const Locale('fr', 'FR'),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: const Color(0xFF4B6CB7), // Couleur principale
+              onPrimary:
+                  Colors.white, // Couleur du texte sur le bouton sélectionné
+              surface: const Color(0xFF1D1D2C), // Couleur de fond du dialogue
+              onSurface: Colors.white, // Couleur du texte sur le fond
+            ),
+            dialogBackgroundColor: const Color(0xFF24243E), // Fond du dialogue
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      final TimeOfDay? time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+        builder: (BuildContext context, Widget? child) {
+          return Theme(
+            data: ThemeData.dark().copyWith(
+              colorScheme: ColorScheme.dark(
+                primary: const Color(0xFF4B6CB7),
+                onPrimary: Colors.white,
+                surface: const Color(0xFF1D1D2C),
+                onSurface: Colors.white,
+              ),
+              dialogBackgroundColor: const Color(0xFF24243E),
+            ),
+            child: child!,
+          );
+        },
+      );
+      if (time != null) {
+        final selectedDateTime = DateTime(
+            picked.year, picked.month, picked.day, time.hour, time.minute);
+        if (selectedDateTime.isAfter(DateTime.now())) {
+          setState(() {
+            _selectedDate = selectedDateTime; // Set the selected date
+          });
+        } else {
+          // Logique pour gérer une date invalide
+        }
+      }
+    }
+  }
+
+  void _clearSelectedDate() {
+    setState(() {
+      _selectedDate = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return GradientBackground(
@@ -184,35 +247,35 @@ class _AddPageState extends State<AddPage> {
           actions: [
             if (_numberOfBlocs < 4)
               Padding(
-                padding: const EdgeInsets.only(right: 10.0),
-                child: TextButton(
-                  onPressed: _addBlocs,
-                  child: const Text(
-                    'Ajouter',
-                    style: TextStyle(
-                      color: Color(0xFF4B6CB7),
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'AvenirNext', // Set font family
-                    ),
+                padding: const EdgeInsets.only(right: 30.0),
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.add_circle_outline,
+                    color: Color(0xFF4B6CB7),
                   ),
+                  onPressed: _addBlocs,
                 ),
               ),
             Padding(
+              padding: const EdgeInsets.only(right: 30.0),
+              child: IconButton(
+                icon: const Icon(
+                  Icons.calendar_today,
+                  color: Color(0xFF4B6CB7),
+                ),
+                onPressed: _showDatePicker,
+              ),
+            ),
+            Padding(
               padding: const EdgeInsets.only(right: 10.0),
-              child: TextButton(
+              child: IconButton(
+                icon: const Icon(
+                  Icons.save,
+                  color: Color(0xFF4B6CB7),
+                ),
                 onPressed: () {
                   // Logique pour enregistrer
                 },
-                child: const Text(
-                  'Sauvegarder',
-                  style: TextStyle(
-                    color: Color(0xFF4B6CB7),
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'AvenirNext', // Set font family
-                  ),
-                ),
               ),
             ),
             Padding(
@@ -231,9 +294,9 @@ class _AddPageState extends State<AddPage> {
                   'Publier',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 15,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    fontFamily: 'AvenirNext', // Set font family
+                    //fontFamily: 'AvenirNext', // Set font family
                   ),
                 ),
               ),
@@ -243,7 +306,7 @@ class _AddPageState extends State<AddPage> {
         body: SingleChildScrollView(
           child: Container(
             alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 16),
             color: Colors.transparent,
             child: Column(
               crossAxisAlignment:
@@ -252,6 +315,29 @@ class _AddPageState extends State<AddPage> {
                 CommentField(
                   controller: _controller,
                 ),
+                if (_selectedDate != null)
+                  Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${_selectedDate!.isAfter(DateTime.now()) ? "Vote ouvert" : "Vote fermé"} -  ${_formatDuration(_selectedDate!.difference(DateTime.now()))}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.normal,
+                            //fontFamily: 'AvenirNext',
+                            color: Colors.white,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.clear,
+                              size: 15, color: Colors.white),
+                          onPressed: _clearSelectedDate,
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 20),
                 BlocGrid(
                   numberOfBlocs: _numberOfBlocs,
                   onTap: _showAddBlocDialog,
@@ -261,24 +347,27 @@ class _AddPageState extends State<AddPage> {
                 Description(
                   controller: _descriptionController,
                 ),
-                const SizedBox(height: 30),
-                DateSelector(
-                  selectedDate: null, // Pass the initial selected date
-                  formatDuration: (duration) {
-                    String twoDigits(int n) => n.toString().padLeft(2, '0');
-                    final days = duration.inDays;
-                    final hours = duration.inHours.remainder(24);
-                    final minutes = duration.inMinutes.remainder(60);
-                    final seconds = duration.inSeconds.remainder(60);
-                    return '${days}j - ${twoDigits(hours)}h-${twoDigits(minutes)}m-${twoDigits(seconds)}s';
-                  },
-                ),
+                const SizedBox(height: 20),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  String _formatDuration(Duration duration) {
+    final parts = [
+      if (duration.inDays > 0) '${duration.inDays}j',
+      if (duration.inHours.remainder(24) > 0)
+        '${duration.inHours.remainder(24)}h',
+      if (duration.inMinutes.remainder(60) > 0)
+        '${duration.inMinutes.remainder(60)}m',
+      if (duration.inSeconds.remainder(60) > 0)
+        '${duration.inSeconds.remainder(60)}s',
+    ];
+
+    return parts.join(' ');
   }
 
   @override
