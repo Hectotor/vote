@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class BlocGrid extends StatelessWidget {
   final int numberOfBlocs;
   final VoidCallback onTap;
   final VoidCallback? onDelete; // Callback pour suppression
+  final List<XFile?> images; // List to store images
+  final ValueChanged<int>? onImageChange; // Callback for image change
 
   const BlocGrid({
     super.key,
     required this.numberOfBlocs,
     required this.onTap,
     this.onDelete,
+    required this.images,
+    this.onImageChange, // Add this line
   });
 
   Widget _buildBloc({
     bool showDeleteButton = false,
     bool isSingle = false,
+    XFile? image,
+    int index = 0,
   }) {
     return Card(
       shape: RoundedRectangleBorder(
@@ -26,7 +34,11 @@ class BlocGrid extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: GestureDetector(
-              onTap: onTap,
+              onTap: () {
+                if (onImageChange != null) {
+                  onImageChange!(index); // Call the callback with the index
+                }
+              },
               child: Container(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
@@ -41,11 +53,19 @@ class BlocGrid extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
-                  child: Icon(
-                    Icons.add_photo_alternate_outlined,
-                    size: isSingle ? 50 : 40,
-                    color: Colors.grey.shade300, // Icône avec contraste doux
-                  ),
+                  child: image != null
+                      ? Image.file(
+                          File(image.path),
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                        )
+                      : Icon(
+                          Icons.add_photo_alternate_outlined,
+                          size: isSingle ? 50 : 40,
+                          color:
+                              Colors.grey.shade300, // Icône avec contraste doux
+                        ),
                 ),
               ),
             ),
@@ -89,12 +109,16 @@ class BlocGrid extends StatelessWidget {
                 Expanded(
                   child: _buildBloc(
                     isSingle: numberOfBlocs == 2,
+                    image: images[0],
+                    index: 0,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildBloc(
                     isSingle: numberOfBlocs == 2,
+                    image: images[1],
+                    index: 1,
                   ),
                 ),
               ],
@@ -110,6 +134,8 @@ class BlocGrid extends StatelessWidget {
                       width: MediaQuery.of(context).size.width * 0.5,
                       child: _buildBloc(
                         showDeleteButton: true,
+                        image: images[2],
+                        index: 2,
                       ),
                     )
                   : Row(
@@ -117,12 +143,16 @@ class BlocGrid extends StatelessWidget {
                         Expanded(
                           child: _buildBloc(
                             showDeleteButton: numberOfBlocs == 4 ? false : true,
+                            image: images[2],
+                            index: 2,
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: _buildBloc(
                             showDeleteButton: numberOfBlocs == 4 ? true : false,
+                            image: images[3],
+                            index: 3,
                           ),
                         ),
                       ],

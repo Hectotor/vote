@@ -6,7 +6,6 @@ import 'bloc.dart';
 import 'addoption.dart'; // Importer le nouveau fichier
 import 'package:image_picker/image_picker.dart';
 import 'description.dart'; // Ajouter l'import
-//import 'date.dart'; // Import the new file
 import 'package:flutter_localizations/flutter_localizations.dart'; // Import localization package
 import 'dart:async'; // Import the dart:async package for Timer
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firebase Firestore
@@ -44,6 +43,7 @@ class _AddPageState extends State<AddPage> {
   int _numberOfBlocs = 2;
   Timer? _timer; // Add a Timer variable
   DateTime? _selectedDate; // Add a DateTime variable
+  List<XFile?> _images = List<XFile?>.filled(4, null); // List to store images
 
   @override
   void initState() {
@@ -57,14 +57,14 @@ class _AddPageState extends State<AddPage> {
     });
   }
 
-  void _showAddBlocDialog() {
+  void _showAddBlocDialog(int index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AddOption(
           onAddText: _addText,
-          onAddPhoto: _addPhoto,
-          onTakePhoto: _takePhoto,
+          onAddPhoto: () => _addPhoto(index),
+          onTakePhoto: () => _takePhoto(index),
           onDeleteContent: _hasContent()
               ? _deleteContent
               : null, // Show delete button only if there is content
@@ -85,21 +85,25 @@ class _AddPageState extends State<AddPage> {
     // Logique pour ajouter un texte
   }
 
-  void _addPhoto() async {
+  void _addPhoto(int index) async {
     Navigator.pop(context);
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
-      // Logique pour ajouter une photo
+      setState(() {
+        _images[index] = pickedFile;
+      });
     }
   }
 
-  void _takePhoto() async {
+  void _takePhoto(int index) async {
     Navigator.pop(context);
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
-      // Logique pour prendre une photo
+      setState(() {
+        _images[index] = pickedFile;
+      });
     }
   }
 
@@ -267,7 +271,7 @@ class _AddPageState extends State<AddPage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(right: 10.0),
+              padding: const EdgeInsets.only(right: 20.0),
               child: IconButton(
                 icon: const Icon(
                   Icons.save,
@@ -315,6 +319,15 @@ class _AddPageState extends State<AddPage> {
                 CommentField(
                   controller: _controller,
                 ),
+                const SizedBox(height: 10),
+                BlocGrid(
+                  numberOfBlocs: _numberOfBlocs,
+                  onTap: () => _showAddBlocDialog(0),
+                  onDelete: _deleteBloc,
+                  images: _images, // Pass images to BlocGrid
+                  onImageChange: (index) =>
+                      _showAddBlocDialog(index), // Add this line
+                ),
                 if (_selectedDate != null)
                   Center(
                     child: Row(
@@ -323,9 +336,9 @@ class _AddPageState extends State<AddPage> {
                         Text(
                           '${_selectedDate!.isAfter(DateTime.now()) ? "Vote ouvert" : "Vote fermé"} -  ${_formatDuration(_selectedDate!.difference(DateTime.now()))}',
                           style: const TextStyle(
-                            fontSize: 13,
+                            fontSize: 16,
                             fontWeight: FontWeight.normal,
-                            //fontFamily: 'AvenirNext',
+                            fontFamily: 'AvenirNext',
                             color: Colors.white,
                           ),
                         ),
@@ -337,12 +350,6 @@ class _AddPageState extends State<AddPage> {
                       ],
                     ),
                   ),
-                const SizedBox(height: 20),
-                BlocGrid(
-                  numberOfBlocs: _numberOfBlocs,
-                  onTap: _showAddBlocDialog,
-                  onDelete: _deleteBloc,
-                ),
                 const SizedBox(height: 30),
                 Description(
                   controller: _descriptionController,
