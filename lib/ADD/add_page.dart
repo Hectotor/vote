@@ -9,6 +9,7 @@ import 'description.dart'; // Ajouter l'import
 import 'package:flutter_localizations/flutter_localizations.dart'; // Import localization package
 import 'dart:async'; // Import the dart:async package for Timer
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firebase Firestore
+import 'image.dart'; // Import the new image.dart file
 
 void main() {
   runApp(const MyApp());
@@ -44,6 +45,8 @@ class _AddPageState extends State<AddPage> {
   Timer? _timer; // Add a Timer variable
   DateTime? _selectedDate; // Add a DateTime variable
   List<XFile?> _images = List<XFile?>.filled(4, null); // List to store images
+  List<Color> _imageFilters =
+      List<Color>.filled(4, Colors.transparent); // Nouvelle ligne
 
   @override
   void initState() {
@@ -60,56 +63,69 @@ class _AddPageState extends State<AddPage> {
   void _showAddBlocDialog(int index) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AddOption(
-          onAddText: _addText,
-          onAddPhoto: () => _addPhoto(index),
-          onTakePhoto: () => _takePhoto(index),
-          onDeleteContent: _hasContent()
-              ? _deleteContent
-              : null, // Show delete button only if there is content
+      barrierDismissible: true, // Permet de fermer en cliquant à l'extérieur
+      builder: (BuildContext dialogContext) {
+        // Utilisez un nouveau context
+        return WillPopScope(
+          onWillPop: () async {
+            Navigator.of(dialogContext).pop(); // Ferme le dialogue
+            return true;
+          },
+          child: AddOption(
+            onAddText: () {
+              Navigator.pop(dialogContext); // Ferme le dialogue
+              _addText();
+            },
+            onAddPhoto: () async {
+              Navigator.pop(dialogContext); // Ferme le dialogue
+              if (!mounted) return; // Vérifiez si le widget est toujours monté
+              await addPhoto(
+                index,
+                _images,
+                setState,
+                context,
+                (index, color) {
+                  setState(() {
+                    _imageFilters[index] = color;
+                  });
+                },
+              );
+            },
+            onTakePhoto: () async {
+              Navigator.pop(dialogContext); // Ferme le dialogue
+              if (!mounted) return; // Vérifiez si le widget est toujours monté
+              await takePhoto(
+                index,
+                _images,
+                setState,
+                context,
+                (index, color) {
+                  setState(() {
+                    _imageFilters[index] = color;
+                  });
+                },
+              );
+            },
+            onDeleteContent: _images[index] != null
+                ? () {
+                    setState(() {
+                      _images[index] = null;
+                      _imageFilters[index] =
+                          Colors.transparent; // Réinitialiser le filtre
+                    });
+                    Navigator.pop(dialogContext); // Ferme le dialogue
+                  }
+                : null,
+            hasImage: _images[index] != null,
+          ),
         );
       },
     );
   }
 
-  bool _hasContent() {
-    // Logique pour vérifier si le bloc a du contenu
-    // Retourner true si le bloc a du contenu, sinon false
-    // Exemple de logique : vérifier si le contrôleur de texte n'est pas vide
-    return _controller.text.isNotEmpty;
-  }
-
   void _addText() {
     Navigator.pop(context);
     // Logique pour ajouter un texte
-  }
-
-  void _addPhoto(int index) async {
-    Navigator.pop(context);
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _images[index] = pickedFile;
-      });
-    }
-  }
-
-  void _takePhoto(int index) async {
-    Navigator.pop(context);
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      setState(() {
-        _images[index] = pickedFile;
-      });
-    }
-  }
-
-  void _deleteContent() {
-    Navigator.pop(context);
-    // Logique pour supprimer le contenu
   }
 
   void _addBlocs() {
@@ -310,7 +326,7 @@ class _AddPageState extends State<AddPage> {
         body: SingleChildScrollView(
           child: Container(
             alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 5),
             color: Colors.transparent,
             child: Column(
               crossAxisAlignment:
@@ -319,12 +335,13 @@ class _AddPageState extends State<AddPage> {
                 CommentField(
                   controller: _controller,
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 40),
                 BlocGrid(
                   numberOfBlocs: _numberOfBlocs,
                   onTap: () => _showAddBlocDialog(0),
                   onDelete: _deleteBloc,
                   images: _images, // Pass images to BlocGrid
+                  imageFilters: _imageFilters, // Ajouter cette ligne
                   onImageChange: (index) =>
                       _showAddBlocDialog(index), // Add this line
                 ),
@@ -350,7 +367,7 @@ class _AddPageState extends State<AddPage> {
                       ],
                     ),
                   ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 40),
                 Description(
                   controller: _descriptionController,
                 ),

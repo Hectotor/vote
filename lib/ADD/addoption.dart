@@ -5,6 +5,7 @@ class AddOption extends StatelessWidget {
   final VoidCallback onAddPhoto;
   final VoidCallback onTakePhoto;
   final VoidCallback? onDeleteContent;
+  final bool hasImage; // Nouveau paramètre
 
   const AddOption({
     super.key,
@@ -12,6 +13,7 @@ class AddOption extends StatelessWidget {
     required this.onAddPhoto,
     required this.onTakePhoto,
     this.onDeleteContent,
+    this.hasImage = false, // Par défaut false
   });
 
   @override
@@ -29,8 +31,8 @@ class AddOption extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1D1D2C), // Dégradé sombre
-              Color(0xFF1D1D2C),
+              Color(0xFF000000), // Dégradé sombre
+              Color(0xFF1D1D2C), // Dégradé bleu
             ],
           ),
         ),
@@ -64,11 +66,11 @@ class AddOption extends StatelessWidget {
               title: "Prendre une photo",
               onTap: onTakePhoto,
             ),
-            if (onDeleteContent != null)
+            if (hasImage && onDeleteContent != null)
               _buildOption(
                 icon: Icons.delete,
                 color: Colors.redAccent,
-                title: "Supprimer le contenu",
+                title: "Supprimer l'image",
                 onTap: onDeleteContent!,
               ),
           ],

@@ -8,6 +8,7 @@ class BlocGrid extends StatelessWidget {
   final VoidCallback? onDelete; // Callback pour suppression
   final List<XFile?> images; // List to store images
   final ValueChanged<int>? onImageChange; // Callback for image change
+  final List<Color> imageFilters; // Ajouter cette ligne
 
   const BlocGrid({
     super.key,
@@ -16,6 +17,7 @@ class BlocGrid extends StatelessWidget {
     this.onDelete,
     required this.images,
     this.onImageChange, // Add this line
+    required this.imageFilters, // Ajouter ce paramètre
   });
 
   Widget _buildBloc({
@@ -54,11 +56,20 @@ class BlocGrid extends StatelessWidget {
                 ),
                 child: Center(
                   child: image != null
-                      ? Image.file(
-                          File(image.path),
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
+                      ? Stack(
+                          children: [
+                            Image.file(
+                              File(image.path),
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                            ),
+                            Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              color: imageFilters[index],
+                            ),
+                          ],
                         )
                       : Icon(
                           Icons.add_photo_alternate_outlined,
