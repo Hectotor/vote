@@ -36,7 +36,7 @@ class Description extends StatelessWidget {
         fillColor: Colors.transparent, // Transparent background
         hintText: 'Commentaire & Hashtags...',
         hintStyle: TextStyle(
-          fontFamily: 'AvenirNext',
+          //fontFamily: 'AvenirNext',
           fontWeight: FontWeight.normal,
           fontSize: 18, // Slightly larger font
           color: Colors.grey[400], // Hint text in grey

@@ -9,6 +9,7 @@ class BlocGrid extends StatelessWidget {
   final List<XFile?> images; // List to store images
   final ValueChanged<int>? onImageChange; // Callback for image change
   final List<Color> imageFilters; // Ajouter cette ligne
+  final List<Widget?> textWidgets; // Nouveau
 
   const BlocGrid({
     super.key,
@@ -18,6 +19,7 @@ class BlocGrid extends StatelessWidget {
     required this.images,
     this.onImageChange, // Add this line
     required this.imageFilters, // Ajouter ce paramètre
+    required this.textWidgets, // Nouveau
   });
 
   Widget _buildBloc({
@@ -26,15 +28,18 @@ class BlocGrid extends StatelessWidget {
     XFile? image,
     int index = 0,
   }) {
+    final bool hasContent = image != null ||
+        (index < textWidgets.length && textWidgets[index] != null);
+
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(10), // Réduit de 16 à 8
       ),
       elevation: 4,
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(10), // Réduit de 16 à 8
             child: GestureDetector(
               onTap: () {
                 if (onImageChange != null) {
@@ -52,7 +57,7 @@ class BlocGrid extends StatelessWidget {
                     end: Alignment.bottomRight,
                   ),
                   border: Border.all(color: Colors.grey.shade800, width: 0.5),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(10), // Réduit de 16 à 8
                 ),
                 child: Center(
                   child: image != null
@@ -71,12 +76,14 @@ class BlocGrid extends StatelessWidget {
                             ),
                           ],
                         )
-                      : Icon(
-                          Icons.add_photo_alternate_outlined,
-                          size: isSingle ? 50 : 40,
-                          color:
-                              Colors.grey.shade300, // Icône avec contraste doux
-                        ),
+                      : !hasContent // Modifier cette condition
+                          ? Icon(
+                              Icons.add_photo_alternate_outlined,
+                              size: isSingle ? 50 : 40,
+                              color: Colors
+                                  .grey.shade300, // Icône avec contraste doux
+                            )
+                          : null, // Ne rien afficher si il y a du contenu
                 ),
               ),
             ),
@@ -101,6 +108,10 @@ class BlocGrid extends StatelessWidget {
                 ),
               ),
             ),
+          if (index < textWidgets.length && textWidgets[index] != null)
+            Positioned.fill(
+              child: textWidgets[index]!,
+            ),
         ],
       ),
     );
@@ -124,7 +135,7 @@ class BlocGrid extends StatelessWidget {
                     index: 0,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 2), // Réduit de 8 à 2
                 Expanded(
                   child: _buildBloc(
                     isSingle: numberOfBlocs == 2,
@@ -135,7 +146,7 @@ class BlocGrid extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 2), // Réduit de 8 à 2
           // Deuxième rangée avec bloc 3 (centré) ou blocs 3 et 4
           if (numberOfBlocs >= 3)
             SizedBox(
@@ -158,7 +169,7 @@ class BlocGrid extends StatelessWidget {
                             index: 2,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 2), // Réduit de 8 à 2
                         Expanded(
                           child: _buildBloc(
                             showDeleteButton: numberOfBlocs == 4 ? true : false,

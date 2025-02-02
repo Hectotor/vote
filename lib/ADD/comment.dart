@@ -19,9 +19,9 @@ class CommentField extends StatelessWidget {
       maxLength: 45, // Limit to 45 characters
       textAlign: TextAlign.center,
       style: const TextStyle(
-        fontFamily: 'AvenirNext',
+        //fontFamily: 'AvenirNext',
         fontWeight: FontWeight.w700,
-        fontSize: 22,
+        fontSize: 25,
         color: Colors.white, // Text in white
       ),
       decoration: InputDecoration(
@@ -29,7 +29,7 @@ class CommentField extends StatelessWidget {
         fillColor: Colors.transparent, // Transparent background
         hintText: hintText ?? 'Que veux-tu dire ?',
         hintStyle: TextStyle(
-          fontFamily: 'AvenirNext',
+          //fontFamily: 'AvenirNext',
           fontWeight: FontWeight.w500,
           fontSize: 25,
           color: Colors.grey[400], // Hint text color

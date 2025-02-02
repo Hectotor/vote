@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vote_app/ADD/texte.dart';
 import 'package:vote_app/main.dart';
 import 'package:vote_app/navBar.dart';
 import 'comment.dart';
@@ -47,6 +48,8 @@ class _AddPageState extends State<AddPage> {
   List<XFile?> _images = List<XFile?>.filled(4, null); // List to store images
   List<Color> _imageFilters =
       List<Color>.filled(4, Colors.transparent); // Nouvelle ligne
+  bool _isChronoActive = false; // Pour suivre l'état du chrono
+  List<Widget?> _textWidgets = List<Widget?>.filled(4, null); // Nouveau
 
   @override
   void initState() {
@@ -74,7 +77,7 @@ class _AddPageState extends State<AddPage> {
           child: AddOption(
             onAddText: () {
               Navigator.pop(dialogContext); // Ferme le dialogue
-              _addText();
+              _addText(index);
             },
             onAddPhoto: () async {
               Navigator.pop(dialogContext); // Ferme le dialogue
@@ -117,15 +120,25 @@ class _AddPageState extends State<AddPage> {
                   }
                 : null,
             hasImage: _images[index] != null,
+            hasText: _textWidgets[index] != null, // Ajout de cette ligne
           ),
         );
       },
     );
   }
 
-  void _addText() {
-    Navigator.pop(context);
-    // Logique pour ajouter un texte
+  void _addText(int index) {
+    setState(() {
+      _textWidgets[index] = TextEditWidget(
+        backgroundColor: Colors
+            .transparent, // La couleur est maintenant gérée dans bloc.dart
+        onEmpty: () {
+          setState(() {
+            _textWidgets[index] = null;
+          });
+        },
+      );
+    });
   }
 
   void _addBlocs() {
@@ -235,6 +248,26 @@ class _AddPageState extends State<AddPage> {
     });
   }
 
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 3),
+        backgroundColor: const Color(0xFF4B6CB7),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  void _toggleChrono() {
+    setState(() {
+      _isChronoActive = !_isChronoActive;
+      _showSnackBar(_isChronoActive ? 'Chrono activé' : 'Chrono désactivé');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return GradientBackground(
@@ -267,7 +300,7 @@ class _AddPageState extends State<AddPage> {
           actions: [
             if (_numberOfBlocs < 4)
               Padding(
-                padding: const EdgeInsets.only(right: 30.0),
+                padding: const EdgeInsets.only(right: 15.0),
                 child: IconButton(
                   icon: const Icon(
                     Icons.add_circle_outline,
@@ -277,7 +310,26 @@ class _AddPageState extends State<AddPage> {
                 ),
               ),
             Padding(
-              padding: const EdgeInsets.only(right: 30.0),
+              padding: const EdgeInsets.only(right: 15.0),
+              child: IconButton(
+                icon: _isChronoActive
+                    ? const Text(
+                        '5s',
+                        style: TextStyle(
+                          color: Color(0xFF4B6CB7),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.timer_sharp,
+                        color: Color(0xFF4B6CB7),
+                      ),
+                onPressed: _toggleChrono,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 15.0),
               child: IconButton(
                 icon: const Icon(
                   Icons.calendar_today,
@@ -287,7 +339,7 @@ class _AddPageState extends State<AddPage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(right: 20.0),
+              padding: const EdgeInsets.only(right: 15.0),
               child: IconButton(
                 icon: const Icon(
                   Icons.save,
@@ -342,8 +394,9 @@ class _AddPageState extends State<AddPage> {
                   onDelete: _deleteBloc,
                   images: _images, // Pass images to BlocGrid
                   imageFilters: _imageFilters, // Ajouter cette ligne
-                  onImageChange: (index) =>
-                      _showAddBlocDialog(index), // Add this line
+                  onImageChange: (index) => _showAddBlocDialog(index),
+                  textWidgets:
+                      _textWidgets, // Passez _textWidgets au lieu d'une liste vide
                 ),
                 if (_selectedDate != null)
                   Center(
@@ -367,7 +420,7 @@ class _AddPageState extends State<AddPage> {
                       ],
                     ),
                   ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 25),
                 Description(
                   controller: _descriptionController,
                 ),

@@ -5,7 +5,8 @@ class AddOption extends StatelessWidget {
   final VoidCallback onAddPhoto;
   final VoidCallback onTakePhoto;
   final VoidCallback? onDeleteContent;
-  final bool hasImage; // Nouveau paramètre
+  final bool hasImage;
+  final bool hasText; // Nouveau paramètre
 
   const AddOption({
     super.key,
@@ -13,7 +14,8 @@ class AddOption extends StatelessWidget {
     required this.onAddPhoto,
     required this.onTakePhoto,
     this.onDeleteContent,
-    this.hasImage = false, // Par défaut false
+    this.hasImage = false,
+    this.hasText = false, // Nouvelle option
   });
 
   @override
@@ -48,12 +50,13 @@ class AddOption extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            _buildOption(
-              icon: Icons.text_fields,
-              color: Colors.white,
-              title: "Ajouter un texte",
-              onTap: onAddText,
-            ),
+            if (!hasText) // Condition pour afficher le bouton uniquement s'il n'y a pas de texte
+              _buildOption(
+                icon: Icons.text_fields,
+                color: Colors.white,
+                title: "Ajouter un texte",
+                onTap: onAddText,
+              ),
             _buildOption(
               icon: Icons.photo_library,
               color: Colors.white,
