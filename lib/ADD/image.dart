@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -21,6 +20,7 @@ class ImageFilterPage extends StatefulWidget {
 
 class _ImageFilterPageState extends State<ImageFilterPage> {
   Color _selectedFilter = Colors.transparent;
+  bool isGif = false;
   final List<Color> _filterColors = [
     Colors.transparent,
     Colors.blue.withOpacity(0.3),
@@ -31,6 +31,12 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
     Colors.pink.withOpacity(0.3),
     Colors.teal.withOpacity(0.3),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    isGif = widget.image.path.toLowerCase().endsWith('.gif');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,10 +55,8 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
               widget.onFilterSelected(widget.image, _selectedFilter);
               Navigator.of(context).pop();
             },
-            child: const Text(
-              'Appliquer',
-              style: TextStyle(color: Colors.white),
-            ),
+            child:
+                const Text('Appliquer', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -60,9 +64,7 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
         children: [
           Expanded(
             child: Center(
-              // Ajout d'un Center pour contenir l'image
               child: ClipRRect(
-                // Ajout de ClipRRect pour les coins arrondis
                 borderRadius: BorderRadius.circular(12),
                 child: Stack(
                   children: [
@@ -71,10 +73,7 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
                       fit: BoxFit.contain,
                     ),
                     Positioned.fill(
-                      // Utilisation de Positioned.fill pour couvrir uniquement l'image
-                      child: Container(
-                        color: _selectedFilter,
-                      ),
+                      child: Container(color: _selectedFilter),
                     ),
                   ],
                 ),
@@ -107,24 +106,18 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
                       ),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: Stack(
-                            children: [
-                              Image.file(
-                                File(widget.image.path),
-                                fit: BoxFit.cover,
-                              ),
-                              Container(
-                                color: _filterColors[index],
-                              ),
-                            ],
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Image.file(
+                            File(widget.image.path),
+                            fit: BoxFit.cover,
                           ),
-                        ),
-                      ],
+                          Container(color: _filterColors[index]),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -138,57 +131,60 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
   }
 }
 
-// Modifier les fonctions addPhoto et takePhoto
+// Fonction addPhoto modifiée pour gérer les GIFs
 Future<void> addPhoto(int index, List<XFile?> images, Function setState,
     BuildContext context, Function(int, Color) onFilterChange) async {
-  // Ajout du paramètre onFilterChange
-  if (!context.mounted) return; // Vérifiez si le contexte est monté
+  if (!context.mounted) return;
 
   final picker = ImagePicker();
-  final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  final XFile? pickedFile = await picker.pickImage(
+    source: ImageSource.gallery,
+  );
 
   if (pickedFile != null && context.mounted) {
-    // Vérifiez encore après l'opération async
-    final croppedFile = await ImageCropper().cropImage(
-      sourcePath: pickedFile.path,
-      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Recadrer l\'image',
-          toolbarColor: const Color(0xFF1D1D2C),
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.square,
-          lockAspectRatio: true,
-          hideBottomControls: false,
-        ),
-        IOSUiSettings(
-          title: 'Recadrer l\'image',
-          doneButtonTitle: 'Terminer',
-          cancelButtonTitle: 'Annuler',
-          aspectRatioLockEnabled: true,
-        ),
-      ],
-    );
-
-    if (croppedFile != null && context.mounted) {
-      // Vérifiez encore après le crop
-      final imageFile = XFile(croppedFile.path);
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ImageFilterPage(
-            image: imageFile,
-            onFilterSelected: (XFile image, Color filterColor) {
-              setState(() {
-                images[index] = image;
-              });
-              onFilterChange(index, filterColor); // Utiliser la fonction passée
-            },
+    if (pickedFile.path.toLowerCase().endsWith('.gif')) {
+      setState(() {
+        images[index] = pickedFile;
+      });
+      onFilterChange(index, Colors.transparent);
+    } else {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Recadrer l\'image',
+            toolbarColor: const Color(0xFF1D1D2C),
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true,
           ),
-        ),
+          IOSUiSettings(
+            title: 'Recadrer l\'image',
+            doneButtonTitle: 'Terminer',
+            cancelButtonTitle: 'Annuler',
+            aspectRatioLockEnabled: true,
+          ),
+        ],
       );
+
+      if (croppedFile != null && context.mounted) {
+        final imageFile = XFile(croppedFile.path);
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ImageFilterPage(
+              image: imageFile,
+              onFilterSelected: (image, filterColor) {
+                setState(() {
+                  images[index] = image;
+                });
+                onFilterChange(index, filterColor);
+              },
+            ),
+          ),
+        );
+      }
     }
-  } else {
-    print('No image selected'); // Debug print
   }
 }
 

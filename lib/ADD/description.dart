@@ -13,45 +13,43 @@ class Description extends StatelessWidget {
     final hashtags =
         text.split(' ').where((word) => word.startsWith('#')).toList();
     for (var hashtag in hashtags) {
-      print('Hashtag found: $hashtag'); // Log each hashtag
+      print('Hashtag found: $hashtag');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      minLines: 1,
-      maxLines: 5, // Limit to a single line
-      maxLength: 300, // Limit the text to 200 characters
-      textAlign: TextAlign.start,
-      style: const TextStyle(
-        //fontFamily: 'AvenirNext',
-        fontWeight: FontWeight.normal,
-        fontSize: 15,
-        color: Colors.white, // Text in white for good contrast
-      ),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.transparent, // Transparent background
-        hintText: 'Commentaire & Hashtags...',
-        hintStyle: TextStyle(
-          //fontFamily: 'AvenirNext',
-          fontWeight: FontWeight.normal,
-          fontSize: 18, // Slightly larger font
-          color: Colors.grey[400], // Hint text in grey
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2C2C54).withOpacity(0.3),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 0.5,
         ),
-        border: InputBorder.none, // Remove border
-        counterText: '', // Hide character counter
       ),
-      onChanged: (text) {
-        _logHashtags(); // Log hashtags whenever the text changes
-      },
-      onFieldSubmitted: (text) {
-        // Prevent new lines by doing nothing on Enter
-      },
-      textInputAction:
-          TextInputAction.done, // Change the action button to "Done"
+      child: TextFormField(
+        controller: controller,
+        minLines: 1,
+        maxLines: 7,
+        maxLength: 200,
+        textAlign: TextAlign.start,
+        style: const TextStyle(
+          fontSize: 15,
+          color: Colors.white,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Commentaire & Hashtags...',
+          hintStyle: TextStyle(
+            color: Colors.white.withOpacity(0.5),
+          ),
+          border: InputBorder.none,
+          counterText: '', // Cacher le compteur en mettant une chaîne vide
+        ),
+        onChanged: (text) => _logHashtags(),
+      ),
     );
   }
 }

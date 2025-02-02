@@ -378,7 +378,7 @@ class _AddPageState extends State<AddPage> {
         body: SingleChildScrollView(
           child: Container(
             alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 5),
+            padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 8),
             color: Colors.transparent,
             child: Column(
               crossAxisAlignment:
@@ -387,7 +387,7 @@ class _AddPageState extends State<AddPage> {
                 CommentField(
                   controller: _controller,
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
                 BlocGrid(
                   numberOfBlocs: _numberOfBlocs,
                   onTap: () => _showAddBlocDialog(0),

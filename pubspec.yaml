@@ -16,8 +16,10 @@ dependencies:
   google_fonts: ^6.2.1
   image_picker: ^1.1.2
   flutter_localization: ^0.3.0
+  flutter_image_compress: ^2.4.0
   firebase_auth: ^5.3.4
   image_cropper: ^8.1.0
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:

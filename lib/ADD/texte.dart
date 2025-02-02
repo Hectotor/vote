@@ -46,6 +46,7 @@ class _TextEditWidgetState extends State<TextEditWidget> {
 
   void _showTextDialog() {
     double tempFontSize = _fontSize; // Variable temporaire pour la taille
+    String tempText = _textController.text; // Sauvegarder le texte actuel
 
     showDialog(
       context: context,
@@ -132,7 +133,16 @@ class _TextEditWidgetState extends State<TextEditWidget> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () {
+                            _textController.text =
+                                tempText; // Restaurer le texte original
+                            if (_displayText.isEmpty &&
+                                widget.onEmpty != null) {
+                              widget
+                                  .onEmpty!(); // Supprimer le widget si pas de texte
+                            }
+                            Navigator.pop(context);
+                          },
                           child: const Text(
                             'Annuler',
                             style: TextStyle(color: Colors.white70),
