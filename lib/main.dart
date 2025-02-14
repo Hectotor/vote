@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-//import 'package:vote_app/INSCRIPTION/connexion.dart';
-import 'package:vote_app/navBar.dart'; // Import localization package
+import 'package:vote_app/INSCRIPTION/connexion.dart';
 //import 'package:vote_app/INSCRIPTION/inscription.dart';
 
 //import 'navBar.dart';
@@ -22,34 +21,50 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Firebase Demo',
       theme: ThemeData(
-        colorScheme: const ColorScheme.light(
-          primary: Colors.white,
-          secondary: Colors.white,
-          surface: Colors.white,
-          background: Colors.white,
-          error: Colors.black,
-          onPrimary: Colors.black,
-          onSecondary: Colors.black,
-          onSurface: Colors.black,
-          onBackground: Colors.black,
-          onError: Colors.black,
-          brightness: Brightness.light,
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF1A1A1A),
+          elevation: 0,
+          iconTheme: IconThemeData(color: Color(0xFFE0E0E0)),
+          titleTextStyle: TextStyle(
+            color: Color(0xFFE0E0E0),
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        scaffoldBackgroundColor: Colors.transparent, // Set to transparent
-        //fontFamily: 'AvenirNext',
-        //textTheme: const TextTheme(
-        //bodyLarge: TextStyle(fontFamily: 'AvenirNext'),
-        //bodyMedium: TextStyle(fontFamily: 'AvenirNext'),
-        //titleLarge: TextStyle(fontFamily: 'AvenirNext'),
-        //titleMedium: TextStyle(fontFamily: 'AvenirNext'),
-        //titleSmall: TextStyle(fontFamily: 'AvenirNext'),
-        //),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFFFFFFFF),      // Bleu principal
+          secondary: Color(0xFF64B5F6),    // Bleu secondaire
+          surface: Color(0xFF1A1A1A),      // Surface des cartes
+          background: Color(0xFF121212),   // Arrière-plan principal
+          error: Color(0xFFCF6679),        // Couleur d'erreur
+          onPrimary: Color(0xFFFFFFFF),    // Texte sur primary
+          onSecondary: Color(0xFF000000),  // Texte sur secondary
+          onSurface: Color(0xFFE0E0E0),    // Texte sur surface
+          onBackground: Color(0xFFE0E0E0), // Texte sur background
+          onError: Color(0xFF000000),      // Texte sur error
+        ),
+        cardTheme: const CardTheme(
+          color: Color(0xFF1A1A1A),
+          elevation: 4,
+        ),
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Color(0xFFE0E0E0)),
+          bodyMedium: TextStyle(color: Color(0xFFE0E0E0)),
+          titleLarge: TextStyle(color: Color(0xFFE0E0E0)),
+        ),
+        iconTheme: const IconThemeData(
+          color: Color(0xFFE0E0E0),
+        ),
+        scaffoldBackgroundColor: const Color(0xFF121212),
       ),
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: const [
         Locale('fr', 'FR'), // Add French locale
       ],
-      home: const GradientBackground(child: NavBar()), // Use GradientBackground
+      home: const GradientBackground(
+          child: ConnexionPage()), // Use GradientBackground
     );
   }
 }
@@ -57,25 +72,17 @@ class MyApp extends StatelessWidget {
 class GradientBackground extends StatelessWidget {
   final Widget child;
 
-  const GradientBackground({required this.child});
+  const GradientBackground({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF000000), // Dégradé sombre
-            Color(0xFF000000),
-            //Color(0xFF1D1D2C), // Dégradé sombre
-            //Color(0xFF1D1D2C),
-            //Color(0xFF24243E),
-          ],
-        ),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.background,
       ),
-      child: child,
+      child: SafeArea(
+        child: child,
+      ),
     );
   }
 }

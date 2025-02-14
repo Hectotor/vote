@@ -6,7 +6,7 @@ class AddOption extends StatelessWidget {
   final VoidCallback onTakePhoto;
   final VoidCallback? onDeleteContent;
   final bool hasImage;
-  final bool hasText; // Nouveau paramètre
+  final bool hasText;
 
   const AddOption({
     super.key,
@@ -15,66 +15,59 @@ class AddOption extends StatelessWidget {
     required this.onTakePhoto,
     this.onDeleteContent,
     this.hasImage = false,
-    this.hasText = false, // Nouvelle option
+    this.hasText = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
       ),
-      backgroundColor: Colors.transparent, // Laisse le dégradé visible
+      backgroundColor: Color(0xFF121212),
+      elevation: 8,
       child: Container(
-        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF000000), // Dégradé sombre
-              Color(0xFF1D1D2C), // Dégradé bleu
+              Color(0xFF121212),
+              Color(0xFF0A0A0A),
             ],
           ),
+          borderRadius: BorderRadius.circular(24),
         ),
+        constraints: BoxConstraints(maxWidth: 300),
+        padding: EdgeInsets.symmetric(vertical: 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              "Choisir une action",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 20),
-            if (!hasText) // Condition pour afficher le bouton uniquement s'il n'y a pas de texte
-              _buildOption(
-                icon: Icons.text_fields,
-                color: Colors.white,
-                title: "Ajouter un texte",
+            if (!hasText)
+              _buildModernTile(
+                icon: Icons.edit,
+                title: 'Ajouter du texte',
+                color: Colors.blue[300]!,
                 onTap: onAddText,
               ),
-            _buildOption(
-              icon: Icons.photo_library,
-              color: Colors.white,
-              title: "Ajouter une image",
+            _buildModernTile(
+              icon: Icons.image,
+              title: 'Choisir une image',
+              color: Colors.purple[300]!,
               onTap: onAddPhoto,
             ),
-            _buildOption(
-              icon: Icons.photo_camera,
-              color: Colors.white,
-              title: "Prendre une photo",
+            _buildModernTile(
+              icon: Icons.camera_alt,
+              title: 'Prendre une photo',
+              color: Colors.green[300]!,
               onTap: onTakePhoto,
             ),
             if (hasImage && onDeleteContent != null)
-              _buildOption(
+              _buildModernTile(
                 icon: Icons.delete,
-                color: Colors.redAccent,
-                title: "Supprimer l'image",
-                onTap: onDeleteContent!,
+                title: 'Supprimer',
+                color: Colors.red[300]!,
+                onTap: () => onDeleteContent!(),
               ),
           ],
         ),
@@ -82,29 +75,41 @@ class AddOption extends StatelessWidget {
     );
   }
 
-  Widget _buildOption({
+  Widget _buildModernTile({
     required IconData icon,
-    required Color color,
     required String title,
+    required Color color,
     required VoidCallback onTap,
   }) {
-    return ListTile(
-      leading: Icon(icon, color: color),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white, // Texte en blanc
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-          const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
-        ],
-      ),
+    return InkWell(
       onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            Icon(Icons.chevron_right, color: Colors.grey[500]),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -19,6 +19,8 @@ class _InscriptionPageState extends State<InscriptionPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? _errorMessage;
   String? _pseudoErrorMessage;
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
 
   @override
   void initState() {
@@ -136,41 +138,74 @@ class _InscriptionPageState extends State<InscriptionPage> {
   Widget build(BuildContext context) {
     return GradientBackground(
       child: Scaffold(
-        extendBodyBehindAppBar: true, // Étend le corps sous l'AppBar
+        extendBodyBehindAppBar: true,
         appBar: AppBar(
-          backgroundColor:
-              Colors.transparent, // Fond transparent pour le dégradé
-          elevation: 0, // Retire l'ombre
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
             onPressed: () {
               Navigator.pop(context);
             },
           ),
         ),
-        body: Center(
+        body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Inscription',
+                  const SizedBox(height: 20),
+                  Text(
+                    'Créer un compte',
                     style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontFamily: 'AvenirNext',
+                      fontSize: 28,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[300],
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 40),
                   _buildTextField(
                     controller: _pseudoController,
                     label: 'Pseudo',
                     icon: Icons.person_outline,
                   ),
+                  if (_pseudoErrorMessage != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      margin: const EdgeInsets.only(top: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.red.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            color: Colors.red[400],
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _pseudoErrorMessage!,
+                              style: TextStyle(
+                                color: Colors.red[400],
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   const SizedBox(height: 20),
                   _buildTextField(
                     controller: _emailController,
@@ -183,72 +218,112 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     controller: _passwordController,
                     label: 'Mot de passe',
                     icon: Icons.lock_outline,
-                    obscureText: true,
+                    obscureText: !_isPasswordVisible,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.grey[400],
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
+                    ),
                   ),
                   const SizedBox(height: 20),
                   _buildTextField(
                     controller: _confirmPasswordController,
                     label: 'Confirmer le mot de passe',
                     icon: Icons.lock_reset_outlined,
-                    obscureText: true,
+                    obscureText: !_isConfirmPasswordVisible,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isConfirmPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.grey[400],
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                        });
+                      },
+                    ),
                     validator: (value) {
                       if (value != _passwordController.text) {
-                        _showErrorMessage(
-                            'Les mots de passe ne correspondent pas 😢');
+                        _showErrorMessage('Les mots de passe ne correspondent pas');
                         return '';
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
                   if (_errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 20.0),
-                      child: Text(
-                        _errorMessage!,
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontFamily: 'AvenirNext',
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      margin: const EdgeInsets.only(top: 24),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.red.withOpacity(0.3),
                         ),
                       ),
-                    ),
-                  const SizedBox(height: 80),
-                  ElevatedButton(
-                    onPressed: _isFormValid() && _pseudoErrorMessage == null
-                        ? _register
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      disabledBackgroundColor: Colors.grey,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            color: Colors.red[400],
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: TextStyle(
+                                color: Colors.red[400],
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
                     ),
-                    child: Text(
-                      'S\'inscrire',
-                      style: TextStyle(
-                        color: Colors.grey.shade900,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'AvenirNext',
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _isFormValid() && _pseudoErrorMessage == null
+                          ? _register
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        disabledBackgroundColor: Colors.grey[800],
+                        disabledForegroundColor: Colors.grey[600],
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        'S\'inscrire',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: _isFormValid() && _pseudoErrorMessage == null
+                              ? Colors.black
+                              : Colors.grey[400],
+                        ),
                       ),
                     ),
                   ),
-                  if (_pseudoErrorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        _pseudoErrorMessage!,
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontFamily: 'AvenirNext',
-                        ),
-                      ),
-                    ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -270,31 +345,62 @@ class _InscriptionPageState extends State<InscriptionPage> {
       controller: controller,
       obscureText: obscureText,
       validator: validator,
+      textCapitalization: label == 'Pseudo'
+          ? TextCapitalization.sentences
+          : TextCapitalization.none,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 16,
+      ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.grey),
-        prefixIcon: Icon(icon, color: Colors.grey.shade300),
+        labelStyle: TextStyle(
+          color: Colors.grey[400],
+          fontSize: 16,
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: Colors.grey[400],
+          size: 22,
+        ),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white.withOpacity(0.1),
+        fillColor: Colors.grey[900],
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.grey.shade700),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Colors.grey[800]!,
+            width: 1,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.grey.shade400),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(
+            color: Colors.white,
+            width: 1,
+          ),
         ),
-        errorStyle:
-            const TextStyle(color: Colors.white), // Error message in white
-      ),
-      style: const TextStyle(
-        color: Colors.white,
-        fontFamily: 'AvenirNext',
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Colors.red[400]!,
+            width: 1,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Colors.red[400]!,
+            width: 1.5,
+          ),
+        ),
+        errorStyle: TextStyle(
+          color: Colors.red[400],
+        ),
       ),
     );
   }

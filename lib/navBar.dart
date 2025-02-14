@@ -38,60 +38,83 @@ class _NavBarState extends State<NavBar> {
         bottomNavigationBar: _selectedIndex == 2
             ? null // Hide the navigation bar when on AddPage
             : Container(
-                decoration: const BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: Colors.grey,
-                      width: 0.2,
+                height: 65,
+                child: SafeArea(
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      splashFactory: NoSplash.splashFactory,
+                      highlightColor: Colors.transparent,
                     ),
-                  ),
-                ),
-                child: Theme(
-                  data: Theme.of(context).copyWith(
-                    splashFactory: NoSplash.splashFactory,
-                    highlightColor: Colors.transparent,
-                  ),
-                  child: BottomNavigationBar(
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    items: const <BottomNavigationBarItem>[
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.home_outlined),
-                        activeIcon: Icon(Icons.home),
-                        label: 'Accueil',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.search_outlined),
-                        activeIcon: Icon(Icons.search),
-                        label: 'Recherche',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.add_circle_outline, size: 40),
-                        activeIcon: Icon(Icons.add_circle, size: 40),
-                        label: '',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.notifications_outlined),
-                        activeIcon: Icon(Icons.notifications),
-                        label: 'Alertes',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.person_outline),
-                        activeIcon: Icon(Icons.person),
-                        label: 'Profil',
-                      ),
-                    ],
-                    currentIndex: _selectedIndex,
-                    selectedItemColor: Colors.white,
-                    unselectedItemColor: Colors.grey,
-                    onTap: _onItemTapped,
-                    type: BottomNavigationBarType.fixed,
-                    showSelectedLabels: false,
-                    showUnselectedLabels: false,
+                    child: BottomNavigationBar(
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                      selectedFontSize: 0,
+                      unselectedFontSize: 0,
+                      items: <BottomNavigationBarItem>[
+                        _buildNavItem(
+                          Icons.home_outlined,
+                          Icons.home,
+                          '',
+                          0,
+                        ),
+                        _buildNavItem(
+                          Icons.search_outlined,
+                          Icons.search,
+                          '',
+                          1,
+                        ),
+                        _buildAddButton(),
+                        _buildNavItem(
+                          Icons.notifications_outlined,
+                          Icons.notifications,
+                          '',
+                          3,
+                        ),
+                        _buildNavItem(
+                          Icons.person_outline,
+                          Icons.person,
+                          '',
+                          4,
+                        ),
+                      ],
+                      currentIndex: _selectedIndex,
+                      selectedItemColor: Colors.white,
+                      unselectedItemColor: Colors.grey[600],
+                      onTap: _onItemTapped,
+                      type: BottomNavigationBarType.fixed,
+                      showSelectedLabels: false,
+                      showUnselectedLabels: false,
+                    ),
                   ),
                 ),
               ),
       ),
+    );
+  }
+
+  BottomNavigationBarItem _buildNavItem(
+    IconData unselectedIcon,
+    IconData selectedIcon,
+    String label,
+    int index,
+  ) {
+    return BottomNavigationBarItem(
+      icon: Icon(
+        _selectedIndex == index ? selectedIcon : unselectedIcon,
+        size: 30,
+      ),
+      label: label,
+    );
+  }
+
+  BottomNavigationBarItem _buildAddButton() {
+    return BottomNavigationBarItem(
+      icon: Icon(
+        Icons.add_circle,
+        size: 46,
+        color: Colors.grey[400],
+      ),
+      label: '',
     );
   }
 }

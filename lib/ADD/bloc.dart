@@ -37,15 +37,12 @@ class BlocGrid extends StatelessWidget {
       ),
       elevation: 4,
       child: Stack(
+        // Retiré le fit: StackFit.expand pour permettre un positionnement naturel
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(10), // Réduit de 16 à 8
             child: GestureDetector(
-              onTap: () {
-                if (onImageChange != null) {
-                  onImageChange!(index); // Call the callback with the index
-                }
-              },
+              onTap: () => onImageChange?.call(index), // Utiliser l'index passé
               child: Container(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(

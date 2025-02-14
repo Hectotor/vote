@@ -14,8 +14,8 @@ class CommentField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      minLines: 2,
-      maxLines: 2, // Limit to a single line
+      minLines: 1,
+      maxLines: 1, // Limit to a single line
       maxLength: 45, // Limit to 45 characters
       textAlign: TextAlign.center,
       textCapitalization: TextCapitalization
@@ -24,7 +24,7 @@ class CommentField extends StatelessWidget {
         //fontFamily: 'AvenirNext',
         fontWeight: FontWeight.w700,
         fontSize: 25,
-        color: Colors.white, // Text in white
+        color: Color(0xE6FFFFFF), // Changé de Colors.white54 à Colors.white
       ),
       decoration: InputDecoration(
         filled: true,
@@ -32,9 +32,10 @@ class CommentField extends StatelessWidget {
         hintText: hintText ?? 'Que veux-tu dire ?',
         hintStyle: TextStyle(
           //fontFamily: 'AvenirNext',
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w700,
           fontSize: 25,
-          color: Colors.grey[400], // Hint text color
+          color: Colors
+              .white38, // Changé de Colors.grey[400] à Colors.white38 pour meilleur contraste
         ),
         counterText: '', // Hide character counter
         contentPadding: const EdgeInsets.symmetric(

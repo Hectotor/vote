@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class TextEditWidget extends StatefulWidget {
   final Color backgroundColor;
   final VoidCallback? onEmpty;
+  final String initialText; // Ajouter cette ligne
 
   const TextEditWidget({
     Key? key,
     required this.backgroundColor,
     this.onEmpty,
+    this.initialText = '', // Ajouter cette ligne
   }) : super(key: key);
 
   @override
@@ -22,13 +24,22 @@ class _TextEditWidgetState extends State<TextEditWidget> {
   Size _parentSize = Size.zero;
   double _fontSize = 16.0; // Nouvelle variable pour la taille du texte
   Offset? _startPosition; // Nouvelle variable pour le point de départ
+  bool _dialogOpen = false; // Ajouter cette variable
+  bool _isDragging = false; // Nouvelle variable pour suivre l'état du drag
 
   @override
   void initState() {
     super.initState();
+    print('TextEditWidget - initState called');
+    _textController.text = widget.initialText; // Ajouter cette ligne
+    // Retarder l'initialisation pour éviter les problèmes de contexte
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializePosition();
-      _showTextDialog();
+      if (mounted) {
+        // Vérifier si le widget est toujours monté
+        print('TextEditWidget - postFrameCallback');
+        _initializePosition();
+        _showTextDialog();
+      }
     });
   }
 
@@ -45,6 +56,8 @@ class _TextEditWidgetState extends State<TextEditWidget> {
   }
 
   void _showTextDialog() {
+    print('TextEditWidget - _showTextDialog called');
+    _dialogOpen = true; // Marquer que le dialog est ouvert
     double tempFontSize = _fontSize; // Variable temporaire pour la taille
     String tempText = _textController.text; // Sauvegarder le texte actuel
 
@@ -64,13 +77,10 @@ class _TextEditWidgetState extends State<TextEditWidget> {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  gradient: const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFF000000),
-                      Color(0xFF1D1D2C),
-                    ],
+                  color: const Color(0xFF1D1D2C),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.1),
+                    width: 0.5,
                   ),
                 ),
                 child: Column(
@@ -179,7 +189,13 @@ class _TextEditWidgetState extends State<TextEditWidget> {
           },
         );
       },
-    );
+    ).then((_) {
+      if (mounted) {
+        setState(() {
+          _dialogOpen = false; // Marquer que le dialog est fermé
+        });
+      }
+    });
   }
 
   void _updatePosition(Offset delta) {
@@ -219,7 +235,10 @@ class _TextEditWidgetState extends State<TextEditWidget> {
               top: _position.dy,
               child: GestureDetector(
                 onPanStart: (details) {
-                  _startPosition = details.globalPosition;
+                  setState(() {
+                    _isDragging = true; // Début du drag
+                    _startPosition = details.globalPosition;
+                  });
                 },
                 onPanUpdate: (details) {
                   if (_startPosition != null) {
@@ -229,7 +248,10 @@ class _TextEditWidgetState extends State<TextEditWidget> {
                   }
                 },
                 onPanEnd: (_) {
-                  _startPosition = null;
+                  setState(() {
+                    _isDragging = false; // Fin du drag
+                    _startPosition = null;
+                  });
                 },
                 onTap: _showTextDialog,
                 child: ConstrainedBox(
@@ -237,20 +259,23 @@ class _TextEditWidgetState extends State<TextEditWidget> {
                     maxWidth: _parentSize.width * 0.8,
                     minWidth: 50,
                   ),
-                  child: Text(
-                    _displayText,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: _fontSize,
-                      fontWeight: FontWeight.bold,
-                      shadows: const [
-                        Shadow(
-                          offset: Offset(1, 1),
-                          blurRadius: 3.0,
-                          color: Colors.black,
-                        ),
-                      ],
+                  child: Opacity(
+                    opacity: _isDragging ? 0.7 : 1.0, // Ajout de l'opacité
+                    child: Text(
+                      _displayText,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: _fontSize,
+                        fontWeight: FontWeight.bold,
+                        shadows: const [
+                          Shadow(
+                            offset: Offset(1, 1),
+                            blurRadius: 3.0,
+                            color: Colors.black,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -263,6 +288,11 @@ class _TextEditWidgetState extends State<TextEditWidget> {
 
   @override
   void dispose() {
+    print('TextEditWidget - dispose called');
+    if (_dialogOpen) {
+      // Si le dialog est ouvert, le fermer
+      Navigator.of(context, rootNavigator: true).pop();
+    }
     _textController.dispose();
     super.dispose();
   }

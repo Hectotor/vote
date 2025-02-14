@@ -23,7 +23,7 @@ class Description extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 8),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2C54).withOpacity(0.3),
+        color: const Color(0xFF2C2C54).withOpacity(0.2),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
           color: Colors.white.withOpacity(0.1),
@@ -36,14 +36,17 @@ class Description extends StatelessWidget {
         maxLines: 7,
         maxLength: 200,
         textAlign: TextAlign.start,
+        textCapitalization: TextCapitalization
+            .sentences, // Ajout de cette ligne pour les majuscules
         style: const TextStyle(
+          fontWeight: FontWeight.w500,
           fontSize: 15,
-          color: Colors.white,
+          color: Color(0xCFFFFFFF),
         ),
         decoration: InputDecoration(
           hintText: 'Commentaire & Hashtags...',
           hintStyle: TextStyle(
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white38,
           ),
           border: InputBorder.none,
           counterText: '', // Cacher le compteur en mettant une chaîne vide
