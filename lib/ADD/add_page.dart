@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:vote_app/ADD/texte.dart';
 import 'package:vote_app/navBar.dart';
 import 'comment.dart';
 import 'bloc.dart';
@@ -43,12 +42,12 @@ class _AddPageState extends State<AddPage> {
   final TextEditingController _controller = TextEditingController();
   final TextEditingController _descriptionController =
       TextEditingController(); // nouveau controller
-  int _numberOfBlocs = 2;
   Timer? _timer;
   List<XFile?> _images = List<XFile?>.filled(4, null);
   List<Color> _imageFilters =
       List<Color>.filled(4, Colors.transparent); // Nouvelle ligne
   List<Widget?> _textWidgets = List<Widget?>.filled(4, null); // Nouveau
+  List<bool> _isEditing = List<bool>.filled(4, false); // Nouveau
 
   @override
   void initState() {
@@ -67,10 +66,6 @@ class _AddPageState extends State<AddPage> {
             return true;
           },
           child: AddOption(
-            onAddText: () {
-              Navigator.pop(dialogContext); // Ferme le dialogue
-              _addText(index);
-            },
             onAddPhoto: () async {
               Navigator.pop(dialogContext); // Ferme le dialogue
               if (!mounted) return; // Vérifiez si le widget est toujours monté
@@ -119,29 +114,36 @@ class _AddPageState extends State<AddPage> {
     );
   }
 
-  void _addText(int index) {
-    print('AddPage - _addText called for index: $index');
-    setState(() {
-      _textWidgets[index] = TextEditWidget(
-        key: Key('textWidget$index'),
-        backgroundColor: Colors.transparent,
-        onEmpty: () {
-          print('AddPage - TextWidget onEmpty callback for index: $index');
-          setState(() {
-            _textWidgets[index] = null;
-          });
-        },
-      );
-    });
-  }
-
-
-  void _deleteBloc() {
-    setState(() {
-      if (_numberOfBlocs > 2) {
-        _numberOfBlocs--;
-      }
-    });
+  void _openAddOption() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AddOption(
+          onAddPhoto: () {
+            Navigator.of(context).pop(); // Fermer le dialogue
+            // Trouver le premier bloc sans image
+            int firstEmptyIndex = _images.indexWhere((image) => image == null);
+            if (firstEmptyIndex != -1) {
+              _showAddBlocDialog(firstEmptyIndex);
+            }
+          },
+          onTakePhoto: () {
+            Navigator.of(context).pop(); // Fermer le dialogue
+            // Trouver le premier bloc sans image
+            int firstEmptyIndex = _images.indexWhere((image) => image == null);
+            if (firstEmptyIndex != -1) {
+              _showAddBlocDialog(firstEmptyIndex);
+            }
+          },
+          hasImage: _images.any((image) => image != null),
+          hasText: _textWidgets.any((widget) => widget != null),
+          onDeleteContent: () {
+            Navigator.of(context).pop(); // Fermer le dialogue
+            // Logique de suppression si nécessaire
+          },
+        );
+      },
+    );
   }
 
   Future<void> _publishPost() async {
@@ -195,8 +197,15 @@ class _AddPageState extends State<AddPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF121212),
+            Color(0xFF0A0A0A),
+          ],
+        ),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -277,13 +286,12 @@ class _AddPageState extends State<AddPage> {
                       ),
                       const SizedBox(height: 20),
                       BlocGrid(
-                        numberOfBlocs: _numberOfBlocs,
-                        onTap: () => _showAddBlocDialog(0),
-                        onDelete: _deleteBloc,
                         images: _images,
                         imageFilters: _imageFilters,
                         onImageChange: (index) => _showAddBlocDialog(index),
                         textWidgets: _textWidgets,
+                        isEditing: _isEditing,
+                        onOpenAddOption: _openAddOption,
                       ),
                       const SizedBox(height: 80),
                       Description(

@@ -1,31 +1,29 @@
 import 'package:flutter/material.dart';
 
 class AddOption extends StatelessWidget {
-  final VoidCallback onAddText;
-  final VoidCallback onAddPhoto;
-  final VoidCallback onTakePhoto;
+  final VoidCallback? onAddPhoto;
+  final VoidCallback? onTakePhoto;
   final VoidCallback? onDeleteContent;
   final bool hasImage;
   final bool hasText;
 
   const AddOption({
-    super.key,
-    required this.onAddText,
-    required this.onAddPhoto,
-    required this.onTakePhoto,
+    Key? key,
+    this.onAddPhoto,
+    this.onTakePhoto,
     this.onDeleteContent,
     this.hasImage = false,
     this.hasText = false,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: Color(0xFF121212),
+      elevation: 8,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
       ),
-      backgroundColor: Color(0xFF121212),
-      elevation: 8,
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -43,13 +41,6 @@ class AddOption extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (!hasText)
-              _buildModernTile(
-                icon: Icons.edit,
-                title: 'Ajouter du texte',
-                color: Colors.blue[300]!,
-                onTap: onAddText,
-              ),
             _buildModernTile(
               icon: Icons.image,
               title: 'Choisir une image',
@@ -79,7 +70,7 @@ class AddOption extends StatelessWidget {
     required IconData icon,
     required String title,
     required Color color,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
   }) {
     return InkWell(
       onTap: onTap,
