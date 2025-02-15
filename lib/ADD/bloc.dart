@@ -33,28 +33,93 @@ class BlocGrid extends StatelessWidget {
 
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10), // Réduit de 16 à 8
+        borderRadius: numberOfBlocs >= 2
+          ? (index == 0 
+              ? BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  bottomLeft: Radius.circular(16)
+                )
+              : index == 1
+                ? BorderRadius.only(
+                    topRight: Radius.circular(16),
+                    bottomRight: Radius.circular(16)
+                  )
+              : index == 2
+                ? BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16)
+                  )
+                : index == 3
+                  ? BorderRadius.only(
+                      topRight: Radius.circular(16),
+                      bottomRight: Radius.circular(16)
+                    )
+                  : BorderRadius.circular(16))
+          : BorderRadius.circular(16),
       ),
       elevation: 4,
       child: Stack(
-        // Retiré le fit: StackFit.expand pour permettre un positionnement naturel
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(10), // Réduit de 16 à 8
+            borderRadius: numberOfBlocs >= 2
+              ? (index == 0 
+                  ? BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      bottomLeft: Radius.circular(16)
+                    )
+                  : index == 1
+                    ? BorderRadius.only(
+                        topRight: Radius.circular(16),
+                        bottomRight: Radius.circular(16)
+                      )
+                  : index == 2
+                    ? BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        bottomLeft: Radius.circular(16)
+                      )
+                    : index == 3
+                      ? BorderRadius.only(
+                          topRight: Radius.circular(16),
+                          bottomRight: Radius.circular(16)
+                        )
+                      : BorderRadius.circular(16))
+              : BorderRadius.circular(16),
             child: GestureDetector(
-              onTap: () => onImageChange?.call(index), // Utiliser l'index passé
+              onTap: () => onImageChange?.call(index),
               child: Container(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [
-                      Color(0xFF2C2C54), // Teinte sombre du dégradé
-                      Color(0xFF4B6CB7), // Teinte légèrement plus claire
+                      Color(0xFF2C2C54),
+                      Color(0xFF4B6CB7),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   border: Border.all(color: Colors.grey.shade800, width: 0.5),
-                  borderRadius: BorderRadius.circular(10), // Réduit de 16 à 8
+                  borderRadius: numberOfBlocs >= 2
+                    ? (index == 0 
+                        ? BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            bottomLeft: Radius.circular(16)
+                          )
+                        : index == 1
+                          ? BorderRadius.only(
+                              topRight: Radius.circular(16),
+                              bottomRight: Radius.circular(16)
+                            )
+                          : index == 2
+                            ? BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                bottomLeft: Radius.circular(16)
+                              )
+                            : index == 3
+                              ? BorderRadius.only(
+                                  topRight: Radius.circular(16),
+                                  bottomRight: Radius.circular(16)
+                                )
+                              : BorderRadius.circular(16))
+                    : BorderRadius.circular(16),
                 ),
                 child: Center(
                   child: image != null
@@ -122,12 +187,12 @@ class BlocGrid extends StatelessWidget {
         children: [
           // Première rangée avec blocs 1 et 2
           SizedBox(
-            height: numberOfBlocs == 2 ? 300 : 200,
+            height: 300,
             child: Row(
               children: [
                 Expanded(
                   child: _buildBloc(
-                    isSingle: numberOfBlocs == 2,
+                    isSingle: true,
                     image: images[0],
                     index: 0,
                   ),
@@ -135,7 +200,7 @@ class BlocGrid extends StatelessWidget {
                 const SizedBox(width: 2), // Réduit de 8 à 2
                 Expanded(
                   child: _buildBloc(
-                    isSingle: numberOfBlocs == 2,
+                    isSingle: true,
                     image: images[1],
                     index: 1,
                   ),
@@ -143,40 +208,6 @@ class BlocGrid extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 2), // Réduit de 8 à 2
-          // Deuxième rangée avec bloc 3 (centré) ou blocs 3 et 4
-          if (numberOfBlocs >= 3)
-            SizedBox(
-              height: 200,
-              child: numberOfBlocs == 3
-                  ? SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.5,
-                      child: _buildBloc(
-                        showDeleteButton: true,
-                        image: images[2],
-                        index: 2,
-                      ),
-                    )
-                  : Row(
-                      children: [
-                        Expanded(
-                          child: _buildBloc(
-                            showDeleteButton: numberOfBlocs == 4 ? false : true,
-                            image: images[2],
-                            index: 2,
-                          ),
-                        ),
-                        const SizedBox(width: 2), // Réduit de 8 à 2
-                        Expanded(
-                          child: _buildBloc(
-                            showDeleteButton: numberOfBlocs == 4 ? true : false,
-                            image: images[3],
-                            index: 3,
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
         ],
       ),
     );

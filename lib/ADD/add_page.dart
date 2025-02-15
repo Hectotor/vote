@@ -135,15 +135,6 @@ class _AddPageState extends State<AddPage> {
     });
   }
 
-  void _addBlocs() {
-    print('AddPage - _addBlocs called, current blocks: $_numberOfBlocs');
-    if (_numberOfBlocs < 4) {
-      setState(() {
-        _numberOfBlocs++;
-        print('AddPage - New number of blocks: $_numberOfBlocs');
-      });
-    }
-  }
 
   void _deleteBloc() {
     setState(() {
@@ -294,7 +285,7 @@ class _AddPageState extends State<AddPage> {
                         onImageChange: (index) => _showAddBlocDialog(index),
                         textWidgets: _textWidgets,
                       ),
-                      const SizedBox(height: 25),
+                      const SizedBox(height: 80),
                       Description(
                         controller: _descriptionController,
                       ),
@@ -305,43 +296,7 @@ class _AddPageState extends State<AddPage> {
             ),
           ],
         ),
-        floatingActionButton: _numberOfBlocs < 4
-            ? Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF2E2E2E),
-                      Color(0xFF1A1A1A),
-                    ],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _addBlocs,
-                    borderRadius: BorderRadius.circular(50),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      child: const Icon(
-                        Icons.add_rounded,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            : null,
+        floatingActionButton: null,
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );

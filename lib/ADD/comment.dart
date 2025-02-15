@@ -14,8 +14,8 @@ class CommentField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      minLines: 1,
-      maxLines: 1, // Limit to a single line
+      minLines: 2,
+      maxLines: 2, // Limit to a single line
       maxLength: 45, // Limit to 45 characters
       textAlign: TextAlign.center,
       textCapitalization: TextCapitalization

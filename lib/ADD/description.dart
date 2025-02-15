@@ -1,58 +1,112 @@
 import 'package:flutter/material.dart';
 
-class Description extends StatelessWidget {
+class Description extends StatefulWidget {
   final TextEditingController controller;
 
-  const Description({
-    super.key,
-    required this.controller,
-  });
+  const Description({Key? key, required this.controller}) : super(key: key);
+
+  @override
+  _DescriptionState createState() => _DescriptionState();
+}
+
+class _DescriptionState extends State<Description> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_formatHashtags);
+  }
+
+  void _formatHashtags() {
+    String text = widget.controller.text;
+    
+    // Si le texte est vide, ne rien faire
+    if (text.isEmpty) return;
+
+    // Vérifier si le dernier caractère est une lettre
+    if (!RegExp(r'[a-zA-Z]').hasMatch(text[text.length - 1])) return;
+
+    // Diviser le texte en mots
+    List<String> words = text.split(' ');
+    
+    // Transformer chaque mot qui ne commence pas par # en hashtag
+    List<String> formattedWords = words.map((word) {
+      // Ignorer les mots qui sont déjà des hashtags
+      if (word.startsWith('#')) return word;
+      
+      // Convertir le mot en hashtag uniquement s'il contient des lettres
+      return RegExp(r'[a-zA-Z]').hasMatch(word) ? '#$word' : word;
+    }).toList();
+
+    // Rejoindre les mots
+    String formattedText = formattedWords.join(' ');
+
+    // Mettre à jour le contrôleur uniquement si le texte a changé
+    if (formattedText != text) {
+      widget.controller.value = TextEditingValue(
+        text: formattedText,
+        selection: TextSelection.collapsed(offset: formattedText.length),
+      );
+    }
+  }
 
   void _logHashtags() {
-    final text = controller.text;
+    final text = widget.controller.text;
     final hashtags =
         text.split(' ').where((word) => word.startsWith('#')).toList();
     for (var hashtag in hashtags) {
-      print('Hashtag found: $hashtag');
+      print('Hashtag: $hashtag');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2C54).withOpacity(0.2),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 0.5,
-        ),
+        color: Colors.grey.shade900,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: TextFormField(
-        controller: controller,
-        minLines: 1,
-        maxLines: 7,
-        maxLength: 200,
-        textAlign: TextAlign.start,
-        textCapitalization: TextCapitalization
-            .sentences, // Ajout de cette ligne pour les majuscules
-        style: const TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
-          color: Color(0xCFFFFFFF),
-        ),
+        controller: widget.controller,
         decoration: InputDecoration(
-          hintText: 'Commentaire & Hashtags...',
+          hintText: '✨ Ajoute des hashtags',
           hintStyle: TextStyle(
-            color: Colors.white38,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w400,
           ),
-          border: InputBorder.none,
-          counterText: '', // Cacher le compteur en mettant une chaîne vide
+          prefixIcon: Icon(
+            Icons.tag_rounded,
+            color: Colors.grey.shade700,
+            size: 22,
+          ),
+          filled: true,
+          fillColor: Colors.transparent,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+          counterText: '',
         ),
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 15,
+          fontWeight: FontWeight.w400,
+        ),
+        cursorColor: Colors.grey.shade500,
+        maxLines: null,
+        maxLength: 200,
+        keyboardType: TextInputType.text,
         onChanged: (text) => _logHashtags(),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_formatHashtags);
+    super.dispose();
   }
 }
