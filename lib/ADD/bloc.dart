@@ -4,66 +4,36 @@ import 'package:image_picker/image_picker.dart';
 
 class BlocGrid extends StatefulWidget {
   final List<XFile?> images;
-  final Function(int) onImageChange;
   final List<Color> imageFilters;
   final List<Widget?> textWidgets;
-  final List<bool> isEditing;
+  final Function(int) onImageChange;
   final int numberOfBlocs;
-  final VoidCallback? onTap;
-  final VoidCallback? onDelete;
-  final VoidCallback? onOpenAddOption;
+  final List<bool> isEditing;
 
   const BlocGrid({
     Key? key,
     required this.images,
-    required this.onImageChange,
     required this.imageFilters,
     required this.textWidgets,
+    required this.onImageChange,
+    required this.numberOfBlocs,
     required this.isEditing,
-    this.numberOfBlocs = 2,
-    this.onTap,
-    this.onDelete,
-    this.onOpenAddOption,
   }) : super(key: key);
 
   @override
-  _BlocGridState createState() => _BlocGridState();
+  State<BlocGrid> createState() => _BlocGridState();
 }
 
 class _BlocGridState extends State<BlocGrid> {
-  late List<TextEditingController> _textControllers;
-  late List<bool> _isEditing;
+  List<TextEditingController> _textControllers = [];
 
   @override
   void initState() {
     super.initState();
     _textControllers = List.generate(
-      widget.images.length, 
-      (_) => TextEditingController()
+      widget.numberOfBlocs,
+      (index) => TextEditingController(),
     );
-    _isEditing = widget.isEditing;
-  }
-
-  void _activateTextEdit(int index) {
-    setState(() {
-      // Conserver l'état du texte pour tous les blocs
-      for (int i = 0; i < _isEditing.length; i++) {
-        if (i != index && _textControllers[i].text.isNotEmpty) {
-          // Créer un widget texte pour les blocs non édités qui ont du contenu
-          widget.textWidgets[i] = Text(
-            _textControllers[i].text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          );
-        }
-        // Désactiver l'édition pour tous les autres blocs
-        _isEditing[i] = (i == index);
-      }
-    });
   }
 
   @override
@@ -80,204 +50,146 @@ class _BlocGridState extends State<BlocGrid> {
     int index = 0,
   }) {
     return Card(
-      child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: widget.numberOfBlocs >= 2
-              ? (index == 0 
-                  ? BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      bottomLeft: Radius.circular(16)
-                    )
-                  : index == 1
+      child: ClipRRect(
+        borderRadius: widget.numberOfBlocs >= 2
+            ? (index == 0
+                ? BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                  )
+                : index == 1
                     ? BorderRadius.only(
                         topRight: Radius.circular(16),
-                        bottomRight: Radius.circular(16)
+                        bottomRight: Radius.circular(16),
                       )
-                  : index == 2
-                    ? BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        bottomLeft: Radius.circular(16)
-                      )
-                    : index == 3
-                      ? BorderRadius.only(
-                          topRight: Radius.circular(16),
-                          bottomRight: Radius.circular(16)
-                        )
-                      : BorderRadius.circular(16))
-              : BorderRadius.circular(16),
-            child: GestureDetector(
-              onTap: () {
-                // Réinitialiser tous les modes d'édition avant de changer l'image
-                setState(() {
-                  _isEditing = List.filled(_isEditing.length, false);
-                });
-                // Appeler le changement d'image
-                widget.onImageChange.call(index);
-              },
-              onDoubleTap: () {
-                // Activer la zone de texte uniquement pour ce bloc
-                _activateTextEdit(index);
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF2C2C54),
-                      Color(0xFF4B6CB7),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  border: Border.all(color: Colors.grey.shade800, width: 0.5),
-                  borderRadius: widget.numberOfBlocs >= 2
-                    ? (index == 0 
-                        ? BorderRadius.only(
-                            topLeft: Radius.circular(16),
-                            bottomLeft: Radius.circular(16)
-                          )
-                        : index == 1
-                          ? BorderRadius.only(
-                              topRight: Radius.circular(16),
-                              bottomRight: Radius.circular(16)
-                            )
-                          : index == 2
-                            ? BorderRadius.only(
-                                topLeft: Radius.circular(16),
-                                bottomLeft: Radius.circular(16)
-                              )
-                            : index == 3
-                              ? BorderRadius.only(
-                                  topRight: Radius.circular(16),
-                                  bottomRight: Radius.circular(16)
-                                )
-                              : BorderRadius.circular(16))
-                    : BorderRadius.circular(16),
-                ),
-                child: Center(
+                    : BorderRadius.circular(16))
+            : BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [
+                Color(0xFF2C2C54),
+                Color(0xFF4B6CB7),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border.all(color: Colors.grey.shade800, width: 0.5),
+          ),
+          child: Stack(
+            children: [
+              GestureDetector(
+                onTap: () => widget.onImageChange(index),
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
                   child: image != null
                       ? Stack(
+                          fit: StackFit.expand,
                           children: [
                             Image.file(
                               File(image.path),
                               fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
                             ),
                             Container(
-                              width: double.infinity,
-                              height: double.infinity,
                               color: widget.imageFilters[index],
                             ),
                           ],
                         )
-                      : !(_isEditing[index] || (index < widget.textWidgets.length && widget.textWidgets[index] != null))
-                          ? Icon(
-                              Icons.add_photo_alternate_outlined,
-                              size: isSingle ? 50 : 40,
-                              color: Colors.grey.shade300,
-                            )
-                          : null,
+                      : Icon(
+                          Icons.add_photo_alternate_outlined,
+                          size: isSingle ? 50 : 40,
+                          color: Colors.grey.shade300,
+                        ),
                 ),
               ),
-            ),
-          ),
-          
-          // Afficher le texte existant si non édité
-          if (!_isEditing[index] && widget.textWidgets[index] != null)
-            Positioned.fill(
-              child: Center(
-                child: widget.textWidgets[index]!,
-              ),
-            ),
-          
-          // Zone de texte en mode édition
-          if (_isEditing[index])
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () {
-                  // Ouvrir AddOption sans modifier l'état d'édition
-                  widget.onOpenAddOption?.call();
-                },
-                child: Container(
-                  color: Colors.transparent,
-                  child: Center(
-                    child: GestureDetector(
-                      onTap: () {}, 
-                      child: TextField(
-                        controller: _textControllers[index],
-                        autofocus: true,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          height: 1.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                        ),
-                        cursorColor: Colors.white,
-                        keyboardType: TextInputType.multiline,
-                        minLines: 1,
-                        maxLines: null,
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (value) {
-                          // Fermer le clavier et conserver le texte
-                          FocusScope.of(context).unfocus();
-                          setState(() {
-                            // Créer un widget texte permanent
-                            widget.textWidgets[index] = Text(
-                              value,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            );
-                            // Désactiver le mode édition
-                            _isEditing[index] = false;
-                          });
-                        },
-                        onChanged: (value) {
-                          setState(() {
-                            // Mettre à jour dynamiquement le texte
-                            widget.textWidgets[index] = Text(
-                              value,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            );
-                          });
-                        },
-                        onEditingComplete: () {
-                          // Fermer le clavier et conserver le texte
-                          FocusScope.of(context).unfocus();
-                          setState(() {
-                            widget.textWidgets[index] = Text(
-                              _textControllers[index].text,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            );
-                            // Désactiver le mode édition
-                            _isEditing[index] = false;
-                          });
-                        },
+              
+              // Zone de texte en mode édition
+              if (widget.isEditing[index])
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: widget.textWidgets[index] != null || _textControllers[index].text.isNotEmpty
+                          ? LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.0),
+                                Colors.black.withOpacity(0.8),
+                              ],
+                            )
+                          : null,
+                    ),
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: _textControllers[index],
+                      autofocus: true,
+                      textAlign: TextAlign.center,
+                      textCapitalization: TextCapitalization.sentences,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
                       ),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      cursorColor: Colors.white,
+                      keyboardType: TextInputType.multiline,
+                      maxLines: null,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (value) {
+                        if (value.isEmpty) {
+                          setState(() {
+                            widget.textWidgets[index] = null;
+                          });
+                        } else {
+                          setState(() {
+                            widget.textWidgets[index] = Text(
+                              value,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                              ),
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.visible,
+                            );
+                          });
+                        }
+                      },
                     ),
                   ),
                 ),
-              ),
-            ),
-        ],
+              
+              // Afficher le texte existant
+              if (!widget.isEditing[index] && widget.textWidgets[index] != null)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.0),
+                          Colors.black.withOpacity(0.8),
+                        ],
+                      ),
+                    ),
+                    padding: const EdgeInsets.all(8.0),
+                    child: widget.textWidgets[index]!,
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -288,14 +200,13 @@ class _BlocGridState extends State<BlocGrid> {
       color: Colors.transparent,
       child: Column(
         children: [
-          // Première rangée avec blocs 1 et 2
           SizedBox(
             height: 300,
             child: Row(
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onDoubleTap: () => _activateTextEdit(0),
+                    onTap: () => widget.onImageChange(0),
                     child: _buildBloc(
                       isSingle: true,
                       image: widget.images[0],
@@ -303,10 +214,10 @@ class _BlocGridState extends State<BlocGrid> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 2), // Réduit de 8 à 2
+                const SizedBox(width: 2),
                 Expanded(
                   child: GestureDetector(
-                    onDoubleTap: () => _activateTextEdit(1),
+                    onTap: () => widget.onImageChange(1),
                     child: _buildBloc(
                       isSingle: true,
                       image: widget.images[1],

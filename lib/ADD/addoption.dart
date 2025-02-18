@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AddOption extends StatelessWidget {
   final VoidCallback? onAddPhoto;
   final VoidCallback? onTakePhoto;
-  final VoidCallback? onDeleteContent;
+  final VoidCallback? onAddText;
   final bool hasImage;
   final bool hasText;
 
@@ -11,7 +11,7 @@ class AddOption extends StatelessWidget {
     Key? key,
     this.onAddPhoto,
     this.onTakePhoto,
-    this.onDeleteContent,
+    this.onAddText,
     this.hasImage = false,
     this.hasText = false,
   }) : super(key: key);
@@ -53,12 +53,12 @@ class AddOption extends StatelessWidget {
               color: Colors.green[300]!,
               onTap: onTakePhoto,
             ),
-            if (hasImage && onDeleteContent != null)
+            if (hasImage) 
               _buildModernTile(
-                icon: Icons.delete,
-                title: 'Supprimer',
-                color: Colors.red[300]!,
-                onTap: () => onDeleteContent!(),
+                icon: Icons.text_fields,
+                title: 'Ajouter un texte',
+                color: Colors.blue[300]!,
+                onTap: onAddText,
               ),
           ],
         ),

@@ -1,54 +1,37 @@
 import 'package:flutter/material.dart';
 
 class CommentField extends StatelessWidget {
-  final TextEditingController? controller;
-  final String? hintText;
+  final TextEditingController controller;
 
   const CommentField({
-    super.key,
-    this.controller,
-    this.hintText,
-  });
+    Key? key,
+    required this.controller,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    return TextField(
       controller: controller,
-      minLines: 2,
-      maxLines: 2, // Limit to a single line
-      maxLength: 45, // Limit to 45 characters
       textAlign: TextAlign.center,
-      textCapitalization: TextCapitalization
-          .sentences, // Ajout de cette ligne pour les majuscules automatiques
+      textCapitalization: TextCapitalization.sentences,
       style: const TextStyle(
-        //fontFamily: 'AvenirNext',
-        fontWeight: FontWeight.w700,
-        fontSize: 25,
-        color: Color(0xE6FFFFFF), // Changé de Colors.white54 à Colors.white
+        color: Colors.white,
+        fontSize: 16,
+        fontWeight: FontWeight.w900,
       ),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.transparent, // Transparent background
-        hintText: hintText ?? 'Que veux-tu dire ?',
+      decoration: const InputDecoration(
+        hintText: 'Ajoute une description...',
         hintStyle: TextStyle(
-          //fontFamily: 'AvenirNext',
-          fontWeight: FontWeight.w700,
-          fontSize: 25,
-          color: Colors
-              .white38, // Changé de Colors.grey[400] à Colors.white38 pour meilleur contraste
+          color: Colors.grey,
+          fontSize: 16,
+          fontWeight: FontWeight.w900,
         ),
-        counterText: '', // Hide character counter
-        contentPadding: const EdgeInsets.symmetric(
-          //vertical: 10.0,
-          horizontal: 12.0,
-        ),
-        border: InputBorder.none, // Remove border
+        border: InputBorder.none,
+        alignLabelWithHint: true,
       ),
-      onFieldSubmitted: (text) {
-        // Prevent new lines by doing nothing on Enter
-      },
-      textInputAction:
-          TextInputAction.done, // Change the action button to "Done"
+      keyboardType: TextInputType.multiline,
+      maxLines: null,
+      textInputAction: TextInputAction.newline,
     );
   }
 }

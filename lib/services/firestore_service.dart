@@ -47,4 +47,28 @@ class FirestoreService {
       ),
     });
   }
+
+  Future<void> createVote(
+    List<String> imageUrls,
+    List<String?> texts,
+    List<int> filters,
+    String description,
+    String userId,
+  ) async {
+    try {
+      await _firestore.collection('votes').add({
+        'userId': userId,
+        'imageUrls': imageUrls,
+        'texts': texts,
+        'filters': filters,
+        'description': description,
+        'timestamp': FieldValue.serverTimestamp(),
+        'likes': [],
+        'comments': [],
+      });
+    } catch (e) {
+      print('Error creating vote: $e');
+      rethrow;
+    }
+  }
 }
