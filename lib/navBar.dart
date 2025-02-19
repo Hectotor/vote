@@ -37,56 +37,45 @@ class _NavBarState extends State<NavBar> {
         body: _pages[_selectedIndex],
         bottomNavigationBar: _selectedIndex == 2
             ? null // Hide the navigation bar when on AddPage
-            : Container(
-                height: 65,
-                child: SafeArea(
-                  child: Theme(
-                    data: Theme.of(context).copyWith(
-                      splashFactory: NoSplash.splashFactory,
-                      highlightColor: Colors.transparent,
-                    ),
-                    child: BottomNavigationBar(
-                      backgroundColor: Colors.transparent,
-                      elevation: 0,
-                      selectedFontSize: 0,
-                      unselectedFontSize: 0,
-                      items: <BottomNavigationBarItem>[
-                        _buildNavItem(
-                          Icons.home_outlined,
-                          Icons.home,
-                          '',
-                          0,
-                        ),
-                        _buildNavItem(
-                          Icons.search_outlined,
-                          Icons.search,
-                          '',
-                          1,
-                        ),
-                        _buildAddButton(),
-                        _buildNavItem(
-                          Icons.notifications_outlined,
-                          Icons.notifications,
-                          '',
-                          3,
-                        ),
-                        _buildNavItem(
-                          Icons.person_outline,
-                          Icons.person,
-                          '',
-                          4,
-                        ),
-                      ],
-                      currentIndex: _selectedIndex,
-                      selectedItemColor: Colors.white,
-                      unselectedItemColor: Colors.grey[600],
-                      onTap: _onItemTapped,
-                      type: BottomNavigationBarType.fixed,
-                      showSelectedLabels: false,
-                      showUnselectedLabels: false,
-                    ),
+            : BottomNavigationBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                selectedFontSize: 0,
+                unselectedFontSize: 0,
+                items: <BottomNavigationBarItem>[
+                  _buildNavItem(
+                    Icons.home_outlined,
+                    Icons.home,
+                    '',
+                    0,
                   ),
-                ),
+                  _buildNavItem(
+                    Icons.search_outlined,
+                    Icons.search,
+                    '',
+                    1,
+                  ),
+                  _buildAddButton(),
+                  _buildNavItem(
+                    Icons.notifications_outlined,
+                    Icons.notifications,
+                    '',
+                    3,
+                  ),
+                  _buildNavItem(
+                    Icons.person_outline,
+                    Icons.person,
+                    '',
+                    4,
+                  ),
+                ],
+                currentIndex: _selectedIndex,
+                selectedItemColor: Colors.white,
+                unselectedItemColor: Colors.grey[600],
+                onTap: _onItemTapped,
+                type: BottomNavigationBarType.fixed,
+                showSelectedLabels: false,
+                showUnselectedLabels: false,
               ),
       ),
     );
@@ -101,7 +90,7 @@ class _NavBarState extends State<NavBar> {
     return BottomNavigationBarItem(
       icon: Icon(
         _selectedIndex == index ? selectedIcon : unselectedIcon,
-        size: 30,
+        size: 30, // Taille augmentée
       ),
       label: label,
     );
@@ -111,7 +100,7 @@ class _NavBarState extends State<NavBar> {
     return BottomNavigationBarItem(
       icon: Icon(
         Icons.add_circle,
-        size: 46,
+        size: 38, // Taille augmentée
         color: Colors.grey[400],
       ),
       label: '',

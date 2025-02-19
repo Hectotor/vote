@@ -20,6 +20,15 @@ class BlocGrid extends StatefulWidget {
     required this.isEditing,
   }) : super(key: key);
 
+  static double getBlockRatio(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = 24.0; // 12 de chaque côté
+    final spaceBetweenBlocks = 8.0;
+    final blockWidth = (screenWidth - horizontalPadding - spaceBetweenBlocks) / 2;
+    final blockHeight = 300.0;
+    return blockWidth / blockHeight;
+  }
+
   @override
   State<BlocGrid> createState() => _BlocGridState();
 }
@@ -50,7 +59,8 @@ class _BlocGridState extends State<BlocGrid> {
     int index = 0,
   }) {
     return Card(
-      child: ClipRRect(
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
         borderRadius: widget.numberOfBlocs >= 2
             ? (index == 0
                 ? BorderRadius.only(
@@ -64,131 +74,132 @@ class _BlocGridState extends State<BlocGrid> {
                       )
                     : BorderRadius.circular(16))
             : BorderRadius.circular(16),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [
-                Color(0xFF2C2C54),
-                Color(0xFF4B6CB7),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            border: Border.all(color: Colors.grey.shade800, width: 0.5),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF2C2C54),
+              Color(0xFF4B6CB7),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          child: Stack(
-            children: [
-              GestureDetector(
-                onTap: () => widget.onImageChange(index),
+          border: Border.all(color: Colors.grey.shade800, width: 0.5),
+        ),
+        child: Stack(
+          children: [
+            GestureDetector(
+              onTap: () => widget.onImageChange(index),
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                child: image != null
+                    ? Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Image.file(
+                            File(image.path),
+                            fit: BoxFit.cover,
+                          ),
+                          Container(
+                            color: widget.imageFilters[index],
+                          ),
+                        ],
+                      )
+                    : Icon(
+                        Icons.add_photo_alternate_outlined,
+                        size: isSingle ? 50 : 40,
+                        color: Colors.grey.shade300,
+                      ),
+              ),
+            ),
+            
+            // Zone de texte en mode édition
+            if (widget.isEditing[index])
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
                 child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  child: image != null
-                      ? Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Image.file(
-                              File(image.path),
-                              fit: BoxFit.cover,
+                  decoration: BoxDecoration(
+                    gradient: widget.textWidgets[index] != null || _textControllers[index].text.isNotEmpty
+                        ? LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.0),
+                              Colors.black.withOpacity(0.8),
+                            ],
+                          )
+                        : null,
+                  ),
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _textControllers[index],
+                    autofocus: true,
+                    textAlign: TextAlign.center,
+                    textCapitalization: TextCapitalization.sentences,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    cursorColor: Colors.white,
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (value) {
+                      if (value.isEmpty) {
+                        setState(() {
+                          widget.textWidgets[index] = null;
+                        });
+                      } else {
+                        setState(() {
+                          widget.textWidgets[index] = Text(
+                            value,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
                             ),
-                            Container(
-                              color: widget.imageFilters[index],
-                            ),
-                          ],
-                        )
-                      : Icon(
-                          Icons.add_photo_alternate_outlined,
-                          size: isSingle ? 50 : 40,
-                          color: Colors.grey.shade300,
-                        ),
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.visible,
+                          );
+                        });
+                      }
+                    },
+                  ),
                 ),
               ),
-              
-              // Zone de texte en mode édition
-              if (widget.isEditing[index])
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: widget.textWidgets[index] != null || _textControllers[index].text.isNotEmpty
-                          ? LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.black.withOpacity(0.0),
-                                Colors.black.withOpacity(0.8),
-                              ],
-                            )
-                          : null,
-                    ),
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: _textControllers[index],
-                      autofocus: true,
-                      textAlign: TextAlign.center,
-                      textCapitalization: TextCapitalization.sentences,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                      ),
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                      cursorColor: Colors.white,
-                      keyboardType: TextInputType.multiline,
-                      maxLines: null,
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (value) {
-                        if (value.isEmpty) {
-                          setState(() {
-                            widget.textWidgets[index] = null;
-                          });
-                        } else {
-                          setState(() {
-                            widget.textWidgets[index] = Text(
-                              value,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                              ),
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.visible,
-                            );
-                          });
-                        }
-                      },
+            
+            // Afficher le texte existant
+            if (!widget.isEditing[index] && widget.textWidgets[index] != null)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.0),
+                        Colors.black.withOpacity(0.8),
+                      ],
                     ),
                   ),
+                  padding: const EdgeInsets.all(8.0),
+                  child: widget.textWidgets[index]!,
                 ),
-              
-              // Afficher le texte existant
-              if (!widget.isEditing[index] && widget.textWidgets[index] != null)
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.0),
-                          Colors.black.withOpacity(0.8),
-                        ],
-                      ),
-                    ),
-                    padding: const EdgeInsets.all(8.0),
-                    child: widget.textWidgets[index]!,
-                  ),
-                ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
@@ -214,7 +225,7 @@ class _BlocGridState extends State<BlocGrid> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 2),
+                const SizedBox(width: 8),
                 Expanded(
                   child: GestureDetector(
                     onTap: () => widget.onImageChange(1),

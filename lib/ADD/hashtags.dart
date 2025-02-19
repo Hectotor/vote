@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-class Description extends StatefulWidget {
+class Hashtags extends StatefulWidget {
   final TextEditingController controller;
 
-  const Description({Key? key, required this.controller}) : super(key: key);
+  const Hashtags({Key? key, required this.controller}) : super(key: key);
 
   @override
-  _DescriptionState createState() => _DescriptionState();
+  _HashtagsState createState() => _HashtagsState();
 }
 
-class _DescriptionState extends State<Description> {
+class _HashtagsState extends State<Hashtags> {
   @override
   void initState() {
     super.initState();
@@ -61,6 +61,9 @@ class _DescriptionState extends State<Description> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: const BoxConstraints(
+        minHeight: 120,
+      ),
       decoration: BoxDecoration(
         color: Colors.grey.shade900,
         borderRadius: BorderRadius.circular(12),
@@ -86,7 +89,7 @@ class _DescriptionState extends State<Description> {
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: 16,
+            vertical: 24,
           ),
           counterText: '',
         ),

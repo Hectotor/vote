@@ -5,11 +5,13 @@ import 'comment.dart';
 import 'bloc.dart';
 import 'addoption.dart'; // Importer le nouveau fichier
 import 'package:image_picker/image_picker.dart';
-import 'description.dart'; // Ajouter l'import
+import 'hashtags.dart'; // Ajouter l'import
 import 'package:flutter_localizations/flutter_localizations.dart'; // Import localization package
 import 'dart:async'; // Import the dart:async package for Timer
 import 'image.dart'; // Import the new image.dart file
 import '../services/firestore_service.dart';
+import 'poll_button.dart'; // Importer le PollButton
+import 'poll_grid.dart'; // Importer le PollGrid
 
 void main() {
   runApp(const MyApp());
@@ -46,6 +48,7 @@ class _AddPageState extends State<AddPage> {
   final List<Color> _imageFilters = List.filled(2, Colors.transparent);
   final List<Widget?> _textWidgets = List.filled(2, null);
   final List<bool> _isEditing = List.filled(2, false);
+  bool _showPoll = false;
 
   void _showAddBlocDialog(int index) {
     showDialog(
@@ -92,6 +95,12 @@ class _AddPageState extends State<AddPage> {
         );
       },
     );
+  }
+
+  void _togglePoll() {
+    setState(() {
+      _showPoll = !_showPoll;
+    });
   }
 
   Future<void> _publishPost() async {
@@ -212,7 +221,7 @@ class _AddPageState extends State<AddPage> {
               child: Container(
                 alignment: Alignment.center,
                 padding:
-                    const EdgeInsets.symmetric(vertical: 30, horizontal: 12),
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                 color: Colors.transparent,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,19 +229,26 @@ class _AddPageState extends State<AddPage> {
                     CommentField(
                       controller: _controller,
                     ),
-                    const SizedBox(height: 20),
-                    BlocGrid(
-                      images: _images,
-                      imageFilters: _imageFilters,
-                      onImageChange: (index) => _showAddBlocDialog(index),
-                      textWidgets: _textWidgets,
-                      numberOfBlocs: 2,
-                      isEditing: _isEditing,
-                    ),
-                    const SizedBox(height: 80),
-                    Description(
+                    const SizedBox(height: 10),
+                    _showPoll
+                        ? const PollGrid()
+                        : BlocGrid(
+                            images: _images,
+                            imageFilters: _imageFilters,
+                            textWidgets: _textWidgets,
+                            onImageChange: _showAddBlocDialog,
+                            numberOfBlocs: 2,
+                            isEditing: _isEditing,
+                          ),
+                    const SizedBox(height: 30),
+                    Hashtags(
                       controller: _descriptionController,
                     ),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: PollButton(onPressed: _togglePoll),
+                    ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),

@@ -22,42 +22,45 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Firebase Demo',
       theme: ThemeData(
         useMaterial3: true,
+        splashFactory: NoSplash.splashFactory,
+        highlightColor: Colors.transparent,
+        splashColor: Colors.transparent,
         brightness: Brightness.dark,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1A1A1A),
+          backgroundColor: Colors.black,
           elevation: 0,
-          iconTheme: IconThemeData(color: Color(0xFFE0E0E0)),
+          iconTheme: IconThemeData(color: Colors.white),
           titleTextStyle: TextStyle(
-            color: Color(0xFFE0E0E0),
+            color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFFFFFFF),      // Bleu principal
-          secondary: Color(0xFF64B5F6),    // Bleu secondaire
-          surface: Color(0xFF1A1A1A),      // Surface des cartes
-          background: Color(0xFF121212),   // Arrière-plan principal
-          error: Color(0xFFCF6679),        // Couleur d'erreur
-          onPrimary: Color(0xFFFFFFFF),    // Texte sur primary
-          onSecondary: Color(0xFF000000),  // Texte sur secondary
-          onSurface: Color(0xFFE0E0E0),    // Texte sur surface
-          onBackground: Color(0xFFE0E0E0), // Texte sur background
-          onError: Color(0xFF000000),      // Texte sur error
+          primary: Colors.white,
+          secondary: Colors.white,
+          surface: Colors.black,
+          background: Colors.black,
+          error: Colors.white,
+          onPrimary: Colors.black,
+          onSecondary: Colors.black,
+          onSurface: Colors.white,
+          onBackground: Colors.white,
+          onError: Colors.black,
         ),
         cardTheme: const CardTheme(
-          color: Color(0xFF1A1A1A),
+          color: Colors.black,
           elevation: 4,
         ),
         textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Color(0xFFE0E0E0)),
-          bodyMedium: TextStyle(color: Color(0xFFE0E0E0)),
-          titleLarge: TextStyle(color: Color(0xFFE0E0E0)),
+          bodyLarge: TextStyle(color: Colors.white),
+          bodyMedium: TextStyle(color: Colors.white),
+          titleLarge: TextStyle(color: Colors.white),
         ),
         iconTheme: const IconThemeData(
-          color: Color(0xFFE0E0E0),
+          color: Colors.white,
         ),
-        scaffoldBackgroundColor: const Color(0xFF121212),
+        scaffoldBackgroundColor: Colors.black,
       ),
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: const [
@@ -80,9 +83,7 @@ class GradientBackground extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.background,
       ),
-      child: SafeArea(
-        child: child,
-      ),
+      child: child,
     );
   }
 }

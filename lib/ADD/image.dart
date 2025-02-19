@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'bloc.dart';
 
 class ImageFilterPage extends StatefulWidget {
   final XFile image;
@@ -148,15 +149,16 @@ Future<void> addPhoto(int index, List<XFile?> images, Function setState,
       });
       onFilterChange(index, Colors.transparent);
     } else {
+      final blockRatio = BlocGrid.getBlockRatio(context);
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: pickedFile.path,
-        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        aspectRatio: CropAspectRatio(ratioX: blockRatio, ratioY: 1),
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Recadrer l\'image',
             toolbarColor: const Color(0xFF1D1D2C),
             toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.square,
+            initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: true,
           ),
           IOSUiSettings(
@@ -190,28 +192,26 @@ Future<void> addPhoto(int index, List<XFile?> images, Function setState,
 
 Future<void> takePhoto(int index, List<XFile?> images, Function setState,
     BuildContext context, Function(int, Color) onFilterChange) async {
-  // Ajout du paramètre onFilterChange
-  if (!context.mounted) return; // Vérifiez si le contexte est monté
+  if (!context.mounted) return;
 
   final picker = ImagePicker();
   final pickedFile = await picker.pickImage(source: ImageSource.camera);
 
   if (pickedFile != null && context.mounted) {
-    // Vérifiez encore après l'opération async
+    final blockRatio = BlocGrid.getBlockRatio(context);
     final croppedFile = await ImageCropper().cropImage(
       sourcePath: pickedFile.path,
-      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      aspectRatio: CropAspectRatio(ratioX: blockRatio, ratioY: 1),
       uiSettings: [
         AndroidUiSettings(
-          toolbarTitle: 'Recadrer la photo',
+          toolbarTitle: 'Recadrer l\'image',
           toolbarColor: const Color(0xFF1D1D2C),
           toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.square,
+          initAspectRatio: CropAspectRatioPreset.original,
           lockAspectRatio: true,
-          hideBottomControls: false,
         ),
         IOSUiSettings(
-          title: 'Recadrer la photo',
+          title: 'Recadrer l\'image',
           doneButtonTitle: 'Terminer',
           cancelButtonTitle: 'Annuler',
           aspectRatioLockEnabled: true,
@@ -220,7 +220,6 @@ Future<void> takePhoto(int index, List<XFile?> images, Function setState,
     );
 
     if (croppedFile != null && context.mounted) {
-      // Vérifiez encore après le crop
       final imageFile = XFile(croppedFile.path);
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -230,13 +229,13 @@ Future<void> takePhoto(int index, List<XFile?> images, Function setState,
               setState(() {
                 images[index] = image;
               });
-              onFilterChange(index, filterColor); // Utiliser la fonction passée
+              onFilterChange(index, filterColor);
             },
           ),
         ),
       );
+    } else {
+      print('No photo taken');
     }
-  } else {
-    print('No photo taken'); // Debug print
   }
 }
