@@ -15,6 +15,7 @@ class FirestoreService {
     required List<Color> filters,
     required String description,
     required List<String> hashtags,
+    List<String> mentions = const [],
     DateTime? endVoteDate,
   }) async {
     final docRef = _firestore.collection('users/$userId/posts').doc();
@@ -36,6 +37,7 @@ class FirestoreService {
       'endVoteAt': endVoteDate,
       'description': description,
       'hashtags': hashtags,
+      'mentions': mentions,
       'blocks': List.generate(
         images.length,
         (index) => {

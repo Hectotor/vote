@@ -8,16 +8,20 @@ class PollGrid extends StatefulWidget {
 }
 
 class _PollGridState extends State<PollGrid> {
-  // Palette de couleurs pastel
-  final List<Color> pastelColors = [
-    Color(0xFFFFC3A0), // Pêche
-    Color(0xFFA0E7E5), // Bleu-vert
-    Color(0xFFB4F8C8), // Vert menthe
-    Color(0xFFFBE7C6), // Jaune crème
-    Color(0xFFFFA0A0), // Rose pâle
-    Color(0xFFC3B1E1), // Lavande
-    Color(0xFFD4F0F0), // Bleu glacier
-    Color(0xFFFFC6FF), // Rose bonbon pâle
+  // Palette de couleurs vibrantes et modernes
+  final List<Color> vibrantGradients = [
+    Color(0xFF6A11CB), // Violet profond
+    Color(0xFF2575FC), // Bleu électrique
+    Color(0xFFFF6B6B), // Corail vif
+    Color(0xFF4ECDC4), // Turquoise moderne
+  ];
+
+  // Emojis amusants pour chaque option
+  final List<String> optionEmojis = [
+    '🎉', // Célébration
+    '🚀', // Fusée
+    '🌈', // Arc-en-ciel
+    '🎸', // Guitare
   ];
 
   // Liste des contrôleurs de texte
@@ -60,12 +64,12 @@ class _PollGridState extends State<PollGrid> {
           color: Colors.black87,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: pastelColors.length,
+            itemCount: vibrantGradients.length,
             itemBuilder: (context, colorIndex) {
               return GestureDetector(
                 onTap: () {
                   setState(() {
-                    _blockColors[index] = pastelColors[colorIndex];
+                    _blockColors[index] = vibrantGradients[colorIndex];
                   });
                   Navigator.pop(context);
                 },
@@ -74,7 +78,7 @@ class _PollGridState extends State<PollGrid> {
                   height: 60,
                   margin: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: pastelColors[colorIndex],
+                    color: vibrantGradients[colorIndex],
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
                   ),
@@ -88,61 +92,101 @@ class _PollGridState extends State<PollGrid> {
   }
 
   Widget _buildPollOption(int index) {
-    return GestureDetector(
-      onLongPress: () => _showColorPicker(index),
-      child: Container(
-        height: 100,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: _blockColors[index] ?? Colors.grey[900],
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[800]!),
-        ),
-        child: Stack(
-          children: [
-            Center(
-              child: TextField(
-                controller: _controllers[index],
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(
-                  hintText: 'Option ${index + 1}',
-                  hintStyle: TextStyle(
-                    color: Colors.grey[600],
+    // Sélectionner un dégradé unique pour chaque bloc
+    final gradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        vibrantGradients[index % vibrantGradients.length],
+        vibrantGradients[index % vibrantGradients.length].withOpacity(0.7),
+      ],
+    );
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      height: 120, // Augmentation de la hauteur verticale
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 4), // Réduction de la marge verticale
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onLongPress: () => _showColorPicker(index),
+          child: Stack(
+            children: [
+              Center(
+                child: TextField(
+                  controller: _controllers[index],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 10.0,
+                        color: Colors.black45,
+                        offset: Offset(2.0, 2.0),
+                      ),
+                    ],
                   ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  isDense: true,
-                ),
-                maxLength: 30,
-                buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
-                textAlignVertical: TextAlignVertical.center,
-              ),
-            ),
-            if (index >= 2)
-              Positioned(
-                top: 4,
-                right: 4,
-                child: GestureDetector(
-                  onTap: () => _removeOption(index),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[800],
-                      shape: BoxShape.circle,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: InputDecoration(
+                    hintText: 'Option ${index + 1} ${optionEmojis[index % optionEmojis.length]}',
+                    hintStyle: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontStyle: FontStyle.italic,
                     ),
-                    child: Icon(
-                      Icons.close, 
-                      color: Colors.grey[300], 
-                      size: 20
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  maxLength: 30,
+                  maxLines: null,
+                  buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
+                ),
+              ),
+
+              // Bouton de suppression pour les options 3 et 4
+              if (index >= 2)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () => _removeOption(index),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        Icons.close, 
+                        color: Colors.white, 
+                        size: 20,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 5.0,
+                            color: Colors.black.withOpacity(0.5),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -159,8 +203,6 @@ class _PollGridState extends State<PollGrid> {
             Expanded(child: _buildPollOption(1)),
           ],
         ),
-        const SizedBox(height: 8),
-        
         // Deuxième ligne : blocs 3 et 4
         if (_controllers.length > 2)
           Row(

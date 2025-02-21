@@ -53,154 +53,173 @@ class _BlocGridState extends State<BlocGrid> {
     super.dispose();
   }
 
+  // Palette de couleurs vibrantes et modernes
+  final List<Color> vibrantGradients = [
+    Color(0xFF6A11CB), // Violet profond
+    Color(0xFF2575FC), // Bleu électrique
+    Color(0xFFFF6B6B), // Corail vif
+    Color(0xFF4ECDC4), // Turquoise moderne
+  ];
+
+  // Emojis amusants pour chaque option
+  final List<String> optionEmojis = [
+    '🎉', // Célébration
+    '🚀', // Fusée
+    '🌈', // Arc-en-ciel
+    '🎸', // Guitare
+  ];
+
   Widget _buildBloc({
     bool isSingle = false,
     XFile? image,
     int index = 0,
   }) {
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: widget.numberOfBlocs >= 2
-            ? (index == 0
-                ? BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                  )
-                : index == 1
-                    ? BorderRadius.only(
-                        topRight: Radius.circular(16),
-                        bottomRight: Radius.circular(16),
-                      )
-                    : BorderRadius.circular(16))
-            : BorderRadius.circular(16),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFF2C2C54),
-              Color(0xFF4B6CB7),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    final screenWidth = MediaQuery.of(context).size.width;
+    final blockWidth = (screenWidth - 24.0 - 8.0) / 2;
+    final gradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        vibrantGradients[index % vibrantGradients.length],
+        vibrantGradients[index % vibrantGradients.length].withOpacity(0.7),
+      ],
+    );
+
+    return Container(
+      width: blockWidth,
+      height: 300.0,
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(15.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10.0,
+            offset: Offset(0, 4),
           ),
-          border: Border.all(color: Colors.grey.shade800, width: 0.5),
-        ),
-        child: Stack(
-          children: [
-            GestureDetector(
-              onTap: () => widget.onImageChange(index),
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                child: image != null
-                    ? Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Image.file(
-                            File(image.path),
-                            fit: BoxFit.cover,
-                          ),
-                          Container(
-                            color: widget.imageFilters[index],
-                          ),
-                        ],
-                      )
-                    : Icon(
-                        Icons.add_photo_alternate_outlined,
-                        size: isSingle ? 50 : 40,
-                        color: Colors.grey.shade300,
-                      ),
+        ],
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          GestureDetector(
+            onTap: () => widget.onImageChange(index),
+            child: image != null
+              ? Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.file(
+                      File(image.path),
+                      fit: BoxFit.cover,
+                    ),
+                    Container(
+                      color: widget.imageFilters[index],
+                    ),
+                  ],
+                )
+              : Center(
+                  child: Icon(
+                    Icons.add_photo_alternate_outlined,
+                    size: isSingle ? 50 : 40,
+                    color: Colors.grey.shade300,
+                  ),
+                ),
+          ),
+          if (image == null)
+            Positioned(
+              bottom: 40,
+              left: 0,
+              right: 0,
+              child: Text(
+                'Option ${index + 1} ${optionEmojis[index % optionEmojis.length]}',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ),
-            
-            // Zone de texte en mode édition
-            if (widget.isEditing[index])
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: widget.textWidgets[index] != null || _textControllers[index].text.isNotEmpty
-                        ? LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withOpacity(0.0),
-                              Colors.black.withOpacity(0.8),
-                            ],
-                          )
-                        : null,
+          if (widget.isEditing[index])
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: widget.textWidgets[index] != null || _textControllers[index].text.isNotEmpty
+                      ? LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.0),
+                            Colors.black.withOpacity(0.8),
+                          ],
+                        )
+                      : null,
+                ),
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: _textControllers[index],
+                  autofocus: true,
+                  textAlign: TextAlign.center,
+                  textCapitalization: TextCapitalization.sentences,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
                   ),
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    controller: _textControllers[index],
-                    autofocus: true,
-                    textAlign: TextAlign.center,
-                    textCapitalization: TextCapitalization.sentences,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                    ),
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    cursorColor: Colors.white,
-                    keyboardType: TextInputType.multiline,
-                    maxLines: null,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (value) {
-                      if (value.isEmpty) {
-                        setState(() {
-                          widget.textWidgets[index] = null;
-                        });
-                      } else {
-                        setState(() {
-                          widget.textWidgets[index] = Text(
-                            value,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                            ),
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.visible,
-                          );
-                        });
-                      }
-                    },
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
                   ),
+                  cursorColor: Colors.white,
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (value) {
+                    if (value.isEmpty) {
+                      setState(() {
+                        widget.textWidgets[index] = null;
+                      });
+                    } else {
+                      setState(() {
+                        widget.textWidgets[index] = Text(
+                          value,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                          ),
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.visible,
+                        );
+                      });
+                    }
+                  },
                 ),
               ),
-            
-            // Afficher le texte existant
-            if (!widget.isEditing[index] && widget.textWidgets[index] != null)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.0),
-                        Colors.black.withOpacity(0.8),
-                      ],
-                    ),
+            ),
+          if (!widget.isEditing[index] && widget.textWidgets[index] != null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.0),
+                      Colors.black.withOpacity(0.8),
+                    ],
                   ),
-                  padding: const EdgeInsets.all(8.0),
-                  child: widget.textWidgets[index]!,
                 ),
+                padding: const EdgeInsets.all(8.0),
+                child: widget.textWidgets[index]!,
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

@@ -1,17 +1,36 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vote_app/navBar.dart';
-import 'comment.dart';
+import 'description.dart';
 import 'bloc.dart';
 import 'addoption.dart'; // Importer le nouveau fichier
 import 'package:image_picker/image_picker.dart';
-import 'hashtags.dart'; // Ajouter l'import
 import 'package:flutter_localizations/flutter_localizations.dart'; // Import localization package
 import 'dart:async'; // Import the dart:async package for Timer
 import 'image.dart'; // Import the new image.dart file
 import '../services/firestore_service.dart';
 import 'poll_button.dart'; // Importer le PollButton
 import 'poll_grid.dart'; // Importer le PollGrid
+
+class Post {
+  final User user;
+  final List<XFile?> images;
+  final List<Map<String, dynamic>> texts;
+  final List<Color> filters;
+  final String description;
+  final List<String> hashtags;
+  final List<String> mentions;
+
+  Post({
+    required this.user,
+    required this.images,
+    required this.texts,
+    required this.filters,
+    this.description = '',
+    this.hashtags = const [],
+    this.mentions = const [],
+  });
+}
 
 void main() {
   runApp(const MyApp());
@@ -49,6 +68,8 @@ class _AddPageState extends State<AddPage> {
   final List<Widget?> _textWidgets = List.filled(2, null);
   final List<bool> _isEditing = List.filled(2, false);
   bool _showPoll = false;
+  List<String> _hashtags = [];
+  List<String> _mentions = [];
 
   void _showAddBlocDialog(int index) {
     showDialog(
@@ -108,11 +129,6 @@ class _AddPageState extends State<AddPage> {
     if (user == null) return;
 
     try {
-      final hashtags = _descriptionController.text
-          .split(' ')
-          .where((word) => word.startsWith('#'))
-          .toList();
-
       final texts = _textWidgets.map((widget) {
         if (widget == null) return null;
         return {
@@ -121,6 +137,16 @@ class _AddPageState extends State<AddPage> {
         };
       }).toList();
 
+      final post = Post(
+        user: user,
+        images: _images,
+        texts: texts.whereType<Map<String, dynamic>>().toList(),
+        filters: _imageFilters,
+        description: _descriptionController.text,
+        hashtags: _hashtags,
+        mentions: _mentions,
+      );
+
       await _firestoreService.createPost(
         userId: user.uid,
         title: _controller.text,
@@ -128,7 +154,8 @@ class _AddPageState extends State<AddPage> {
         texts: texts.whereType<Map<String, dynamic>>().toList(),
         filters: _imageFilters,
         description: _descriptionController.text,
-        hashtags: hashtags,
+        hashtags: _hashtags,
+        mentions: _mentions,
       );
 
       if (!mounted) return;
@@ -213,23 +240,25 @@ class _AddPageState extends State<AddPage> {
         fit: StackFit.expand,
         children: [
           SingleChildScrollView(
-            physics:
-                const AlwaysScrollableScrollPhysics(), // Ajout de cette ligne
+            physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.only(
-                  bottom: 120), // Augmenté pour éviter le chevauchement
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
               child: Container(
                 alignment: Alignment.center,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                 color: Colors.transparent,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CommentField(
-                      controller: _controller,
+                    DescriptionField(
+                      controller: _descriptionController,
+                      onTagsChanged: (hashtags, mentions) {
+                        setState(() {
+                          _hashtags = hashtags;
+                          _mentions = mentions;
+                        });
+                      },
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 50),
                     _showPoll
                         ? const PollGrid()
                         : BlocGrid(
@@ -240,24 +269,20 @@ class _AddPageState extends State<AddPage> {
                             numberOfBlocs: 2,
                             isEditing: _isEditing,
                           ),
-                    const SizedBox(height: 30),
-                    Hashtags(
-                      controller: _descriptionController,
-                    ),
-                    const SizedBox(height: 20),
-                    Center(
-                      child: PollButton(onPressed: _togglePoll),
-                    ),
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),
             ),
           ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 20,
+            child: FloatingPollButton(onPressed: _togglePoll),
+          ),
         ],
       ),
       floatingActionButton: null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
