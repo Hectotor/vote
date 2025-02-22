@@ -10,10 +10,10 @@ class PollGrid extends StatefulWidget {
 class _PollGridState extends State<PollGrid> {
   // Palette de couleurs vibrantes et modernes
   final List<Color> vibrantGradients = [
-    Color(0xFF6A11CB), // Violet profond
-    Color(0xFF2575FC), // Bleu électrique
-    Color(0xFFFF6B6B), // Corail vif
-    Color(0xFF4ECDC4), // Turquoise moderne
+  Colors.grey[900]!,
+  Colors.grey[900]!,
+    Colors.grey[900]!,
+  Colors.grey[900]!
   ];
 
   // Emojis amusants pour chaque option
@@ -194,68 +194,78 @@ class _PollGridState extends State<PollGrid> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Première ligne : blocs 1 et 2
-        Row(
-          children: [
-            Expanded(child: _buildPollOption(0)),
-            Expanded(child: _buildPollOption(1)),
-          ],
-        ),
-        // Deuxième ligne : blocs 3 et 4
-        if (_controllers.length > 2)
-          Row(
+    return Container(
+      height: 400, // Hauteur fixe pour le conteneur
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
             children: [
-              if (_controllers.length == 3) ...[
-                const Spacer(),
-                Expanded(flex: 2, child: _buildPollOption(2)),
-                const Spacer(),
-              ] else ...[
-                Expanded(child: _buildPollOption(2)),
-                Expanded(child: _buildPollOption(3)),
-              ],
+              // Première ligne : blocs 1 et 2
+              Row(
+                children: [
+                  Expanded(child: _buildPollOption(0)),
+                  Expanded(child: _buildPollOption(1)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Deuxième ligne : blocs 3 et 4
+              if (_controllers.length > 2)
+                Row(
+                  children: [
+                    if (_controllers.length == 3) ...[
+                      const Spacer(),
+                      Expanded(flex: 2, child: _buildPollOption(2)),
+                      const Spacer(),
+                    ] else ...[
+                      Expanded(child: _buildPollOption(2)),
+                      Expanded(child: _buildPollOption(3)),
+                    ],
+                  ],
+                ),
             ],
           ),
-
-        const SizedBox(height: 8),
-        
-        // Bouton d'ajout
-        if (_controllers.length < 4)
-          ElevatedButton(
-            onPressed: _addNewOption,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey[800],
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 2,
-              shadowColor: Colors.black.withOpacity(0.3),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.add_circle_outline, 
-                  size: 20, 
-                  color: Colors.grey[300]
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Add Option',
-                  style: TextStyle(
-                    color: Colors.grey[300],
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+          // Bouton d'ajout
+          if (_controllers.length < 4)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Container(
+                width: 200,
+                child: ElevatedButton(
+                  onPressed: _addNewOption,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 2,
+                    shadowColor: Colors.black.withOpacity(0.3),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add_circle_outline, 
+                        size: 20, 
+                        color: Colors.grey[300]
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Add Option',
+                        style: TextStyle(
+                          color: Colors.grey[300],
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 

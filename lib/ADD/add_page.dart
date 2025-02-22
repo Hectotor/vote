@@ -258,7 +258,6 @@ class _AddPageState extends State<AddPage> {
                         });
                       },
                     ),
-                    const SizedBox(height: 50),
                     _showPoll
                         ? const PollGrid()
                         : BlocGrid(
@@ -275,16 +274,15 @@ class _AddPageState extends State<AddPage> {
             ),
           ),
           Positioned(
-            left: 0,
-            right: 0,
-            bottom: MediaQuery.of(context).viewInsets.bottom > 20
-                ? MediaQuery.of(context).viewInsets.bottom 
-                : 0,
-            child: FloatingPollButton(onPressed: _togglePoll),
+            right: 16, // Ajuste la distance du bord droit
+            top: MediaQuery.of(context).size.height / 2 - 58, // Ajuster la position verticale pour le remonter
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: FloatingPollButton(onPressed: _togglePoll),
+            ),
           ),
         ],
       ),
-      floatingActionButton: null,
     );
   }
 

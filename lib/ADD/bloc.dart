@@ -55,10 +55,8 @@ class _BlocGridState extends State<BlocGrid> {
 
   // Palette de couleurs vibrantes et modernes
   final List<Color> vibrantGradients = [
-    Color(0xFF6A11CB), // Violet profond
-    Color(0xFF2575FC), // Bleu électrique
-    Color(0xFFFF6B6B), // Corail vif
-    Color(0xFF4ECDC4), // Turquoise moderne
+  Colors.grey[900]!,
+  Colors.grey[900]!
   ];
 
   // Emojis amusants pour chaque option
@@ -130,7 +128,7 @@ class _BlocGridState extends State<BlocGrid> {
                   child: Icon(
                     Icons.add_photo_alternate_outlined,
                     size: isSingle ? 50 : 40,
-                    color: Colors.grey.shade300,
+                    color: Colors.grey.shade200,
                   ),
                 ),
           ),

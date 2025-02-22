@@ -26,7 +26,7 @@ class _DescriptionFieldState extends State<DescriptionField> {
 
   void _extractTags() {
     String text = widget.controller.text;
-    
+
     // Extraire les hashtags
     final hashtagRegex = RegExp(r'#\w+');
     final foundHashtags = hashtagRegex.allMatches(text)
@@ -59,10 +59,11 @@ class _DescriptionFieldState extends State<DescriptionField> {
   Widget build(BuildContext context) {
     return TextField(
       controller: widget.controller,
+      textCapitalization: TextCapitalization.sentences,
       decoration: InputDecoration(
-        hintText: 'What\'s happening?',
+        hintText: 'What\'s Happening?',
         hintStyle: TextStyle(
-          color: Colors.grey.shade600,
+          color: Colors.grey.shade200,
           fontSize: 16,
         ),
         border: InputBorder.none,
@@ -74,7 +75,8 @@ class _DescriptionFieldState extends State<DescriptionField> {
       ),
       style: TextStyle(
         color: Colors.white,
-        fontSize: 16,
+        fontSize: 18,
+        //fontWeight: FontWeight.bold,
       ),
       cursorColor: Colors.blue,
       maxLines: null,
