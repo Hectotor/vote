@@ -108,13 +108,22 @@ class _BlocGridState extends State<BlocGrid> {
               ? Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.file(
-                      File(image.path),
-                      fit: BoxFit.cover,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(15.0),
+                      child: Image.file(
+                        File(image.path),
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                    Container(
-                      color: widget.imageFilters[index],
-                    ),
+                    if (widget.imageFilters[index] != Colors.transparent)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: widget.imageFilters[index],
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                      ),
                   ],
                 )
               : Center(

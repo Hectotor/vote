@@ -277,7 +277,9 @@ class _AddPageState extends State<AddPage> {
           Positioned(
             left: 0,
             right: 0,
-            bottom: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom > 20
+                ? MediaQuery.of(context).viewInsets.bottom 
+                : 0,
             child: FloatingPollButton(onPressed: _togglePoll),
           ),
         ],
