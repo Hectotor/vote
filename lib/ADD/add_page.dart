@@ -290,7 +290,7 @@ class _AddPageState extends State<AddPage> {
             top: MediaQuery.of(context).size.height / 2 - 48,
             child: Align(
               alignment: Alignment.centerRight,
-              child: FloatingPollButton(onPressed: _togglePoll),
+              child: PollButton(onPressed: _togglePoll),
             ),
           ),
           BottomAddBloc(

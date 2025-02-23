@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class FloatingPollButton extends StatelessWidget {
+class PollButton extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const FloatingPollButton({Key? key, required this.onPressed}) : super(key: key);
+  const PollButton({Key? key, required this.onPressed}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

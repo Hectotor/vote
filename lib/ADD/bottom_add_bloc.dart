@@ -19,16 +19,38 @@ class BottomAddBloc extends StatelessWidget {
     }
 
     return Positioned(
-      right: 16,
-      top: MediaQuery.of(context).size.height / 2 + 20,
-      child: FloatingActionButton(
-        mini: true,
-        backgroundColor: Colors.grey[900],
-        onPressed: onPressed,
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-          size: 20,
+      left: 0,
+      right: 0,
+      top: MediaQuery.of(context).size.height / 2 - 45,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.grey[900],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: InkWell(
+            onTap: onPressed,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.add_circle_outline,
+                  size: 20,
+                  color: Colors.grey[300],
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Add Option',
+                  style: TextStyle(
+                    color: Colors.grey[300],
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
