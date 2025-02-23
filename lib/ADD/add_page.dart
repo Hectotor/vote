@@ -280,6 +280,18 @@ class _AddPageState extends State<AddPage> {
                             numberOfBlocs: 2,
                             isEditing: _isEditing,
                           ),
+                          SizedBox(height: 20),
+                    Center(
+                      child: BottomAddBloc(
+                        showPoll: _showPoll,
+                        numberOfPollBlocs: _numberOfPollBlocs,
+                        onPressed: () {
+                          setState(() {
+                            _numberOfPollBlocs++;
+                          });
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -292,15 +304,6 @@ class _AddPageState extends State<AddPage> {
               alignment: Alignment.centerRight,
               child: PollButton(onPressed: _togglePoll),
             ),
-          ),
-          BottomAddBloc(
-            showPoll: _showPoll,
-            numberOfPollBlocs: _numberOfPollBlocs,
-            onPressed: () {
-              setState(() {
-                _numberOfPollBlocs++;
-              });
-            },
           ),
         ],
       ),
