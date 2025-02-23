@@ -260,6 +260,7 @@ class _AddPageState extends State<AddPage> {
                         });
                       },
                     ),
+                    SizedBox(height: 10),
                     _showPoll
                         ? PollGrid(
                             numberOfBlocs: 2,
@@ -280,7 +281,7 @@ class _AddPageState extends State<AddPage> {
           ),
           Positioned(
             right: 16, // Ajuste la distance du bord droit
-            top: MediaQuery.of(context).size.height / 2 - 58, // Ajuster la position verticale pour le remonter
+            top: MediaQuery.of(context).size.height / 2 - 48, // Ajuster la position verticale pour le remonter
             child: Align(
               alignment: Alignment.centerRight,
               child: FloatingPollButton(onPressed: _togglePoll),

@@ -153,7 +153,7 @@ class _PollGridState extends State<PollGrid> {
                   return GridView.builder(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 1.0,
+                      childAspectRatio: (constraints.maxWidth - 8.0) / (2 * 145.0),
                       crossAxisSpacing: 8.0,
                       mainAxisSpacing: 8.0,
                     ),

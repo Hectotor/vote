@@ -78,7 +78,7 @@ class _DescriptionFieldState extends State<DescriptionField> {
         fontSize: 18,
         //fontWeight: FontWeight.bold,
       ),
-      cursorColor: Colors.blue,
+      cursorColor: Colors.white,
       maxLines: null,
       maxLength: 280,
       keyboardType: TextInputType.multiline,
