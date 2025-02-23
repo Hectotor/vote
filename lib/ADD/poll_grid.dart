@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class PollGrid extends StatefulWidget {
   final int numberOfBlocs;
   final List<TextEditingController> textControllers;
+  final Function(int) onBlocRemoved;
 
   const PollGrid({
     Key? key,
     required this.numberOfBlocs,
     required this.textControllers,
+    required this.onBlocRemoved,
   }) : super(key: key);
 
   static double getBlockRatio(BuildContext context) {
@@ -35,11 +37,6 @@ class _PollGridState extends State<PollGrid> {
     '🎸', // Guitare
   ];
 
-  void _addNewOption() {
-    setState(() {
-      _textControllers.add(TextEditingController());
-    });
-  }
 
   @override
   void initState() {
@@ -48,6 +45,16 @@ class _PollGridState extends State<PollGrid> {
       widget.numberOfBlocs,
       (index) => TextEditingController(),
     );
+  }
+
+  @override
+  void didUpdateWidget(PollGrid oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.numberOfBlocs > oldWidget.numberOfBlocs) {
+      setState(() {
+        _textControllers.add(TextEditingController());
+      });
+    }
   }
 
   @override
@@ -130,6 +137,7 @@ class _PollGridState extends State<PollGrid> {
                 onPressed: () {
                   setState(() {
                     _textControllers.removeAt(index);
+                    widget.onBlocRemoved(index);
                   });
                 },
               ),
@@ -141,104 +149,63 @@ class _PollGridState extends State<PollGrid> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 370,
-      child: Column(
-        children: [
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                if (_textControllers.length <= 2) {
-                  // Pour les 2 premiers blocs, utiliser GridView normal
-                  return GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: (constraints.maxWidth - 8.0) / (2 * 145.0),
-                      crossAxisSpacing: 8.0,
-                      mainAxisSpacing: 8.0,
-                    ),
-                    itemCount: _textControllers.length,
-                    itemBuilder: (context, index) => _buildBloc(index),
-                  );
-                } else {
-                  // Pour 3 ou 4 blocs, utiliser une disposition personnalisée
-                  return Column(
-                    children: [
-                      // Première rangée (blocs 1 et 2)
-                      Row(
-                        children: [
-                          Expanded(child: _buildBloc(0)),
-                          SizedBox(width: 8),
-                          Expanded(child: _buildBloc(1)),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      // Deuxième rangée (blocs 3 et 4)
-                      if (_textControllers.length == 3)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: (constraints.maxWidth - 8) / 2,
-                              child: _buildBloc(2),
-                            ),
-                          ],
-                        )
-                      else
-                        Row(
-                          children: [
-                            Expanded(child: _buildBloc(2)),
-                            SizedBox(width: 8),
-                            Expanded(child: _buildBloc(3)),
-                          ],
-                        ),
-                    ],
-                  );
-                }
-              },
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (_textControllers.length <= 2) {
+          // Pour les 2 premiers blocs, utiliser GridView normal
+          return SizedBox(
+            height: 145.0,
+            child: GridView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: (constraints.maxWidth - 8.0) / (2 * 145.0),
+                crossAxisSpacing: 8.0,
+                mainAxisSpacing: 8.0,
+              ),
+              itemCount: _textControllers.length,
+              itemBuilder: (context, index) => _buildBloc(index),
             ),
-          ),
-          // Bouton d'ajout
-          if (_textControllers.length < 4)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Container(
-                width: PollGrid.getBlockRatio(context) * 2,
-                child: ElevatedButton(
-                  onPressed: _addNewOption,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                    shadowColor: Colors.black.withOpacity(0.3),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+          );
+        } else {
+          // Pour 3 ou 4 blocs, utiliser une disposition personnalisée
+          return SizedBox(
+            height: _textControllers.length == 3 ? 298.0 : 298.0, // 145 * 2 + 8 (spacing)
+            child: Column(
+              children: [
+                // Première rangée (blocs 1 et 2)
+                Row(
+                  children: [
+                    Expanded(child: _buildBloc(0)),
+                    SizedBox(width: 8),
+                    Expanded(child: _buildBloc(1)),
+                  ],
+                ),
+                SizedBox(height: 8),
+                // Deuxième rangée (blocs 3 et 4)
+                if (_textControllers.length == 3)
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.add_circle_outline,
-                        size: 20,
-                        color: Colors.grey[300],
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Add Option',
-                        style: TextStyle(
-                          color: Colors.grey[300],
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      SizedBox(
+                        width: (constraints.maxWidth - 8) / 2,
+                        child: _buildBloc(2),
                       ),
                     ],
+                  )
+                else if (_textControllers.length == 4)
+                  Row(
+                    children: [
+                      Expanded(child: _buildBloc(2)),
+                      SizedBox(width: 8),
+                      Expanded(child: _buildBloc(3)),
+                    ],
                   ),
-                ),
-              ),
+              ],
             ),
-        ],
-      ),
+          );
+        }
+      },
     );
   }
 }

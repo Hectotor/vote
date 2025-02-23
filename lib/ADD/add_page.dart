@@ -11,6 +11,7 @@ import 'image.dart'; // Import the new image.dart file
 import '../services/firestore_service.dart';
 import 'poll_button.dart'; // Importer le PollButton
 import 'poll_grid.dart'; // Importer le PollGrid
+import 'bottom_add_bloc.dart'; // Ajout de l'import
 
 class Post {
   final User user;
@@ -68,6 +69,8 @@ class _AddPageState extends State<AddPage> {
   final List<Widget?> _textWidgets = List.filled(2, null);
   final List<bool> _isEditing = List.filled(2, false);
   bool _showPoll = false;
+  int _numberOfPollBlocs = 2;
+  final List<TextEditingController> textControllers = List.generate(4, (index) => TextEditingController());
   List<String> _hashtags = [];
   List<String> _mentions = [];
 
@@ -179,8 +182,6 @@ class _AddPageState extends State<AddPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<TextEditingController> textControllers = List.generate(2, (index) => TextEditingController());
-
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -263,8 +264,13 @@ class _AddPageState extends State<AddPage> {
                     SizedBox(height: 10),
                     _showPoll
                         ? PollGrid(
-                            numberOfBlocs: 2,
+                            numberOfBlocs: _numberOfPollBlocs,
                             textControllers: textControllers,
+                            onBlocRemoved: (index) {
+                              setState(() {
+                                _numberOfPollBlocs--;
+                              });
+                            },
                           )
                         : BlocGrid(
                             images: _images,
@@ -280,12 +286,21 @@ class _AddPageState extends State<AddPage> {
             ),
           ),
           Positioned(
-            right: 16, // Ajuste la distance du bord droit
-            top: MediaQuery.of(context).size.height / 2 - 48, // Ajuster la position verticale pour le remonter
+            right: 16,
+            top: MediaQuery.of(context).size.height / 2 - 48,
             child: Align(
               alignment: Alignment.centerRight,
               child: FloatingPollButton(onPressed: _togglePoll),
             ),
+          ),
+          BottomAddBloc(
+            showPoll: _showPoll,
+            numberOfPollBlocs: _numberOfPollBlocs,
+            onPressed: () {
+              setState(() {
+                _numberOfPollBlocs++;
+              });
+            },
           ),
         ],
       ),
