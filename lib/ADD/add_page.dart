@@ -179,6 +179,8 @@ class _AddPageState extends State<AddPage> {
 
   @override
   Widget build(BuildContext context) {
+    List<TextEditingController> textControllers = List.generate(2, (index) => TextEditingController());
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -259,7 +261,10 @@ class _AddPageState extends State<AddPage> {
                       },
                     ),
                     _showPoll
-                        ? const PollGrid()
+                        ? PollGrid(
+                            numberOfBlocs: 2,
+                            textControllers: textControllers,
+                          )
                         : BlocGrid(
                             images: _images,
                             imageFilters: _imageFilters,
