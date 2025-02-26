@@ -7,12 +7,15 @@ class PollButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onPressed,
-      icon: Icon(Icons.poll),
-      splashRadius: 24, // Optionnel : ajuster le rayon de l'animation de splash
-      style: IconButton.styleFrom(
-        side: BorderSide.none,
+    return Align(
+      alignment: Alignment.centerRight,
+      child: IconButton(
+        onPressed: onPressed,
+        icon: Icon(Icons.poll),
+        splashRadius: 24, // Optionnel : ajuster le rayon de l'animation de splash
+        style: IconButton.styleFrom(
+          side: BorderSide.none,
+        ),
       ),
     );
   }

@@ -37,7 +37,7 @@ class AddOption extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
         ),
         constraints: BoxConstraints(maxWidth: 300),
-        padding: EdgeInsets.symmetric(vertical: 16),
+        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -47,12 +47,14 @@ class AddOption extends StatelessWidget {
               color: Colors.purple[300]!,
               onTap: onAddPhoto,
             ),
+            SizedBox(height: 10),
             _buildModernTile(
               icon: Icons.camera_alt,
               title: 'Prendre une photo',
               color: Colors.green[300]!,
               onTap: onTakePhoto,
             ),
+            SizedBox(height: 10),
             if (hasImage) 
               _buildModernTile(
                 icon: Icons.text_fields,
@@ -72,34 +74,38 @@ class AddOption extends StatelessWidget {
     required Color color,
     required VoidCallback? onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color.fromRGBO(0, 0, 0, 0),
+        foregroundColor: Colors.white,
+        elevation: 0,
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 24),
+        side: BorderSide.none,
+      ),
+      onPressed: onTap,
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey[500]),
-          ],
-        ),
+          ),
+          Icon(Icons.chevron_right, color: Colors.grey[500]),
+        ],
       ),
     );
   }

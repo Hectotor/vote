@@ -24,10 +24,10 @@ class _PollGridState extends State<PollGrid> {
   List<TextEditingController> _textControllers = [];
 
   final List<Color> vibrantGradients = [
-    Colors.grey[900]!,
-    Colors.grey[900]!,
-    Colors.grey[900]!,
-    Colors.grey[900]!
+Color(0xFF3a3d40),
+Color(0xFF3a3d40),
+Color(0xFF3a3d40),
+Color(0xFF3a3d40)
   ];
 
   final List<String> optionEmojis = [
@@ -112,6 +112,7 @@ class _PollGridState extends State<PollGrid> {
                     ),
                   ],
                 ),
+                textInputAction: TextInputAction.done,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
                   hintText: 'Option ${index + 1} ${optionEmojis[index % optionEmojis.length]}',
@@ -122,7 +123,7 @@ class _PollGridState extends State<PollGrid> {
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
-                maxLength: 30,
+                maxLength: 20,
                 maxLines: null,
                 buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
               ),

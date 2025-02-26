@@ -183,7 +183,7 @@ class _AddPageState extends State<AddPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         toolbarHeight: 50,
         backgroundColor: Colors.transparent,
@@ -282,27 +282,26 @@ class _AddPageState extends State<AddPage> {
                           ),
                           SizedBox(height: 20),
                     Center(
-                      child: BottomAddBloc(
-                        showPoll: _showPoll,
-                        numberOfPollBlocs: _numberOfPollBlocs,
-                        onPressed: () {
-                          setState(() {
-                            _numberOfPollBlocs++;
-                          });
-                        },
+                      child: Column(
+                        children: [
+                          BottomAddBloc(
+                            showPoll: _showPoll,
+                            numberOfPollBlocs: _numberOfPollBlocs,
+                            onPressed: () {
+                              setState(() {
+                                _numberOfPollBlocs++;
+                              });
+                            },
+                          ),
+                          PollButton(
+                            onPressed: _togglePoll,
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            right: 16,
-            top: MediaQuery.of(context).size.height / 2 - 48,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: PollButton(onPressed: _togglePoll),
             ),
           ),
         ],

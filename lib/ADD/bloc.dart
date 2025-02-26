@@ -54,10 +54,10 @@ class _BlocGridState extends State<BlocGrid> {
   }
 
   // Palette de couleurs vibrantes et modernes
-  final List<Color> vibrantGradients = [
-  Colors.grey[900]!,
-  Colors.grey[900]!
-  ];
+final List<Color> vibrantGradients = [
+  Color(0xFF3a3d40), // Gris foncé
+  Color(0xFF3a3d40),
+];
 
   // Emojis amusants pour chaque option
   final List<String> optionEmojis = [
@@ -132,20 +132,6 @@ class _BlocGridState extends State<BlocGrid> {
                   ),
                 ),
           ),
-          if (image == null)
-            Positioned(
-              bottom: 40,
-              left: 0,
-              right: 0,
-              child: Text(
-                'Option ${index + 1} ${optionEmojis[index % optionEmojis.length]}',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ),
           if (widget.isEditing[index])
             Positioned(
               left: 0,
@@ -174,6 +160,7 @@ class _BlocGridState extends State<BlocGrid> {
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
+                    fontStyle: FontStyle.italic,
                   ),
                   decoration: const InputDecoration(
                     border: InputBorder.none,
@@ -181,6 +168,7 @@ class _BlocGridState extends State<BlocGrid> {
                   ),
                   cursorColor: Colors.white,
                   keyboardType: TextInputType.multiline,
+                  // maxLength: 30,
                   maxLines: null,
                   textInputAction: TextInputAction.done,
                   onSubmitted: (value) {
@@ -196,6 +184,7 @@ class _BlocGridState extends State<BlocGrid> {
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
+                            fontStyle: FontStyle.italic,
                           ),
                           textAlign: TextAlign.center,
                           overflow: TextOverflow.visible,
