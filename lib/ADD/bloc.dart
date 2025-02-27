@@ -55,8 +55,8 @@ class _BlocGridState extends State<BlocGrid> {
 
   // Palette de couleurs vibrantes et modernes
 final List<Color> vibrantGradients = [
-  Color(0xFF3a3d40), // Gris foncé
-  Color(0xFF3a3d40),
+  Color(0xFF2C2730), // Gris foncé
+  Color(0xFF2C2730),
 ];
 
   // Emojis amusants pour chaque option

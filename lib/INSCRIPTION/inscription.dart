@@ -302,23 +302,38 @@ class _InscriptionPageState extends State<InscriptionPage> {
                           ? _register
                           : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        disabledBackgroundColor: Colors.grey[800],
-                        disabledForegroundColor: Colors.grey[600],
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
                         elevation: 0,
+                        padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: Text(
-                        'S\'inscrire',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: _isFormValid() && _pseudoErrorMessage == null
-                              ? Colors.black
-                              : Colors.grey[400],
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.deepPurple[600]!, 
+                              Colors.purpleAccent[700]!
+                            ],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                        ),
+                        child: Container(
+                          width: double.infinity,
+                          height: 56,
+                          alignment: Alignment.center,
+                          child: Text(
+                            'S\'inscrire',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -365,7 +380,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
         ),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.grey[900],
+        fillColor: Color(0xFF2C2431),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,

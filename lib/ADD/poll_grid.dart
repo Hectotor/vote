@@ -24,17 +24,17 @@ class _PollGridState extends State<PollGrid> {
   List<TextEditingController> _textControllers = [];
 
   final List<Color> vibrantGradients = [
-Color(0xFF3a3d40),
-Color(0xFF3a3d40),
-Color(0xFF3a3d40),
-Color(0xFF3a3d40)
+Color(0xFF2C2730),
+Color(0xFF2C2730),
+Color(0xFF2C2730),
+Color(0xFF2C2730)
   ];
 
   final List<String> optionEmojis = [
-    '🎉', // Célébration
-    '🚀', // Fusée
-    '🌈', // Arc-en-ciel
-    '🎸', // Guitare
+    '', // Célébration
+    '', // Fusée
+    '', // Arc-en-ciel
+    '', // Guitare
   ];
 
 
@@ -102,7 +102,7 @@ Color(0xFF3a3d40)
                 textAlign: TextAlign.center, // Centrer le texte
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   shadows: [
                     Shadow(

@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         splashColor: Colors.transparent,
         brightness: Brightness.dark,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1C1C1C),
+          backgroundColor: Color(0xFF151019),
           elevation: 0,
           iconTheme: IconThemeData(color: Colors.white),
           titleTextStyle: TextStyle(
@@ -39,17 +39,17 @@ class MyApp extends StatelessWidget {
         colorScheme: const ColorScheme.dark(
           primary: Colors.white,
           secondary: Colors.white,
-          surface: Color(0xFF1C1C1C),
-          background: Color(0xFF1C1C1C),
+          surface: Color(0xFF151019),
+          background: Color(0xFF151019),
           error: Colors.white,
-          onPrimary: Color(0xFF1C1C1C),
-          onSecondary: Color(0xFF1C1C1C),
+          onPrimary: Color(0xFF151019),
+          onSecondary: Color(0xFF151019),
           onSurface: Colors.white,
           onBackground: Colors.white,
-          onError: Color(0xFF1C1C1C),
+          onError: Color(0xFF151019),
         ),
         cardTheme: const CardTheme(
-          color: Color(0xFF1C1C1C),
+          color: Color(0xFF151019),
           elevation: 4,
         ),
         textTheme: const TextTheme(
@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
         iconTheme: const IconThemeData(
           color: Colors.white,
         ),
-        scaffoldBackgroundColor: Color(0xFF1C1C1C),
+        scaffoldBackgroundColor: Color(0xFF151019),
       ),
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: const [

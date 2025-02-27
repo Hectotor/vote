@@ -19,47 +19,41 @@ class AddOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Color(0xFF121212),
-      elevation: 8,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF121212),
-              Color(0xFF0A0A0A),
-            ],
-          ),
+          color: Color(0xFF151019),
           borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.4),
+              blurRadius: 30,
+              offset: Offset(0, 15),
+            )
+          ],
         ),
-        constraints: BoxConstraints(maxWidth: 300),
-        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        padding: EdgeInsets.symmetric(vertical: 24, horizontal: 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildModernTile(
-              icon: Icons.image,
               title: 'Choisir une image',
-              color: Colors.purple[300]!,
+              icon: Icons.image_outlined,
               onTap: onAddPhoto,
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 16),
             _buildModernTile(
-              icon: Icons.camera_alt,
               title: 'Prendre une photo',
-              color: Colors.green[300]!,
+              icon: Icons.camera_alt_outlined,
               onTap: onTakePhoto,
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 16),
             if (hasImage) 
               _buildModernTile(
-                icon: Icons.text_fields,
                 title: 'Ajouter un texte',
-                color: Colors.blue[300]!,
+                icon: Icons.text_fields_outlined,
                 onTap: onAddText,
               ),
           ],
@@ -69,43 +63,56 @@ class AddOption extends StatelessWidget {
   }
 
   Widget _buildModernTile({
-    required IconData icon,
     required String title,
-    required Color color,
+    required IconData icon,
     required VoidCallback? onTap,
   }) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color.fromRGBO(0, 0, 0, 0),
-        foregroundColor: Colors.white,
-        elevation: 0,
-        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        side: BorderSide.none,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
       ),
-      onPressed: onTap,
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      icon,
+                      color: Colors.white.withOpacity(1),
+                      size: 24,
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(1),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: Colors.white.withOpacity(0.5),
+                  size: 24,
+                ),
+              ],
             ),
-            child: Icon(icon, color: color, size: 24),
           ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          Icon(Icons.chevron_right, color: Colors.grey[500]),
-        ],
+        ),
       ),
     );
   }

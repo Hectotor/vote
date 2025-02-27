@@ -31,6 +31,10 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
     Colors.amber.withOpacity(0.3),
     Colors.pink.withOpacity(0.3),
     Colors.teal.withOpacity(0.3),
+    Colors.orange.withOpacity(0.3),
+    Colors.pink.shade200.withOpacity(0.3),
+    Colors.indigo.withOpacity(0.3),
+    Colors.lime.withOpacity(0.3),
   ];
 
   @override
@@ -42,12 +46,12 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xFF151019),  
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(Icons.close, color: Colors.white70),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
@@ -57,7 +61,7 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
               Navigator.of(context).pop();
             },
             child:
-                const Text('Appliquer', style: TextStyle(color: Colors.white)),
+                const Text('Appliquer', style: TextStyle(color: Color(0xFF3498DB))),  
           ),
         ],
       ),
@@ -83,7 +87,7 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
           ),
           Container(
             height: 120,
-            color: Colors.black54,
+            color: const Color(0xFF151019).withOpacity(0.8),  
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
@@ -101,7 +105,7 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: _selectedFilter == _filterColors[index]
-                            ? Colors.white
+                            ? const Color(0xFFFFFFFF)  
                             : Colors.transparent,
                         width: 2,
                       ),
@@ -156,7 +160,7 @@ Future<void> addPhoto(int index, List<XFile?> images, Function setState,
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Recadrer l\'image',
-            toolbarColor: const Color(0xFF1D1D2C),
+            toolbarColor: const Color(0xFF3498DB),  // Couleur modifiée
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: true,
@@ -205,10 +209,11 @@ Future<void> takePhoto(int index, List<XFile?> images, Function setState,
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: 'Recadrer l\'image',
-          toolbarColor: const Color(0xFF1D1D2C),
+          toolbarColor: const Color(0xFF151019),  // Couleur demandée
           toolbarWidgetColor: Colors.white,
           initAspectRatio: CropAspectRatioPreset.original,
           lockAspectRatio: true,
+          activeControlsWidgetColor: Colors.white,  
         ),
         IOSUiSettings(
           title: 'Recadrer l\'image',

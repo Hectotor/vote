@@ -217,23 +217,38 @@ class _ConnexionPageState extends State<ConnexionPage> {
                     child: ElevatedButton(
                       onPressed: _isFormValid() ? _login : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        disabledBackgroundColor: Colors.grey[800],
-                        disabledForegroundColor: Colors.grey[600],
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
                         elevation: 0,
+                        padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: Text(
-                        'Se connecter',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: _isFormValid() 
-                              ? Colors.black 
-                              : Colors.grey[400],
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.deepPurple[600]!, 
+                              Colors.purpleAccent[700]!
+                            ],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                        ),
+                        child: Container(
+                          width: double.infinity,
+                          height: 56,
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Se connecter',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -288,13 +303,12 @@ class _ConnexionPageState extends State<ConnexionPage> {
   }) {
     return TextFormField(
       controller: controller,
-      obscureText: obscureText,
       validator: validator,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 16,
-      ),
+      obscureText: obscureText,
+      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
+        fillColor: Color(0xFF2C2431),  
+        filled: true,
         labelText: label,
         labelStyle: TextStyle(
           color: Colors.grey[400],
@@ -306,8 +320,6 @@ class _ConnexionPageState extends State<ConnexionPage> {
           size: 22,
         ),
         suffixIcon: suffixIcon,
-        filled: true,
-        fillColor: Colors.grey[900],
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
