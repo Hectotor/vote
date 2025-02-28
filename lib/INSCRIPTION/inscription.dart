@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:vote_app/main.dart';
+import 'package:votely/main.dart';
 
 class InscriptionPage extends StatefulWidget {
   const InscriptionPage({super.key});
@@ -21,6 +21,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
   String? _pseudoErrorMessage;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  bool _inscriptionTerminee = false;
 
   @override
   void initState() {
@@ -65,7 +66,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
 
     if (querySnapshot.docs.isNotEmpty) {
       setState(() {
-        _pseudoErrorMessage = 'Ce pseudo existe déjà';
+        _pseudoErrorMessage = 'Ce pseudo est déjà utilisé';
       });
     } else {
       setState(() {
@@ -74,24 +75,33 @@ class _InscriptionPageState extends State<InscriptionPage> {
     }
   }
 
-  void _register() async {
+  Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
       try {
+        // Vérifier si l'e-mail existe déjà
+        List<String> signInMethods = await FirebaseAuth.instance
+            .fetchSignInMethodsForEmail(_emailController.text);
+        
+        if (signInMethods.isNotEmpty) {
+          setState(() {
+            _errorMessage = "Cette adresse e-mail est déjà utilisée";
+          });
+          return;
+        }
+
         UserCredential userCredential =
             await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
         );
 
-        // Send email verification
+        // Mettre à jour le profil utilisateur avec le pseudo
+        await userCredential.user!.updateProfile(
+          displayName: _pseudoController.text,
+        );
+
         await userCredential.user!.sendEmailVerification();
 
-        setState(() {
-          _errorMessage =
-              'Un email de vérification a été envoyé. Veuillez vérifier votre email.';
-        });
-
-        // Wait for email verification
         FirebaseAuth.instance.authStateChanges().listen((User? user) async {
           if (user != null && user.emailVerified) {
             await FirebaseFirestore.instance
@@ -105,6 +115,9 @@ class _InscriptionPageState extends State<InscriptionPage> {
             Navigator.pop(context);
           }
         });
+        setState(() {
+          _inscriptionTerminee = true;
+        });
       } on FirebaseAuthException catch (e) {
         setState(() {
           _errorMessage = e.message;
@@ -113,23 +126,9 @@ class _InscriptionPageState extends State<InscriptionPage> {
     }
   }
 
-  void _showErrorMessage(String message) {
-    setState(() {
-      _errorMessage = message;
-    });
-    Future.delayed(const Duration(seconds: 3), () {
-      setState(() {
-        _errorMessage = null;
-      });
-    });
-  }
-
   String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Veuillez entrer une adresse e-mail';
-    }
-    if (!value.contains('@')) {
-      return 'Veuillez entrer une adresse e-mail valide';
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+      return 'Entre un e-mail valide.';
     }
     return null;
   }
@@ -159,7 +158,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
                 children: [
                   const SizedBox(height: 20),
                   Text(
-                    'Créer un compte',
+                    'Inscris-toi !',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w600,
@@ -254,8 +253,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     ),
                     validator: (value) {
                       if (value != _passwordController.text) {
-                        _showErrorMessage('Les mots de passe ne correspondent pas');
-                        return '';
+                        return 'Les mots de passe ne correspondent pas';
                       }
                       return null;
                     },
@@ -331,12 +329,25 @@ class _InscriptionPageState extends State<InscriptionPage> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: _isFormValid() ? Colors.white : Color(0xFF151019),
                             ),
                           ),
                         ),
                       ),
                     ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: _inscriptionTerminee 
+                      ? Text(
+                          "🚀 Vérifie ta boite mail ! Un lien t'attend pour confirmer ton compte.",
+                          style: TextStyle(
+                            color: Colors.grey[100],
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        )
+                      : Container(), // N'affiche rien si l'inscription n'est pas terminée
                   ),
                   const SizedBox(height: 24),
                 ],
@@ -360,9 +371,18 @@ class _InscriptionPageState extends State<InscriptionPage> {
       controller: controller,
       obscureText: obscureText,
       validator: validator,
-      textCapitalization: label == 'Pseudo'
-          ? TextCapitalization.sentences
-          : TextCapitalization.none,
+      textCapitalization: TextCapitalization.none,
+      onChanged: (value) {
+        if (label == 'Pseudo' || label == 'Adresse e-mail') {
+          final lowercase = value.toLowerCase();
+          if (value != lowercase) {
+            controller.value = controller.value.copyWith(
+              text: lowercase,
+              selection: TextSelection.collapsed(offset: lowercase.length),
+            );
+          }
+        }
+      },
       style: const TextStyle(
         color: Colors.white,
         fontSize: 16,

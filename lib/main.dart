@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:vote_app/INSCRIPTION/connexion.dart';
+import 'package:votely/INSCRIPTION/connexion.dart';
 //import 'package:vote_app/INSCRIPTION/inscription.dart';
 
 //import 'navBar.dart';

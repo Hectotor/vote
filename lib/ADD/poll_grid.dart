@@ -24,10 +24,10 @@ class _PollGridState extends State<PollGrid> {
   List<TextEditingController> _textControllers = [];
 
   final List<Color> vibrantGradients = [
-Color(0xFF2C2730),
-Color(0xFF2C2730),
-Color(0xFF2C2730),
-Color(0xFF2C2730)
+Color(0xFF352F3A),
+Color(0xFF352F3A),
+Color(0xFF352F3A),
+Color(0xFF352F3A)
   ];
 
   final List<String> optionEmojis = [

@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:vote_app/navBar.dart';
+import 'package:votely/navBar.dart';
 import 'description.dart';
 import 'bloc.dart';
 import 'addoption.dart'; // Importer le nouveau fichier
@@ -8,10 +8,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; // Import localization package
 import 'dart:async'; // Import the dart:async package for Timer
 import 'image.dart'; // Import the new image.dart file
-import '../services/firestore_service.dart';
 import 'poll_button.dart'; // Importer le PollButton
 import 'poll_grid.dart'; // Importer le PollGrid
 import 'bottom_add_bloc.dart'; // Ajout de l'import
+import 'publish.dart';
 
 class Post {
   final User user;
@@ -60,7 +60,7 @@ class AddPage extends StatefulWidget {
 }
 
 class _AddPageState extends State<AddPage> {
-  final FirestoreService _firestoreService = FirestoreService();
+  final PublishService _publishService = PublishService();
   final TextEditingController _controller = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   Timer? _timer;
@@ -127,48 +127,31 @@ class _AddPageState extends State<AddPage> {
     });
   }
 
-  Future<void> _publishPost() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+  Future<void> _publishContent() async {
+    final description = _descriptionController.text;
+    
+    final success = await _publishService.publishContent(
+      description: description,
+      isPoll: _showPoll,
+      pollOptions: textControllers.map((c) => c.text).toList(),
+      blocContent: _showPoll ? null : _textWidgets.whereType<Widget>().toList(),
+      context: context,
+    );
 
-    try {
-      final texts = _textWidgets.map((widget) {
-        if (widget == null) return null;
-        return {
-          'content': widget.toString(),
-          'fontSize': 16.0,
-        };
-      }).toList();
+    if (success) {
+      // Réinitialiser les champs
+      _descriptionController.clear();
+      for (var controller in textControllers) {
+        controller.clear();
+      }
+      setState(() {
+        _showPoll = false;
+        _textWidgets.fillRange(0, _textWidgets.length, null);
+      });
 
-      final post = Post(
-        user: user,
-        images: _images,
-        texts: texts.whereType<Map<String, dynamic>>().toList(),
-        filters: _imageFilters,
-        description: _descriptionController.text,
-        hashtags: _hashtags,
-        mentions: _mentions,
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Publication réussie!')),
       );
-
-      await _firestoreService.createPost(
-        userId: user.uid,
-        title: _controller.text,
-        images: _images,
-        texts: texts.whereType<Map<String, dynamic>>().toList(),
-        filters: _imageFilters,
-        description: _descriptionController.text,
-        hashtags: _hashtags,
-        mentions: _mentions,
-      );
-
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const NavBar()),
-      );
-    } catch (e) {
-      print('Erreur lors de la publication: $e');
-      // Gérer l'erreur...
     }
   }
 
@@ -211,7 +194,7 @@ class _AddPageState extends State<AddPage> {
           Padding(
             padding: const EdgeInsets.only(right: 10.0),
             child: ElevatedButton(
-              onPressed: _publishPost,
+              onPressed: _publishContent,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,

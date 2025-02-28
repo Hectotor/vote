@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Permettre la lecture des hashtags à tout le monde
+    match /hashtags/{hashtag} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Permettre la lecture des mentions à tout le monde
+    match /mentions/{mention} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Règles pour les posts
+    match /posts/{postId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

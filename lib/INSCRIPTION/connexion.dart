@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:vote_app/INSCRIPTION/inscription.dart';
-import 'package:vote_app/main.dart';
-import 'package:vote_app/navBar.dart'; // Add this import
+import 'package:votely/INSCRIPTION/inscription.dart';
+import 'package:votely/main.dart';
+import 'package:votely/navBar.dart'; // Add this import
 
 class ConnexionPage extends StatefulWidget {
   const ConnexionPage({super.key});
@@ -55,11 +55,8 @@ class _ConnexionPageState extends State<ConnexionPage> {
   }
 
   String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Veuillez entrer une adresse e-mail';
-    }
-    if (!value.contains('@')) {
-      return 'Veuillez entrer une adresse e-mail valide';
+    if (!value!.contains('@')) {
+      return 'Entre une adresse e-mail valide';
     }
     return null;
   }
@@ -75,11 +72,10 @@ class _ConnexionPageState extends State<ConnexionPage> {
           context,
           MaterialPageRoute(builder: (context) => const NavBar()),
         );
-      } on FirebaseAuthException catch (e) {
+      } on FirebaseAuthException catch (_) {
         _showErrorMessage(
-            e.code == 'user-not-found' || e.code == 'wrong-password'
-                ? 'Adresse e-mail ou mot de passe invalide.'
-                : e.message!);
+            'Oups ! E-mail ou mot de passe incorrect.'
+        );
       }
     }
   }
@@ -87,15 +83,25 @@ class _ConnexionPageState extends State<ConnexionPage> {
   void _resetPassword() async {
     if (_emailController.text.isNotEmpty) {
       try {
-        await FirebaseAuth.instance.sendPasswordResetEmail(
-          email: _emailController.text,
+        // Vérifier d'abord si l'utilisateur existe
+        List<String> signInMethods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(_emailController.text);
+        
+        if (signInMethods.isNotEmpty) {
+          // L'utilisateur existe, envoyer l'email de réinitialisation
+          await FirebaseAuth.instance.sendPasswordResetEmail(
+            email: _emailController.text,
+          );
+          _showErrorMessage('Un email de réinitialisation a été envoyé.');
+        } else {
+          _showErrorMessage('Aucun compte associé à cet email.');
+        }
+      } on FirebaseAuthException catch (_) {
+        _showErrorMessage(
+          'Entre une adresse e-mail valide.' 
         );
-        _showErrorMessage('Un email de réinitialisation a été envoyé.');
-      } on FirebaseAuthException catch (e) {
-        _showErrorMessage(e.message!);
       }
     } else {
-      _showErrorMessage('Veuillez entrer votre adresse e-mail.');
+      _showErrorMessage('Entre ton e-mail.');
     }
   }
 
@@ -127,7 +133,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
                 children: [
                   const SizedBox(height: 20),
                   Text(
-                    'Connectez-vous',
+                    'Se connecter',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w600,
@@ -246,7 +252,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: _isFormValid() ? Colors.white : Color(0xFF151019),
                             ),
                           ),
                         ),
@@ -305,6 +311,17 @@ class _ConnexionPageState extends State<ConnexionPage> {
       controller: controller,
       validator: validator,
       obscureText: obscureText,
+      onChanged: (value) {
+        if (label == 'Adresse e-mail') {
+          final lowercase = value.toLowerCase();
+          if (value != lowercase) {
+            controller.value = controller.value.copyWith(
+              text: lowercase,
+              selection: TextSelection.collapsed(offset: lowercase.length),
+            );
+          }
+        }
+      },
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         fillColor: Color(0xFF2C2431),  
