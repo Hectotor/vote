@@ -163,6 +163,17 @@ class _AddPageState extends State<AddPage> {
     );
   }
 
+  bool _canPublish() {
+    // Compter le nombre d'images non nulles
+    int imageCount = _images.where((image) => image != null).length;
+    
+    // Compter le nombre de textes non vides
+    int textCount = textControllers.where((controller) => controller.text.isNotEmpty).length;
+    
+    // Retourner true si 2 images ou au moins 2 textes
+    return imageCount == 2 || textCount >= 2;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -194,13 +205,13 @@ class _AddPageState extends State<AddPage> {
           Padding(
             padding: const EdgeInsets.only(right: 10.0),
             child: ElevatedButton(
-              onPressed: _publishContent,
+              onPressed: _canPublish() ? _publishContent : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
-                foregroundColor: Colors.white,
+                foregroundColor: _canPublish() ? Colors.white : Colors.grey,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(color: Colors.white70),
+                  side: BorderSide(color: _canPublish() ? Colors.white : Colors.grey),
                 ),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
