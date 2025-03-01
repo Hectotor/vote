@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'texte.dart';
 
 class PollGrid extends StatefulWidget {
   final int numberOfBlocs;
@@ -112,78 +113,14 @@ class _PollGridState extends State<PollGrid> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: ClipRRect(
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(15),
-                bottomRight: Radius.circular(15),
-              ),
-              child: _isTextVisible[index] ? Container(
-                decoration: _textControllers[index].text.isNotEmpty ? BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.0),
-                      Colors.black.withOpacity(0.8), 
-                    ],
-                  ),
-                ) : null,
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: _textControllers[index],
-                  autofocus: true,
-                  textAlign: TextAlign.center,
-                  textCapitalization: TextCapitalization.sentences,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  cursorColor: Colors.white,
-                  keyboardType: TextInputType.multiline,
-                  maxLines: null,
-                  textInputAction: TextInputAction.done,
-                  onChanged: (value) {
-                    setState(() {
-                      // This will trigger a rebuild when text changes
-                    });
-                  },
-                  onSubmitted: (value) {
-                    setState(() {
-                      _isTextVisible[index] = true;
-                    });
-                  },
-                ),
-              ) : TextField(
-                controller: _textControllers[index],
-                autofocus: true,
-                textAlign: TextAlign.center,
-                textCapitalization: TextCapitalization.sentences,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                  fontStyle: FontStyle.italic,
-                ),
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                cursorColor: Colors.white,
-                keyboardType: TextInputType.multiline,
-                maxLines: null,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (value) {
-                  setState(() {
-                    _isTextVisible[index] = true;
-                  });
-                },
-              ),
+            child: TexteWidget(
+              controller: _textControllers[index],
+              isVisible: _isTextVisible[index],
+              onVisibilityChanged: (bool visible) {
+                setState(() {
+                  _isTextVisible[index] = visible;
+                });
+              },
             ),
           ),
           if (index >= 2) // Pour les blocs 3 et 4

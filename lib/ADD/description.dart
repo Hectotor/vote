@@ -197,27 +197,24 @@ class _DescriptionFieldState extends State<DescriptionField> {
       link: _layerLink,
       child: TextField(
         controller: widget.controller,
+        autofocus: true,
         textCapitalization: TextCapitalization.sentences,
         decoration: InputDecoration(
-          hintText: 'What\'s Happening?',
+          hintText: 'Ajoute une description...',
           hintStyle: TextStyle(
-            color: Colors.grey.shade200,
-            fontSize: 16,
+            color: Colors.white.withOpacity(0.5),
+            fontSize: 14,
+            fontStyle: FontStyle.italic,
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 0,
-            vertical: 12,
-          ),
-          counterText: '',
+          contentPadding: EdgeInsets.zero,
         ),
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.white,
-          fontSize: 18,
+          fontSize: 14,
         ),
         cursorColor: Colors.white,
         maxLines: null,
-        maxLength: 280,
         keyboardType: TextInputType.multiline,
         buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
       ),
