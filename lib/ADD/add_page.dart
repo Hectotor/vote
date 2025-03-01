@@ -2,16 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:votely/navBar.dart';
 import 'description.dart';
-import 'bloc.dart';
-import 'addoption.dart'; // Importer le nouveau fichier
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; // Import localization package
 import 'dart:async'; // Import the dart:async package for Timer
-import 'image.dart'; // Import the new image.dart file
-import 'poll_button.dart'; // Importer le PollButton
-import 'poll_grid.dart'; // Importer le PollGrid
-import 'bottom_add_bloc.dart'; // Ajout de l'import
 import 'publish.dart';
+import 'poll_grid.dart';
+import 'bottom_add_bloc.dart';
 
 class Post {
   final User user;
@@ -64,94 +60,25 @@ class _AddPageState extends State<AddPage> {
   final TextEditingController _controller = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   Timer? _timer;
-  final List<XFile?> _images = List.filled(2, null);
-  final List<Color> _imageFilters = List.filled(2, Colors.transparent);
-  final List<Widget?> _textWidgets = List.filled(2, null);
-  final List<bool> _isEditing = List.filled(2, false);
-  bool _showPoll = false;
-  int _numberOfPollBlocs = 2;
-  final List<TextEditingController> textControllers = List.generate(4, (index) => TextEditingController());
+  List<XFile?> _images = [];
+  List<Color> _imageFilters = [];
+  List<Widget?> _textWidgets = [];
+  List<bool> _isEditing = [];
+  List<TextEditingController> textControllers = [];
+  bool _showPoll = true;
   List<String> _hashtags = [];
   List<String> _mentions = [];
-
-  void _showAddBlocDialog(int index) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext dialogContext) {
-        return AddOption(
-          onAddPhoto: () async {
-            Navigator.pop(dialogContext);
-            await addPhoto(
-              index,
-              _images,
-              setState,
-              context,
-              (index, color) {
-                setState(() {
-                  _imageFilters[index] = color;
-                });
-              },
-            );
-          },
-          onTakePhoto: () async {
-            Navigator.pop(dialogContext);
-            await takePhoto(
-              index,
-              _images,
-              setState,
-              context,
-              (index, color) {
-                setState(() {
-                  _imageFilters[index] = color;
-                });
-              },
-            );
-          },
-          onAddText: () {
-            Navigator.pop(dialogContext);
-            setState(() {
-              _isEditing[index] = true;
-            });
-          },
-          hasImage: _images[index] != null,
-          hasText: _textWidgets[index] != null,
-        );
-      },
-    );
-  }
-
-  void _togglePoll() {
-    setState(() {
-      _showPoll = !_showPoll;
-    });
-  }
 
   Future<void> _publishContent() async {
     final description = _descriptionController.text;
     
-    final success = await _publishService.publishContent(
-      description: description,
-      isPoll: _showPoll,
-      pollOptions: textControllers.map((c) => c.text).toList(),
-      blocContent: _showPoll ? null : _textWidgets.whereType<Widget>().toList(),
-      context: context,
-    );
 
-    if (success) {
+    if (mounted) {
       // Réinitialiser les champs
       _descriptionController.clear();
-      for (var controller in textControllers) {
-        controller.clear();
-      }
       setState(() {
-        _showPoll = false;
         _textWidgets.fillRange(0, _textWidgets.length, null);
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Publication réussie!')),
-      );
     }
   }
 
@@ -256,42 +183,26 @@ class _AddPageState extends State<AddPage> {
                       },
                     ),
                     SizedBox(height: 10),
-                    _showPoll
-                        ? PollGrid(
-                            numberOfBlocs: _numberOfPollBlocs,
-                            textControllers: textControllers,
-                            onBlocRemoved: (index) {
-                              setState(() {
-                                _numberOfPollBlocs--;
-                              });
-                            },
-                          )
-                        : BlocGrid(
-                            images: _images,
-                            imageFilters: _imageFilters,
-                            textWidgets: _textWidgets,
-                            onImageChange: _showAddBlocDialog,
-                            numberOfBlocs: 2,
-                            isEditing: _isEditing,
-                          ),
-                          SizedBox(height: 20),
-                    Center(
-                      child: Column(
-                        children: [
-                          BottomAddBloc(
-                            showPoll: _showPoll,
-                            numberOfPollBlocs: _numberOfPollBlocs,
-                            onPressed: () {
-                              setState(() {
-                                _numberOfPollBlocs++;
-                              });
-                            },
-                          ),
-                          PollButton(
-                            onPressed: _togglePoll,
-                          ),
-                        ],
-                      ),
+                    PollGrid(
+                      numberOfBlocs: textControllers.length,
+                      textControllers: textControllers,
+                      onBlocRemoved: (index) {
+                        setState(() {
+                          textControllers.removeAt(index);
+                        });
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    BottomAddBloc(
+                      showPoll: true,
+                      numberOfPollBlocs: textControllers.length,
+                      onPressed: () {
+                        setState(() {
+                          if (textControllers.length < 4) {
+                            textControllers.add(TextEditingController());
+                          }
+                        });
+                      },
                     ),
                   ],
                 ),
@@ -308,6 +219,9 @@ class _AddPageState extends State<AddPage> {
     _timer?.cancel();
     _controller.dispose();
     _descriptionController.dispose();
+    for (var controller in textControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 }

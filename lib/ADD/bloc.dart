@@ -227,7 +227,7 @@ final List<Color> vibrantGradients = [
       child: Column(
         children: [
           SizedBox(
-            height: 300,
+            height: 200,
             child: Row(
               children: [
                 Expanded(
