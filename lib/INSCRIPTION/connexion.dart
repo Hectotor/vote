@@ -228,12 +228,12 @@ class _ConnexionPageState extends State<ConnexionPage> {
                         elevation: 0,
                         padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       child: Ink(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(10),
                           gradient: LinearGradient(
                             colors: [
                               Colors.deepPurple[600]!, 
@@ -323,8 +323,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
         }
       },
       style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        fillColor: Color(0xFF2C2431),  
+      decoration: InputDecoration( 
         filled: true,
         labelText: label,
         labelStyle: TextStyle(
@@ -338,32 +337,32 @@ class _ConnexionPageState extends State<ConnexionPage> {
         ),
         suffixIcon: suffixIcon,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(
             color: Colors.grey[800]!,
             width: 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(
             color: Colors.white,
             width: 1,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(
             color: Colors.red[400]!,
             width: 1,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(
             color: Colors.red[400]!,
             width: 1.5,

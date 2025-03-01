@@ -172,7 +172,7 @@ class _AddPageState extends State<AddPage> {
                 foregroundColor: _canPublish() ? Colors.white : Colors.white38,
                 padding: EdgeInsets.zero,
                 side: BorderSide(
-                  color: _canPublish() ? Colors.white54 : Colors.white24,
+                  color: _canPublish() ? Colors.white : Colors.white24,
                   width: 1.0,
                 ),
                 shape: RoundedRectangleBorder(

@@ -23,16 +23,21 @@ class AddOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: EdgeInsets.symmetric(horizontal: 20),
+      insetPadding: EdgeInsets.symmetric(horizontal: 50),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16), // Bords arrondis
+      ),
       child: Container(
+        width: double.infinity,
         decoration: BoxDecoration(
-          color: Color(0xFF151019),
-          borderRadius: BorderRadius.circular(24),
+          color: Color(0xFF151019), // Nouvelle couleur de fond
+          borderRadius: BorderRadius.circular(16), // Bords arrondis
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.4),
-              blurRadius: 30,
-              offset: Offset(0, 15),
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 15,
+              spreadRadius: 1,
+              offset: Offset(0, 8),
             )
           ],
         ),
@@ -41,6 +46,17 @@ class AddOption extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Text(
+              'Ajouter une option',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+            SizedBox(height: 24),
             _buildModernTile(
               title: 'Choisir une image',
               icon: Icons.image_outlined,
@@ -114,17 +130,17 @@ class AddOption extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10), // Bords arrondis pour les tuiles
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withOpacity(0.15),
           width: 1,
         ),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10), // Correspondance avec le container
           onTap: onTap,
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 18, horizontal: 16),
@@ -135,15 +151,16 @@ class AddOption extends StatelessWidget {
                   children: [
                     Icon(
                       icon,
-                      color: Colors.white.withOpacity(1),
+                      color: Colors.white,
                       size: 24,
                     ),
                     SizedBox(width: 12),
                     Text(
                       title,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(1),
+                        color: Colors.white,
                         fontSize: 16,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
