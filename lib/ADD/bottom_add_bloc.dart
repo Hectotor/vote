@@ -39,7 +39,7 @@ class BottomAddBloc extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Add Option',
+                'Ajouter',
                 style: TextStyle(
                   color: Colors.white70,  // Texte blanc légèrement transparent
                   fontSize: 14,

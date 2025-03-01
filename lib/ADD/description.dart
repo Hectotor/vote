@@ -202,7 +202,7 @@ class _DescriptionFieldState extends State<DescriptionField> {
         decoration: InputDecoration(
           hintText: 'Ajoute une description...',
           hintStyle: TextStyle(
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withOpacity(0.7),
             fontSize: 14,
             fontStyle: FontStyle.italic,
           ),

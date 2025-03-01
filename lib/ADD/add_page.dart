@@ -147,7 +147,7 @@ class _AddPageState extends State<AddPage> {
         title: const Text(
           'Crée ton vote',
           style: TextStyle(
-            color: Colors.white54,
+            color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.w500,
           ),
@@ -155,7 +155,7 @@ class _AddPageState extends State<AddPage> {
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios,
-            color: Colors.white54,
+            color: Colors.white,
             size: 20,
           ),
           onPressed: _cancel,
@@ -163,28 +163,28 @@ class _AddPageState extends State<AddPage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10.0),
-            child: ElevatedButton(
+            child: TextButton(
               onPressed: _canPublish() ? () {
                 print('Publish button pressed'); // Debug print
                 _publishContent();
               } : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _canPublish() ? Colors.white.withOpacity(0.2) : Colors.transparent,
-                foregroundColor: _canPublish() ? Colors.white : Colors.grey,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: _canPublish() ? Colors.white : Colors.grey.withOpacity(0.5),
-                    width: 1,
-                  ),
+              style: TextButton.styleFrom(
+                foregroundColor: _canPublish() ? Colors.white : Colors.white38,
+                padding: EdgeInsets.zero,
+                side: BorderSide(
+                  color: _canPublish() ? Colors.white54 : Colors.white24,
+                  width: 1.0,
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-              child: const Text('Publier',
+              child: Text(
+                'Publier',
                 style: TextStyle(
-                  fontSize: 12, 
-                  fontWeight: FontWeight.bold
-                )
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),

@@ -35,19 +35,12 @@ class PollGrid extends StatefulWidget {
 class _PollGridState extends State<PollGrid> {
   List<bool> _isTextVisible = [];
 
-  final List<Color> vibrantGradients = [
-    Color(0xFF352F3A),
-    Color(0xFF352F3A),
-    Color(0xFF352F3A),
-    Color(0xFF352F3A)
-  ];
-
-  final List<String> optionEmojis = [
-    '', // Célébration
-    '', // Fusée
-    '', // Arc-en-ciel
-    '', // Guitare,
-  ];
+final List<Color> vibrantGradients = [
+  Color(0xFF2C2C5E),   // Deep Navy
+  Color(0xFF2C2C5E),   // Dark Midnight Blue
+  Color(0xFF2C2C5E),   // Rich Indigo
+  Color(0xFF2C2C5E)    // Bright Indigo
+];
 
   @override
   void initState() {
