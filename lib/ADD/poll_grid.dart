@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'texte.dart';
+import 'addoption.dart';
 
 class PollGrid extends StatefulWidget {
+  final List<XFile?> images;
+  final List<Color> imageFilters;
   final int numberOfBlocs;
   final List<TextEditingController> textControllers;
+  final Function(int) onImageChange;
   final Function(int) onBlocRemoved;
 
   const PollGrid({
     Key? key,
+    required this.images,
+    required this.imageFilters,
     required this.numberOfBlocs,
     required this.textControllers,
+    required this.onImageChange,
     required this.onBlocRemoved,
   }) : super(key: key);
 
@@ -22,7 +30,6 @@ class PollGrid extends StatefulWidget {
 }
 
 class _PollGridState extends State<PollGrid> {
-  List<TextEditingController> _textControllers = [];
   List<bool> _isTextVisible = [];
 
   final List<Color> vibrantGradients = [
@@ -42,10 +49,6 @@ class _PollGridState extends State<PollGrid> {
   @override
   void initState() {
     super.initState();
-    _textControllers = List.generate(
-      widget.numberOfBlocs,
-      (index) => TextEditingController(),
-    );
     _isTextVisible = List.generate(widget.numberOfBlocs, (index) => false);
   }
 
@@ -54,18 +57,34 @@ class _PollGridState extends State<PollGrid> {
     super.didUpdateWidget(oldWidget);
     if (widget.numberOfBlocs > oldWidget.numberOfBlocs) {
       setState(() {
-        _textControllers.add(TextEditingController());
         _isTextVisible.add(false);
       });
     }
   }
 
-  @override
-  void dispose() {
-    for (var controller in _textControllers) {
-      controller.dispose();
-    }
-    super.dispose();
+  void _showAddOptionDialog(int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AddOption(
+          hasImage: widget.images[index] != null,
+          onAddPhoto: () {
+            Navigator.of(context).pop();
+            widget.onImageChange(index);
+          },
+          onTakePhoto: () {
+            Navigator.of(context).pop();
+            // TODO: Implement take photo functionality
+          },
+          onAddText: () {
+            Navigator.of(context).pop();
+            setState(() {
+              _isTextVisible[index] = true;
+            });
+          },
+        );
+      },
+    );
   }
 
   Widget _buildBloc(int index) {
@@ -80,65 +99,69 @@ class _PollGridState extends State<PollGrid> {
       ],
     );
 
-    return Container(
-      width: blockWidth,
-      height: 145.0, // hauteur réduite du bloc
-      decoration: BoxDecoration(
-        gradient: gradient,
-        borderRadius: BorderRadius.circular(15.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 10.0,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Center(
-            child: IconButton(
-              icon: Icon(
-                Icons.add_photo_alternate_outlined, 
-                size: 40, 
-                color: Colors.white.withOpacity(0.7),
-              ),
-              onPressed: () {
-                // TODO: Implement image selection logic
-              },
+    return GestureDetector(
+      onTap: () => _showAddOptionDialog(index),
+      child: Container(
+        width: blockWidth,
+        height: 145.0, // hauteur réduite du bloc
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(15.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 10.0,
+              offset: Offset(0, 4),
             ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: TexteWidget(
-              controller: _textControllers[index],
-              isVisible: _isTextVisible[index],
-              onVisibilityChanged: (bool visible) {
-                setState(() {
-                  _isTextVisible[index] = visible;
-                });
-              },
-            ),
-          ),
-          if (index >= 2) // Pour les blocs 3 et 4
-            Positioned(
-              right: 0,
-              top: 0,
+          ],
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Center(
               child: IconButton(
-                icon: Icon(Icons.close_sharp, color: Colors.red),
-                onPressed: () {
-                  setState(() {
-                    _textControllers.removeAt(index);
-                    _isTextVisible.removeAt(index);
-                    widget.onBlocRemoved(index);
-                  });
-                },
+                icon: Icon(
+                  Icons.add_photo_alternate_outlined, 
+                  size: 40, 
+                  color: Colors.white.withOpacity(0.7),
+                ),
+                onPressed: () => _showAddOptionDialog(index),
               ),
             ),
-        ],
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: GestureDetector(
+                onTap: () => _showAddOptionDialog(index),
+                child: TexteWidget(
+                  controller: widget.textControllers[index],
+                  isVisible: _isTextVisible[index],
+                  onVisibilityChanged: (bool visible) {
+                    setState(() {
+                      _isTextVisible[index] = visible;
+                    });
+                  },
+                ),
+              ),
+            ),
+            if (index >= 2) // Pour les blocs 3 et 4
+              Positioned(
+                right: 0,
+                top: 0,
+                child: IconButton(
+                  icon: Icon(Icons.close_sharp, color: Colors.red),
+                  onPressed: () {
+                    setState(() {
+                      widget.textControllers.removeAt(index);
+                      _isTextVisible.removeAt(index);
+                      widget.onBlocRemoved(index);
+                    });
+                  },
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -147,7 +170,7 @@ class _PollGridState extends State<PollGrid> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (_textControllers.length <= 2) {
+        if (widget.textControllers.length <= 2) {
           // Pour les 2 premiers blocs, utiliser GridView normal
           return SizedBox(
             height: 145.0,
@@ -159,14 +182,14 @@ class _PollGridState extends State<PollGrid> {
                 crossAxisSpacing: 8.0,
                 mainAxisSpacing: 8.0,
               ),
-              itemCount: _textControllers.length,
+              itemCount: widget.textControllers.length,
               itemBuilder: (context, index) => _buildBloc(index),
             ),
           );
         } else {
           // Pour 3 ou 4 blocs, utiliser une disposition uniforme
           return SizedBox(
-            height: _textControllers.length == 3 ? 298.0 : 298.0, // 145 * 2 + 8 (spacing)
+            height: widget.textControllers.length == 3 ? 298.0 : 298.0, // 145 * 2 + 8 (spacing)
             child: Column(
               children: [
                 // Première rangée (blocs 1 et 2)
@@ -179,7 +202,7 @@ class _PollGridState extends State<PollGrid> {
                 ),
                 SizedBox(height: 8),
                 // Deuxième rangée (blocs 3 et 4)
-                if (_textControllers.length == 3)
+                if (widget.textControllers.length == 3)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -194,7 +217,7 @@ class _PollGridState extends State<PollGrid> {
                       ),
                     ],
                   )
-                else if (_textControllers.length == 4)
+                else if (widget.textControllers.length == 4)
                   Row(
                     children: [
                       Expanded(child: _buildBloc(2)),

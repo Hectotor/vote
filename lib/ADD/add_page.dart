@@ -77,6 +77,10 @@ class _AddPageState extends State<AddPage> {
       TextEditingController(),
       TextEditingController(),
     ];
+    
+    // Initialiser les listes d'images et de filtres
+    _images = List.generate(4, (index) => null);
+    _imageFilters = List.generate(4, (index) => Colors.transparent);
   }
 
   Future<void> _publishContent() async {
@@ -200,6 +204,12 @@ class _AddPageState extends State<AddPage> {
                         setState(() {
                           textControllers.removeAt(index);
                         });
+                      },
+                      images: _images,
+                      imageFilters: _imageFilters,
+                      onImageChange: (index) {
+                        // TODO: Implement image selection logic
+                        // This could open an image picker or another dialog
                       },
                     ),
                     SizedBox(height: 20),
