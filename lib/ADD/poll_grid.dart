@@ -118,7 +118,7 @@ class _PollGridState extends State<PollGrid> {
                 bottomRight: Radius.circular(15),
               ),
               child: _isTextVisible[index] ? Container(
-                decoration: BoxDecoration(
+                decoration: _textControllers[index].text.isNotEmpty ? BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -127,7 +127,7 @@ class _PollGridState extends State<PollGrid> {
                       Colors.black.withOpacity(0.8), 
                     ],
                   ),
-                ),
+                ) : null,
                 padding: const EdgeInsets.all(8.0),
                 child: TextField(
                   controller: _textControllers[index],
@@ -148,6 +148,11 @@ class _PollGridState extends State<PollGrid> {
                   keyboardType: TextInputType.multiline,
                   maxLines: null,
                   textInputAction: TextInputAction.done,
+                  onChanged: (value) {
+                    setState(() {
+                      // This will trigger a rebuild when text changes
+                    });
+                  },
                   onSubmitted: (value) {
                     setState(() {
                       _isTextVisible[index] = true;
