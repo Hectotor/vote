@@ -22,21 +22,21 @@ class PollGrid extends StatefulWidget {
 
 class _PollGridState extends State<PollGrid> {
   List<TextEditingController> _textControllers = [];
+  List<bool> _isTextVisible = [];
 
   final List<Color> vibrantGradients = [
-Color(0xFF352F3A),
-Color(0xFF352F3A),
-Color(0xFF352F3A),
-Color(0xFF352F3A)
+    Color(0xFF352F3A),
+    Color(0xFF352F3A),
+    Color(0xFF352F3A),
+    Color(0xFF352F3A)
   ];
 
   final List<String> optionEmojis = [
     '', // Célébration
     '', // Fusée
     '', // Arc-en-ciel
-    '', // Guitare
+    '', // Guitare,
   ];
-
 
   @override
   void initState() {
@@ -45,6 +45,7 @@ Color(0xFF352F3A)
       widget.numberOfBlocs,
       (index) => TextEditingController(),
     );
+    _isTextVisible = List.generate(widget.numberOfBlocs, (index) => false);
   }
 
   @override
@@ -53,6 +54,7 @@ Color(0xFF352F3A)
     if (widget.numberOfBlocs > oldWidget.numberOfBlocs) {
       setState(() {
         _textControllers.add(TextEditingController());
+        _isTextVisible.add(false);
       });
     }
   }
@@ -95,37 +97,87 @@ Color(0xFF352F3A)
         fit: StackFit.expand,
         children: [
           Center(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _textControllers[index],
-                textAlign: TextAlign.center, // Centrer le texte
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 10.0,
-                      color: Colors.black45,
-                      offset: Offset(2.0, 2.0),
-                    ),
-                  ],
+            child: IconButton(
+              icon: Icon(
+                Icons.add_photo_alternate_outlined, 
+                size: 40, 
+                color: Colors.white.withOpacity(0.7),
+              ),
+              onPressed: () {
+                // TODO: Implement image selection logic
+              },
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: ClipRRect(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(15),
+                bottomRight: Radius.circular(15),
+              ),
+              child: _isTextVisible[index] ? Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.0),
+                      Colors.black.withOpacity(0.8), 
+                    ],
+                  ),
                 ),
-                textInputAction: TextInputAction.done,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(
-                  hintText: 'Option ${index + 1} ${optionEmojis[index % optionEmojis.length]}',
-                  hintStyle: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: _textControllers[index],
+                  autofocus: true,
+                  textAlign: TextAlign.center,
+                  textCapitalization: TextCapitalization.sentences,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
                     fontStyle: FontStyle.italic,
                   ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  cursorColor: Colors.white,
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (value) {
+                    setState(() {
+                      _isTextVisible[index] = true;
+                    });
+                  },
                 ),
-                maxLength: 20,
+              ) : TextField(
+                controller: _textControllers[index],
+                autofocus: true,
+                textAlign: TextAlign.center,
+                textCapitalization: TextCapitalization.sentences,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  fontStyle: FontStyle.italic,
+                ),
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                cursorColor: Colors.white,
+                keyboardType: TextInputType.multiline,
                 maxLines: null,
-                buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (value) {
+                  setState(() {
+                    _isTextVisible[index] = true;
+                  });
+                },
               ),
             ),
           ),
@@ -138,6 +190,7 @@ Color(0xFF352F3A)
                 onPressed: () {
                   setState(() {
                     _textControllers.removeAt(index);
+                    _isTextVisible.removeAt(index);
                     widget.onBlocRemoved(index);
                   });
                 },
@@ -169,7 +222,7 @@ Color(0xFF352F3A)
             ),
           );
         } else {
-          // Pour 3 ou 4 blocs, utiliser une disposition personnalisée
+          // Pour 3 ou 4 blocs, utiliser une disposition uniforme
           return SizedBox(
             height: _textControllers.length == 3 ? 298.0 : 298.0, // 145 * 2 + 8 (spacing)
             child: Column(
@@ -188,9 +241,14 @@ Color(0xFF352F3A)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: (constraints.maxWidth - 8) / 2,
-                        child: _buildBloc(2),
+                      Expanded(
+                        child: Center(
+                          child: SizedBox(
+                            width: (constraints.maxWidth - 8.0) / 2, // Largeur identique aux autres blocs
+                            height: 145.0, // Hauteur identique aux autres blocs
+                            child: _buildBloc(2),
+                          ),
+                        ),
                       ),
                     ],
                   )
@@ -201,7 +259,7 @@ Color(0xFF352F3A)
                       SizedBox(width: 8),
                       Expanded(child: _buildBloc(3)),
                     ],
-                  ),
+                  )
               ],
             ),
           );

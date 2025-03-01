@@ -69,6 +69,16 @@ class _AddPageState extends State<AddPage> {
   List<String> _hashtags = [];
   List<String> _mentions = [];
 
+  @override
+  void initState() {
+    super.initState();
+    // Initialiser deux contrôleurs de texte dès le début
+    textControllers = [
+      TextEditingController(),
+      TextEditingController(),
+    ];
+  }
+
   Future<void> _publishContent() async {
     final description = _descriptionController.text;
     
