@@ -14,7 +14,7 @@ class BottomAddBloc extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (numberOfPollBlocs > 4) {
+    if (numberOfPollBlocs >= 4) {
       return const SizedBox.shrink();
     }
 
