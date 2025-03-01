@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'image.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AddOption extends StatelessWidget {
   final VoidCallback? onAddPhoto;
@@ -41,14 +43,52 @@ class AddOption extends StatelessWidget {
             _buildModernTile(
               title: 'Choisir une image',
               icon: Icons.image_outlined,
-              onTap: onAddPhoto,
+              onTap: () async {
+                final ImagePicker picker = ImagePicker();
+                final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                if (image != null) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ImageFilterPage(
+                        image: image,
+                        onFilterSelected: (selectedImage, selectedFilter) {
+                          // You might want to pass this back to the caller
+                          if (onAddPhoto != null) {
+                            onAddPhoto!();
+                          }
+                        },
+                      ),
+                    ),
+                  );
+                }
+              },
             ),
             SizedBox(height: 16),
             _buildModernTile(
-              title: 'Prendre une photo',
-              icon: Icons.camera_alt_outlined,
-              onTap: onTakePhoto,
+                title: 'Prendre une photo',
+                icon: Icons.camera_alt_outlined,
+                onTap: () async {
+                  final ImagePicker picker = ImagePicker();
+                  final XFile? image = await picker.pickImage(source: ImageSource.camera);
+                  if (image != null) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => ImageFilterPage(
+                          image: image,
+                          onFilterSelected: (selectedImage, selectedFilter) {
+                            // Appel de la fonction de callback si définie
+                            if (onTakePhoto != null) {
+                              onTakePhoto!();
+                            }
+                          },
+                        ),
+                      ),
+                    );
+                  }
+                },
+          
             ),
+            
             SizedBox(height: 16),
             if (hasImage) 
               _buildModernTile(
