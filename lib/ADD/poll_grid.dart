@@ -203,11 +203,10 @@ final List<Color> vibrantGradients = [
                 child: IconButton(
                   icon: Icon(Icons.close_sharp, color: Colors.red),
                   onPressed: () {
-                    setState(() {
-                      widget.textControllers.removeAt(index);
-                      _isTextVisible.removeAt(index);
-                      widget.onBlocRemoved(index);
-                    });
+                    // Vérifier que l'index est valide avant la suppression
+                     if (index >= 2 && index < widget.textControllers.length) {
+                       widget.onBlocRemoved(index);
+                     }
                   },
                 ),
               ),

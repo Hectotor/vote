@@ -232,7 +232,15 @@ class _AddPageState extends State<AddPage> {
                         _updateImageState(index);
                       },
                       onBlocRemoved: (index) {
-                        // TODO: Implement bloc removal logic
+                        setState(() {
+                          // Supprimer uniquement le bloc à l'index spécifié
+                          if (index >= 2 && index < textControllers.length) {
+                            // Supprimer les éléments associés
+                            textControllers.removeAt(index);
+                            _images.removeAt(index);
+                            _imageFilters.removeAt(index);
+                          }
+                        });
                       },
                       onStateUpdate: () {
                         setState(() {});
