@@ -8,19 +8,39 @@ import 'bloc.dart';
 class ImageFilterPage extends StatefulWidget {
   final XFile image;
   final Function(XFile, Color) onFilterSelected;
+  final Color initialFilter;
 
   const ImageFilterPage({
     Key? key,
     required this.image,
     required this.onFilterSelected,
+    this.initialFilter = Colors.transparent,
   }) : super(key: key);
+
+  // Méthode statique sécurisée pour naviguer vers la page de filtre
+  static Future<void> show({
+    required BuildContext context,
+    required XFile image,
+    required Function(XFile, Color) onFilterSelected,
+    Color initialFilter = Colors.transparent,
+  }) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ImageFilterPage(
+          image: image,
+          onFilterSelected: onFilterSelected,
+          initialFilter: initialFilter,
+        ),
+      ),
+    );
+  }
 
   @override
   State<ImageFilterPage> createState() => _ImageFilterPageState();
 }
 
 class _ImageFilterPageState extends State<ImageFilterPage> {
-  Color _selectedFilter = Colors.transparent;
+  late Color _selectedFilter;
   bool isGif = false;
   final List<Color> _filterColors = [
     Colors.transparent,
@@ -40,6 +60,7 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
   @override
   void initState() {
     super.initState();
+    _selectedFilter = widget.initialFilter;
     isGif = widget.image.path.toLowerCase().endsWith('.gif');
   }
 
@@ -60,8 +81,7 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
               widget.onFilterSelected(widget.image, _selectedFilter);
               Navigator.of(context).pop();
             },
-            child:
-                const Text('Appliquer', style: TextStyle(color: Color(0xFF3498DB))),  
+            child: const Text('Appliquer', style: TextStyle(color: Color(0xFF3498DB))),  
           ),
         ],
       ),
@@ -176,18 +196,15 @@ Future<void> addPhoto(int index, List<XFile?> images, Function setState,
 
       if (croppedFile != null && context.mounted) {
         final imageFile = XFile(croppedFile.path);
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => ImageFilterPage(
-              image: imageFile,
-              onFilterSelected: (image, filterColor) {
-                setState(() {
-                  images[index] = image;
-                });
-                onFilterChange(index, filterColor);
-              },
-            ),
-          ),
+        await ImageFilterPage.show(
+          context: context,
+          image: imageFile,
+          onFilterSelected: (image, filter) {
+            setState(() {
+              images[index] = image;
+            });
+            onFilterChange(index, filter);
+          },
         );
       }
     }
@@ -226,18 +243,15 @@ Future<void> takePhoto(int index, List<XFile?> images, Function setState,
 
     if (croppedFile != null && context.mounted) {
       final imageFile = XFile(croppedFile.path);
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ImageFilterPage(
-            image: imageFile,
-            onFilterSelected: (XFile image, Color filterColor) {
-              setState(() {
-                images[index] = image;
-              });
-              onFilterChange(index, filterColor);
-            },
-          ),
-        ),
+      await ImageFilterPage.show(
+        context: context,
+        image: imageFile,
+        onFilterSelected: (image, filter) {
+          setState(() {
+            images[index] = image;
+          });
+          onFilterChange(index, filter);
+        },
       );
     } else {
       print('No photo taken');

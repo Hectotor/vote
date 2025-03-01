@@ -5,8 +5,8 @@ import 'package:image_cropper/image_cropper.dart';
 import 'bloc.dart';
 
 class AddOption extends StatelessWidget {
-  final VoidCallback? onAddPhoto;
-  final VoidCallback? onTakePhoto;
+  final Function(XFile, Color)? onAddPhoto;
+  final Function(XFile, Color)? onTakePhoto;
   final VoidCallback? onAddText;
   final bool hasImage;
   final bool hasText;
@@ -67,55 +67,51 @@ class AddOption extends StatelessWidget {
   }
 
   Future<void> _pickAndProcessImage(BuildContext context, ImageSource source) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source);
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: source);
 
-    if (pickedFile != null) {
-      // Utiliser un ratio fixe basé sur 200.0
-      final croppedFile = await ImageCropper().cropImage(
-        sourcePath: pickedFile.path,
-        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1), // Carré pour correspondre à 200.0
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Recadrer l\'image',
-            toolbarColor: const Color(0xFF151019),
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.square,
-            lockAspectRatio: true,
-            activeControlsWidgetColor: Colors.white,  
-          ),
-          IOSUiSettings(
-            title: 'Recadrer l\'image',
-            doneButtonTitle: 'Terminer',
-            cancelButtonTitle: 'Annuler',
-            aspectRatioLockEnabled: true,
-          ),
-        ],
-      );
-
-      if (croppedFile != null) {
-        final imageFile = XFile(croppedFile.path);
-        
-        // Fermer le dialogue actuel
-        Navigator.of(context).pop();
-
-        // Naviguer vers la page de filtres
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => ImageFilterPage(
-              image: imageFile,
-              onFilterSelected: (XFile image, Color filterColor) {
-                // Appeler le callback approprié
-                if (source == ImageSource.gallery && onAddPhoto != null) {
-                  onAddPhoto!();
-                } else if (source == ImageSource.camera && onTakePhoto != null) {
-                  onTakePhoto!();
-                }
-              },
+      if (pickedFile != null) {
+        final croppedFile = await ImageCropper().cropImage(
+          sourcePath: pickedFile.path,
+          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Recadrer l\'image',
+              toolbarColor: const Color(0xFF151019),
+              toolbarWidgetColor: Colors.white,
+              initAspectRatio: CropAspectRatioPreset.square,
+              lockAspectRatio: true,
+              activeControlsWidgetColor: Colors.white,  
             ),
-          ),
+            IOSUiSettings(
+              title: 'Recadrer l\'image',
+              doneButtonTitle: 'Terminer',
+              cancelButtonTitle: 'Annuler',
+              aspectRatioLockEnabled: true,
+            ),
+          ],
         );
+
+        if (croppedFile != null) {
+          final imageFile = XFile(croppedFile.path);
+          
+          // Utiliser une méthode statique pour gérer la navigation et le filtre
+          await ImageFilterPage.show(
+            context: context, 
+            image: imageFile, 
+            onFilterSelected: (image, filterColor) {
+              if (source == ImageSource.gallery && onAddPhoto != null) {
+                onAddPhoto!(image, filterColor);
+              } else if (source == ImageSource.camera && onTakePhoto != null) {
+                onTakePhoto!(image, filterColor);
+              }
+            },
+          );
+        }
       }
+    } catch (e) {
+      print('Erreur lors de la sélection ou du traitement de l\'image: $e');
     }
   }
 

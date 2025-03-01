@@ -66,22 +66,46 @@ class _PollGridState extends State<PollGrid> {
   void _showAddOptionDialog(int index) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AddOption(
           hasImage: widget.images[index] != null,
-          onAddPhoto: () {
-            Navigator.of(context).pop();
-            widget.onImageChange(index);
+          onAddPhoto: (XFile image, Color filterColor) {
+            // Utiliser le contexte du dialogue pour la navigation
+            Navigator.of(dialogContext).pop();
+            
+            // Mettre à jour l'état du widget parent
+            if (mounted) {
+              setState(() {
+                widget.images[index] = image;
+                widget.imageFilters[index] = filterColor;
+              });
+              
+              // Appeler le callback de changement d'image
+              widget.onImageChange(index);
+            }
           },
-          onTakePhoto: () {
-            Navigator.of(context).pop();
-            // TODO: Implement take photo functionality
+          onTakePhoto: (XFile image, Color filterColor) {
+            // Utiliser le contexte du dialogue pour la navigation
+            Navigator.of(dialogContext).pop();
+            
+            // Mettre à jour l'état du widget parent
+            if (mounted) {
+              setState(() {
+                widget.images[index] = image;
+                widget.imageFilters[index] = filterColor;
+              });
+              
+              // Appeler le callback de changement d'image
+              widget.onImageChange(index);
+            }
           },
           onAddText: () {
-            Navigator.of(context).pop();
-            setState(() {
-              _isTextVisible[index] = true;
-            });
+            Navigator.of(dialogContext).pop();
+            if (mounted) {
+              setState(() {
+                _isTextVisible[index] = true;
+              });
+            }
           },
         );
       },
