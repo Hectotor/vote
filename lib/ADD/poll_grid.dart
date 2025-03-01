@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'texte.dart';
 import 'addoption.dart';
 
@@ -103,7 +104,7 @@ class _PollGridState extends State<PollGrid> {
       onTap: () => _showAddOptionDialog(index),
       child: Container(
         width: blockWidth,
-        height: 145.0, // hauteur réduite du bloc
+        height: 150.0, 
         decoration: BoxDecoration(
           gradient: gradient,
           borderRadius: BorderRadius.circular(15.0),
@@ -118,16 +119,38 @@ class _PollGridState extends State<PollGrid> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Center(
-              child: IconButton(
-                icon: Icon(
-                  Icons.add_photo_alternate_outlined, 
-                  size: 40, 
-                  color: Colors.white.withOpacity(0.7),
+            widget.images[index] != null
+              ? Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(15.0),
+                      child: Image.file(
+                        File(widget.images[index]!.path),
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    if (widget.imageFilters[index] != Colors.transparent)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: widget.imageFilters[index],
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                      ),
+                  ],
+                )
+              : Center(
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.add_photo_alternate_outlined, 
+                      size: 40, 
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                    onPressed: () => _showAddOptionDialog(index),
+                  ),
                 ),
-                onPressed: () => _showAddOptionDialog(index),
-              ),
-            ),
             Positioned(
               left: 0,
               right: 0,
@@ -173,12 +196,12 @@ class _PollGridState extends State<PollGrid> {
         if (widget.textControllers.length <= 2) {
           // Pour les 2 premiers blocs, utiliser GridView normal
           return SizedBox(
-            height: 145.0,
+            height: 150.0,
             child: GridView.builder(
               physics: NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: (constraints.maxWidth - 8.0) / (2 * 145.0),
+                childAspectRatio: (constraints.maxWidth - 8.0) / (2 * 150.0),
                 crossAxisSpacing: 8.0,
                 mainAxisSpacing: 8.0,
               ),
@@ -189,7 +212,7 @@ class _PollGridState extends State<PollGrid> {
         } else {
           // Pour 3 ou 4 blocs, utiliser une disposition uniforme
           return SizedBox(
-            height: widget.textControllers.length == 3 ? 298.0 : 298.0, // 145 * 2 + 8 (spacing)
+            height: widget.textControllers.length == 3 ? 308.0 : 308.0, // 150 * 2 + 8 (spacing)
             child: Column(
               children: [
                 // Première rangée (blocs 1 et 2)
@@ -210,7 +233,7 @@ class _PollGridState extends State<PollGrid> {
                         child: Center(
                           child: SizedBox(
                             width: (constraints.maxWidth - 8.0) / 2, // Largeur identique aux autres blocs
-                            height: 145.0, // Hauteur identique aux autres blocs
+                            height: 150.0, // Hauteur identique aux autres blocs
                             child: _buildBloc(2),
                           ),
                         ),

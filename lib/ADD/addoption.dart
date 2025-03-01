@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'image.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'bloc.dart';
 
 class AddOption extends StatelessWidget {
   final VoidCallback? onAddPhoto;
@@ -43,52 +45,14 @@ class AddOption extends StatelessWidget {
             _buildModernTile(
               title: 'Choisir une image',
               icon: Icons.image_outlined,
-              onTap: () async {
-                final ImagePicker picker = ImagePicker();
-                final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-                if (image != null) {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => ImageFilterPage(
-                        image: image,
-                        onFilterSelected: (selectedImage, selectedFilter) {
-                          // You might want to pass this back to the caller
-                          if (onAddPhoto != null) {
-                            onAddPhoto!();
-                          }
-                        },
-                      ),
-                    ),
-                  );
-                }
-              },
+              onTap: () => _pickAndProcessImage(context, ImageSource.gallery),
             ),
             SizedBox(height: 16),
             _buildModernTile(
-                title: 'Prendre une photo',
-                icon: Icons.camera_alt_outlined,
-                onTap: () async {
-                  final ImagePicker picker = ImagePicker();
-                  final XFile? image = await picker.pickImage(source: ImageSource.camera);
-                  if (image != null) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => ImageFilterPage(
-                          image: image,
-                          onFilterSelected: (selectedImage, selectedFilter) {
-                            // Appel de la fonction de callback si définie
-                            if (onTakePhoto != null) {
-                              onTakePhoto!();
-                            }
-                          },
-                        ),
-                      ),
-                    );
-                  }
-                },
-          
+              title: 'Prendre une photo',
+              icon: Icons.camera_alt_outlined,
+              onTap: () => _pickAndProcessImage(context, ImageSource.camera),
             ),
-            
             SizedBox(height: 16),
             if (hasImage) 
               _buildModernTile(
@@ -100,6 +64,59 @@ class AddOption extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _pickAndProcessImage(BuildContext context, ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+
+    if (pickedFile != null) {
+      // Utiliser un ratio fixe basé sur 150.0
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1), // Carré pour correspondre à 150.0
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Recadrer l\'image',
+            toolbarColor: const Color(0xFF151019),
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true,
+            activeControlsWidgetColor: Colors.white,  
+          ),
+          IOSUiSettings(
+            title: 'Recadrer l\'image',
+            doneButtonTitle: 'Terminer',
+            cancelButtonTitle: 'Annuler',
+            aspectRatioLockEnabled: true,
+          ),
+        ],
+      );
+
+      if (croppedFile != null) {
+        final imageFile = XFile(croppedFile.path);
+        
+        // Fermer le dialogue actuel
+        Navigator.of(context).pop();
+
+        // Naviguer vers la page de filtres
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ImageFilterPage(
+              image: imageFile,
+              onFilterSelected: (XFile image, Color filterColor) {
+                // Appeler le callback approprié
+                if (source == ImageSource.gallery && onAddPhoto != null) {
+                  onAddPhoto!();
+                } else if (source == ImageSource.camera && onTakePhoto != null) {
+                  onTakePhoto!();
+                }
+              },
+            ),
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildModernTile({
@@ -139,15 +156,13 @@ class AddOption extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white.withOpacity(1),
                         fontSize: 16,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
                 Icon(
-                  Icons.chevron_right_rounded,
-                  color: Colors.white.withOpacity(0.5),
-                  size: 24,
+                  Icons.chevron_right,
+                  color: Colors.white.withOpacity(0.7),
                 ),
               ],
             ),

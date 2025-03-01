@@ -78,9 +78,9 @@ class _AddPageState extends State<AddPage> {
       TextEditingController(),
     ];
     
-    // Initialiser les listes d'images et de filtres
-    _images = List.generate(4, (index) => null);
-    _imageFilters = List.generate(4, (index) => Colors.transparent);
+    // Initialiser les listes d'images et de filtres avec la même longueur que textControllers
+    _images = List.generate(textControllers.length, (index) => null);
+    _imageFilters = List.generate(textControllers.length, (index) => Colors.transparent);
   }
 
   Future<void> _publishContent() async {
@@ -113,6 +113,16 @@ class _AddPageState extends State<AddPage> {
     
     // Retourner true si 2 images ou au moins 2 textes
     return imageCount == 2 || textCount >= 2;
+  }
+
+  void _addBloc() {
+    setState(() {
+      if (textControllers.length < 4) {
+        textControllers.add(TextEditingController());
+        _images.add(null);
+        _imageFilters.add(Colors.transparent);
+      }
+    });
   }
 
   @override
@@ -202,8 +212,13 @@ class _AddPageState extends State<AddPage> {
                       textControllers: textControllers,
                       onBlocRemoved: (index) {
                         setState(() {
-                          textControllers.removeAt(index);
-                        });
+                          // Vérifier que l'index est valide
+                           if (index >= 0 && index < textControllers.length) {
+                             textControllers.removeAt(index);
+                             _images.removeAt(index);
+                             _imageFilters.removeAt(index);
+                           }
+                         });
                       },
                       images: _images,
                       imageFilters: _imageFilters,
@@ -212,17 +227,11 @@ class _AddPageState extends State<AddPage> {
                         // This could open an image picker or another dialog
                       },
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 26),
                     BottomAddBloc(
                       showPoll: true,
                       numberOfPollBlocs: textControllers.length,
-                      onPressed: () {
-                        setState(() {
-                          if (textControllers.length < 4) {
-                            textControllers.add(TextEditingController());
-                          }
-                        });
-                      },
+                      onPressed: _addBloc,
                     ),
                   ],
                 ),
