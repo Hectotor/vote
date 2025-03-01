@@ -11,6 +11,7 @@ class PollGrid extends StatefulWidget {
   final List<TextEditingController> textControllers;
   final Function(int) onImageChange;
   final Function(int) onBlocRemoved;
+  final VoidCallback? onStateUpdate;
 
   const PollGrid({
     Key? key,
@@ -20,6 +21,7 @@ class PollGrid extends StatefulWidget {
     required this.textControllers,
     required this.onImageChange,
     required this.onBlocRemoved,
+    this.onStateUpdate,
   }) : super(key: key);
 
   static double getBlockRatio(BuildContext context) {
@@ -82,6 +84,9 @@ class _PollGridState extends State<PollGrid> {
               
               // Appeler le callback de changement d'image
               widget.onImageChange(index);
+              
+              // Trigger state update if callback is provided
+              widget.onStateUpdate?.call();
             }
           },
           onTakePhoto: (XFile image, Color filterColor) {
@@ -97,6 +102,9 @@ class _PollGridState extends State<PollGrid> {
               
               // Appeler le callback de changement d'image
               widget.onImageChange(index);
+              
+              // Trigger state update if callback is provided
+              widget.onStateUpdate?.call();
             }
           },
           onAddText: () {
@@ -105,6 +113,9 @@ class _PollGridState extends State<PollGrid> {
               setState(() {
                 _isTextVisible[index] = true;
               });
+              
+              // Trigger state update if callback is provided
+              widget.onStateUpdate?.call();
             }
           },
         );

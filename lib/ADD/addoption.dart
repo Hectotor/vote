@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'bloc.dart';
 
 class AddOption extends StatelessWidget {
   final Function(XFile, Color)? onAddPhoto;
@@ -53,13 +52,6 @@ class AddOption extends StatelessWidget {
               icon: Icons.camera_alt_outlined,
               onTap: () => _pickAndProcessImage(context, ImageSource.camera),
             ),
-            SizedBox(height: 16),
-            if (hasImage) 
-              _buildModernTile(
-                title: 'Ajouter un texte',
-                icon: Icons.text_fields_outlined,
-                onTap: onAddText,
-              ),
           ],
         ),
       ),

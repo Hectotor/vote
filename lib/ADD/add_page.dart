@@ -65,7 +65,6 @@ class _AddPageState extends State<AddPage> {
   List<Widget?> _textWidgets = [];
   List<bool> _isEditing = [];
   List<TextEditingController> textControllers = [];
-  bool _showPoll = true;
   List<String> _hashtags = [];
   List<String> _mentions = [];
 
@@ -86,6 +85,12 @@ class _AddPageState extends State<AddPage> {
   Future<void> _publishContent() async {
     final description = _descriptionController.text;
     
+    // Debug: Print out details before publishing
+    print('Publishing content:');
+    print('Description: $description');
+    for (int i = 0; i < _images.length; i++) {
+      print('Image $i: ${_images[i]?.path}');
+    }
 
     if (mounted) {
       // Réinitialiser les champs
@@ -104,15 +109,18 @@ class _AddPageState extends State<AddPage> {
     );
   }
 
+  void _updateImageState(int index) {
+    setState(() {
+      // Trigger a state update
+    });
+  }
+
   bool _canPublish() {
-    // Compter le nombre d'images non nulles
+    // Compter le nombre d'images dans le poll grid
     int imageCount = _images.where((image) => image != null).length;
     
-    // Compter le nombre de textes non vides
-    int textCount = textControllers.where((controller) => controller.text.isNotEmpty).length;
-    
-    // Retourner true si 2 images ou au moins 2 textes
-    return imageCount == 2 || textCount >= 2;
+    // Vérifier si au moins 2 images sont présentes
+    return imageCount >= 2;
   }
 
   void _addBloc() {
@@ -156,20 +164,28 @@ class _AddPageState extends State<AddPage> {
           Padding(
             padding: const EdgeInsets.only(right: 10.0),
             child: ElevatedButton(
-              onPressed: _canPublish() ? _publishContent : null,
+              onPressed: _canPublish() ? () {
+                print('Publish button pressed'); // Debug print
+                _publishContent();
+              } : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
+                backgroundColor: _canPublish() ? Colors.white.withOpacity(0.2) : Colors.transparent,
                 foregroundColor: _canPublish() ? Colors.white : Colors.grey,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(color: _canPublish() ? Colors.white : Colors.grey),
+                  side: BorderSide(
+                    color: _canPublish() ? Colors.white : Colors.grey.withOpacity(0.5),
+                    width: 1,
+                  ),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
               child: const Text('Publier',
-                  style:
-                      TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                  fontSize: 12, 
+                  fontWeight: FontWeight.bold
+                )
+              ),
             ),
           ),
         ],
@@ -208,23 +224,18 @@ class _AddPageState extends State<AddPage> {
                     ),
                     SizedBox(height: 10),
                     PollGrid(
-                      numberOfBlocs: textControllers.length,
-                      textControllers: textControllers,
-                      onBlocRemoved: (index) {
-                        setState(() {
-                          // Vérifier que l'index est valide
-                           if (index >= 0 && index < textControllers.length) {
-                             textControllers.removeAt(index);
-                             _images.removeAt(index);
-                             _imageFilters.removeAt(index);
-                           }
-                         });
-                      },
                       images: _images,
                       imageFilters: _imageFilters,
+                      numberOfBlocs: textControllers.length,
+                      textControllers: textControllers,
                       onImageChange: (index) {
-                        // TODO: Implement image selection logic
-                        // This could open an image picker or another dialog
+                        _updateImageState(index);
+                      },
+                      onBlocRemoved: (index) {
+                        // TODO: Implement bloc removal logic
+                      },
+                      onStateUpdate: () {
+                        setState(() {});
                       },
                     ),
                     SizedBox(height: 26),
