@@ -104,7 +104,7 @@ class _PollGridState extends State<PollGrid> {
       onTap: () => _showAddOptionDialog(index),
       child: Container(
         width: blockWidth,
-        height: 150.0, 
+        height: 200.0, 
         decoration: BoxDecoration(
           gradient: gradient,
           borderRadius: BorderRadius.circular(15.0),
@@ -196,12 +196,12 @@ class _PollGridState extends State<PollGrid> {
         if (widget.textControllers.length <= 2) {
           // Pour les 2 premiers blocs, utiliser GridView normal
           return SizedBox(
-            height: 150.0,
+            height: 200.0,
             child: GridView.builder(
               physics: NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: (constraints.maxWidth - 8.0) / (2 * 150.0),
+                childAspectRatio: (constraints.maxWidth - 8.0) / (2 * 200.0),
                 crossAxisSpacing: 8.0,
                 mainAxisSpacing: 8.0,
               ),
@@ -212,7 +212,7 @@ class _PollGridState extends State<PollGrid> {
         } else {
           // Pour 3 ou 4 blocs, utiliser une disposition uniforme
           return SizedBox(
-            height: widget.textControllers.length == 3 ? 308.0 : 308.0, // 150 * 2 + 8 (spacing)
+            height: widget.textControllers.length == 3 ? 416.0 : 416.0, // 200 * 2 + 8 (spacing) + 8 (padding)
             child: Column(
               children: [
                 // Première rangée (blocs 1 et 2)
@@ -233,7 +233,7 @@ class _PollGridState extends State<PollGrid> {
                         child: Center(
                           child: SizedBox(
                             width: (constraints.maxWidth - 8.0) / 2, // Largeur identique aux autres blocs
-                            height: 150.0, // Hauteur identique aux autres blocs
+                            height: 200.0, // Hauteur identique aux autres blocs
                             child: _buildBloc(2),
                           ),
                         ),

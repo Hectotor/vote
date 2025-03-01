@@ -71,10 +71,10 @@ class AddOption extends StatelessWidget {
     final pickedFile = await picker.pickImage(source: source);
 
     if (pickedFile != null) {
-      // Utiliser un ratio fixe basé sur 150.0
+      // Utiliser un ratio fixe basé sur 200.0
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: pickedFile.path,
-        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1), // Carré pour correspondre à 150.0
+        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1), // Carré pour correspondre à 200.0
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Recadrer l\'image',
