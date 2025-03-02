@@ -116,11 +116,20 @@ class _AddPageState extends State<AddPage> {
   }
 
   bool _canPublish() {
-    // Compter le nombre d'images dans le poll grid
-    int imageCount = _images.where((image) => image != null).length;
+    // La description est maintenant optionnelle
+    final hasDescription = true;
     
-    // Vérifier si au moins 2 images sont présentes
-    return imageCount >= 2;
+    // Utiliser la nouvelle méthode de validation des images
+    final publishService = PublishService();
+    final hasValidBlocs = publishService.canPublish(images: _images);
+
+    // Afficher des informations de débogage détaillées
+    print('Description non vide : $hasDescription');
+    print('Images valides : $hasValidBlocs');
+    print('Liste des images : $_images');
+    print('Images non nulles : ${_images.where((img) => img != null).toList()}');
+
+    return hasDescription && hasValidBlocs;
   }
 
   void _addBloc() {
