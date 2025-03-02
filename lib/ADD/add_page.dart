@@ -91,6 +91,8 @@ class _AddPageState extends State<AddPage> {
         images: _images,
         imageFilters: _imageFilters,
         textControllers: textControllers,
+        hashtags: _hashtags, // Add hashtags to the method call
+        mentions: _mentions, // Add mentions to the method call
         context: context,
       );
 
@@ -106,6 +108,8 @@ class _AddPageState extends State<AddPage> {
           _textWidgets.fillRange(0, _textWidgets.length, null);
           _images.fillRange(0, _images.length, null);
           _imageFilters.fillRange(0, _imageFilters.length, Colors.transparent);
+          _hashtags.clear(); // Clear hashtags after publishing
+          _mentions.clear(); // Clear mentions after publishing
         });
       } else {
         // Show error message

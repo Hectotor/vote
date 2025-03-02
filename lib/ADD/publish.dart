@@ -34,6 +34,8 @@ class PublishService {
     required List<XFile?> images,
     required List<Color> imageFilters,
     required List<TextEditingController> textControllers,
+    List<String> hashtags = const [],
+    List<String> mentions = const [],
     BuildContext? context,
   }) async {
     try {
@@ -43,8 +45,12 @@ class PublishService {
       }
 
       // Extraire hashtags et mentions
-      final hashtags = _extractHashtags(description);
-      final mentions = _extractMentions(description);
+      final extractedHashtags = _extractHashtags(description);
+      final extractedMentions = _extractMentions(description);
+
+      // Combine extracted and manually added hashtags and mentions, removing duplicates
+      final allHashtags = {...extractedHashtags, ...hashtags}.toList();
+      final allMentions = {...extractedMentions, ...mentions}.toList();
 
       // Préparer les données des blocs
       final blocData = await _prepareBlocData(images, imageFilters, textControllers);
@@ -54,16 +60,16 @@ class PublishService {
         'userId': user.uid,
         'description': description,
         'timestamp': FieldValue.serverTimestamp(),
-        'hashtags': hashtags,
-        'mentions': mentions,
+        'hashtags': allHashtags,
+        'mentions': allMentions,
         'blocs': blocData,
       });
 
       // Gérer les hashtags
-      await _manageHashtags(hashtags, postRef.id);
+      await _manageHashtags(allHashtags, postRef.id);
 
       // Gérer les mentions
-      await _manageMentions(mentions, postRef.id);
+      await _manageMentions(allMentions, postRef.id);
 
       return true;
     } catch (e) {
