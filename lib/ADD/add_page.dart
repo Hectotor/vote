@@ -63,7 +63,6 @@ class _AddPageState extends State<AddPage> {
   List<XFile?> _images = [];
   List<Color> _imageFilters = [];
   List<Widget?> _textWidgets = [];
-  List<bool> _isEditing = [];
   List<TextEditingController> textControllers = [];
   List<String> _hashtags = [];
   List<String> _mentions = [];
@@ -85,19 +84,40 @@ class _AddPageState extends State<AddPage> {
   Future<void> _publishContent() async {
     final description = _descriptionController.text;
     
-    // Debug: Print out details before publishing
-    print('Publishing content:');
-    print('Description: $description');
-    for (int i = 0; i < _images.length; i++) {
-      print('Image $i: ${_images[i]?.path}');
-    }
+    try {
+      // Use PublishService to publish content
+      final success = await _publishService.publishContent(
+        description: description,
+        images: _images,
+        imageFilters: _imageFilters,
+        textControllers: textControllers,
+        context: context,
+      );
 
-    if (mounted) {
-      // Réinitialiser les champs
-      _descriptionController.clear();
-      setState(() {
-        _textWidgets.fillRange(0, _textWidgets.length, null);
-      });
+      if (success) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Publication réussie')),
+        );
+
+        // Reset fields
+        _descriptionController.clear();
+        setState(() {
+          _textWidgets.fillRange(0, _textWidgets.length, null);
+          _images.fillRange(0, _images.length, null);
+          _imageFilters.fillRange(0, _imageFilters.length, Colors.transparent);
+        });
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Échec de la publication')),
+        );
+      }
+    } catch (e) {
+      // Handle any errors during publishing
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur: ${e.toString()}')),
+      );
     }
   }
 

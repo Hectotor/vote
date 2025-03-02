@@ -23,6 +23,11 @@ class PublishService {
     return mentions;
   }
 
+  // Méthode publique pour extraire les mentions
+  List<String> extractMentions(String text) {
+    return _extractMentions(text);
+  }
+
   // Méthode pour publier du contenu
   Future<bool> publishContent({
     required String description,
