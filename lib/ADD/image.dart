@@ -2,8 +2,7 @@ import 'dart:ui';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'bloc.dart';
+
 
 class ImageFilterPage extends StatefulWidget {
   final XFile image;
@@ -153,108 +152,5 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
         ],
       ),
     );
-  }
-}
-
-// Fonction addPhoto modifiée pour gérer les GIFs
-Future<void> addPhoto(int index, List<XFile?> images, Function setState,
-    BuildContext context, Function(int, Color) onFilterChange) async {
-  if (!context.mounted) return;
-
-  final picker = ImagePicker();
-  final XFile? pickedFile = await picker.pickImage(
-    source: ImageSource.gallery,
-  );
-
-  if (pickedFile != null && context.mounted) {
-    if (pickedFile.path.toLowerCase().endsWith('.gif')) {
-      setState(() {
-        images[index] = pickedFile;
-      });
-      onFilterChange(index, Colors.transparent);
-    } else {
-      final blockRatio = BlocGrid.getBlockRatio(context);
-      final croppedFile = await ImageCropper().cropImage(
-        sourcePath: pickedFile.path,
-        aspectRatio: CropAspectRatio(ratioX: blockRatio, ratioY: 1),
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Recadrer l\'image',
-            toolbarColor: const Color(0xFF3498DB),  // Couleur modifiée
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: true,
-          ),
-          IOSUiSettings(
-            title: 'Recadrer l\'image',
-            doneButtonTitle: 'Terminer',
-            cancelButtonTitle: 'Annuler',
-            aspectRatioLockEnabled: true,
-          ),
-        ],
-      );
-
-      if (croppedFile != null && context.mounted) {
-        final imageFile = XFile(croppedFile.path);
-        await ImageFilterPage.show(
-          context: context,
-          image: imageFile,
-          onFilterSelected: (image, filter) {
-            setState(() {
-              images[index] = image;
-            });
-            onFilterChange(index, filter);
-          },
-        );
-      }
-    }
-  }
-}
-
-Future<void> takePhoto(int index, List<XFile?> images, Function setState,
-    BuildContext context, Function(int, Color) onFilterChange) async {
-  if (!context.mounted) return;
-
-  final picker = ImagePicker();
-  final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-  if (pickedFile != null && context.mounted) {
-    final blockRatio = BlocGrid.getBlockRatio(context);
-    final croppedFile = await ImageCropper().cropImage(
-      sourcePath: pickedFile.path,
-      aspectRatio: CropAspectRatio(ratioX: blockRatio, ratioY: 1),
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Recadrer l\'image',
-          toolbarColor: const Color(0xFF151019),  // Couleur demandée
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.original,
-          lockAspectRatio: true,
-          activeControlsWidgetColor: Colors.white,  
-        ),
-        IOSUiSettings(
-          title: 'Recadrer l\'image',
-          doneButtonTitle: 'Terminer',
-          cancelButtonTitle: 'Annuler',
-          aspectRatioLockEnabled: true,
-        ),
-      ],
-    );
-
-    if (croppedFile != null && context.mounted) {
-      final imageFile = XFile(croppedFile.path);
-      await ImageFilterPage.show(
-        context: context,
-        image: imageFile,
-        onFilterSelected: (image, filter) {
-          setState(() {
-            images[index] = image;
-          });
-          onFilterChange(index, filter);
-        },
-      );
-    } else {
-      print('No photo taken');
-    }
   }
 }
