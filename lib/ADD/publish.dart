@@ -59,10 +59,10 @@ class PublishService {
       final postRef = await _firestore.collection('posts').add({
         'userId': user.uid,
         'description': description,
-        'timestamp': FieldValue.serverTimestamp(),
         'hashtags': allHashtags,
         'mentions': allMentions,
         'blocs': blocData,
+        'timestamp': FieldValue.serverTimestamp(),
       });
 
       // Gérer les hashtags
@@ -155,24 +155,6 @@ class PublishService {
     }
   }
 
-  // Ajouter un commentaire
-  Future<void> addComment({
-    required String postId, 
-    required String text,
-  }) async {
-    final user = _auth.currentUser;
-    if (user == null) {
-      throw Exception('Utilisateur non connecté');
-    }
-
-    await _firestore.collection('comments').add({
-      'postId': postId,
-      'userId': user.uid,
-      'text': text,
-      'createdAt': FieldValue.serverTimestamp(),
-      'likes': [],
-    });
-  }
 
   // Valider la présence d'images dans les blocs 1 et 2
   bool canPublish({

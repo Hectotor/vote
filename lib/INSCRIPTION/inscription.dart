@@ -22,6 +22,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _inscriptionTerminee = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -77,6 +78,10 @@ class _InscriptionPageState extends State<InscriptionPage> {
 
   Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
       try {
         // Vérifier si l'e-mail existe déjà
         List<String> signInMethods = await FirebaseAuth.instance
@@ -85,6 +90,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
         if (signInMethods.isNotEmpty) {
           setState(() {
             _errorMessage = "Cette adresse e-mail est déjà utilisée";
+            _isLoading = false;
           });
           return;
         }
@@ -110,6 +116,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
                 .set({
               'pseudo': _pseudoController.text,
               'email': _emailController.text,
+              'createdAt': Timestamp.now(), // Nouvelle ligne pour ajouter la date d'inscription
             });
 
             Navigator.pop(context);
@@ -117,10 +124,12 @@ class _InscriptionPageState extends State<InscriptionPage> {
         });
         setState(() {
           _inscriptionTerminee = true;
+          _isLoading = false;
         });
       } on FirebaseAuthException catch (e) {
         setState(() {
           _errorMessage = e.message;
+          _isLoading = false;
         });
       }
     }
@@ -296,9 +305,9 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: _isFormValid() && _pseudoErrorMessage == null
-                          ? _register
-                          : null,
+                      onPressed: _isLoading || !_isFormValid() || _pseudoErrorMessage != null
+                          ? null
+                          : _register,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         foregroundColor: Colors.white,
@@ -324,14 +333,16 @@ class _InscriptionPageState extends State<InscriptionPage> {
                           width: double.infinity,
                           height: 56,
                           alignment: Alignment.center,
-                          child: Text(
-                            'S\'inscrire',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: _isFormValid() ? Colors.white : Color(0xFF151019),
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : Text(
+                                  'S\'inscrire',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: _isFormValid() ? Colors.white : Color(0xFF151019),
+                                  ),
+                                ),
                         ),
                       ),
                     ),
