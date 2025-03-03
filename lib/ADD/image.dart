@@ -90,16 +90,28 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
             child: Center(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Stack(
-                  children: [
-                    Image.file(
-                      File(widget.image.path),
-                      fit: BoxFit.contain,
-                    ),
-                    Positioned.fill(
-                      child: Container(color: _selectedFilter),
-                    ),
-                  ],
+                child: AspectRatio(
+                  aspectRatio: 1.0,  // Force 1:1 square
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.file(
+                        File(widget.image.path),
+                        fit: BoxFit.cover,
+                      ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: IgnorePointer(
+                          child: Container(
+                            color: _selectedFilter,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -132,15 +144,18 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(6),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Image.file(
-                            File(widget.image.path),
-                            fit: BoxFit.cover,
-                          ),
-                          Container(color: _filterColors[index]),
-                        ],
+                      child: AspectRatio(
+                        aspectRatio: 1.0,  // Force 1:1 square
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Image.file(
+                              File(widget.image.path),
+                              fit: BoxFit.cover,
+                            ),
+                            Container(color: _filterColors[index]),
+                          ],
+                        ),
                       ),
                     ),
                   ),

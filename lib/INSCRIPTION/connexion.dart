@@ -236,8 +236,8 @@ class _ConnexionPageState extends State<ConnexionPage> {
                           borderRadius: BorderRadius.circular(10),
                           gradient: LinearGradient(
                             colors: [
-                              Colors.deepPurple[600]!, 
-                              Colors.purpleAccent[700]!
+                              Colors.grey[700]!, 
+                              Colors.grey[800]!
                             ],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
