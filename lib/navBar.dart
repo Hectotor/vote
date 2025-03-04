@@ -90,7 +90,7 @@ class _NavBarState extends State<NavBar> {
     return BottomNavigationBarItem(
       icon: Icon(
         _selectedIndex == index ? selectedIcon : unselectedIcon,
-        size: 30, // Taille augmentée
+        size: 30,
       ),
       label: label,
     );
@@ -99,9 +99,9 @@ class _NavBarState extends State<NavBar> {
   BottomNavigationBarItem _buildAddButton() {
     return BottomNavigationBarItem(
       icon: Icon(
-        Icons.add_circle,
+        Icons.add,
         size: 38, // Taille augmentée
-        color: Colors.grey[400],
+        color: Colors.grey[600],
       ),
       label: '',
     );

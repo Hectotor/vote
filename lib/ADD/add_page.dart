@@ -202,12 +202,8 @@ class _AddPageState extends State<AddPage> {
                 _publishContent();
               } : null,
               style: TextButton.styleFrom(
-                foregroundColor: _canPublish() ? Colors.white : Colors.white38,
+                foregroundColor: _canPublish() ? const Color(0xFF3498DB) : Colors.white70,
                 padding: EdgeInsets.zero,
-                side: BorderSide(
-                  color: _canPublish() ? Colors.white : Colors.white24,
-                  width: 1.0,
-                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

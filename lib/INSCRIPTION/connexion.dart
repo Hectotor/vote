@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:votely/INSCRIPTION/inscription.dart';
 import 'package:votely/main.dart';
 import 'package:votely/navBar.dart'; // Add this import
+import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
 
 class ConnexionPage extends StatefulWidget {
   const ConnexionPage({super.key});
@@ -17,6 +18,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? _errorMessage;
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -62,21 +64,64 @@ class _ConnexionPageState extends State<ConnexionPage> {
   }
 
   void _login() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.text,
-          password: _passwordController.text,
-        );
-        Navigator.pushReplacement(
-          context,
+    // Vérifier la validité du formulaire
+    if (!_isFormValid()) {
+      return;
+    }
+
+    // Commencer le chargement
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Connexion avec Firebase Authentication
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      // Vérifier si l'utilisateur existe et est vérifié
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
+
+      if (userDoc.exists) {
+        // Rediriger vers la page d'accueil
+        Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const NavBar()),
         );
-      } on FirebaseAuthException catch (_) {
-        _showErrorMessage(
-            'Oups ! E-mail ou mot de passe incorrect.'
-        );
+      } else {
+        // Gérer le cas où l'utilisateur n'existe pas dans Firestore
+        setState(() {
+          _errorMessage = 'Compte introuvable';
+        });
       }
+    } on FirebaseAuthException catch (e) {
+      // Gérer les erreurs de connexion
+      setState(() {
+        switch (e.code) {
+          case 'user-not-found':
+            _errorMessage = 'Aucun utilisateur trouvé avec cet email';
+            break;
+          case 'wrong-password':
+            _errorMessage = 'Mot de passe incorrect';
+            break;
+          default:
+            _errorMessage = 'Erreur de connexion. Réessayez.';
+        }
+      });
+    } catch (e) {
+      // Gérer les autres erreurs
+      setState(() {
+        _errorMessage = 'Une erreur est survenue. Réessayez.';
+      });
+    } finally {
+      // Toujours arrêter le chargement
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -184,36 +229,14 @@ class _ConnexionPageState extends State<ConnexionPage> {
                     ),
                   ),
                   if (_errorMessage != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      margin: const EdgeInsets.only(top: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.red.withOpacity(0.3),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16, left: 16),
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(
+                          color: Colors.red[400],
+                          fontSize: 14,
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            color: Colors.red[400],
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              _errorMessage!,
-                              style: TextStyle(
-                                color: Colors.red[400],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   const SizedBox(height: 32),
@@ -221,7 +244,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: _isFormValid() ? _login : null,
+                      onPressed: _isLoading || !_isFormValid() ? null : _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         foregroundColor: Colors.white,
@@ -231,30 +254,49 @@ class _ConnexionPageState extends State<ConnexionPage> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: Ink(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           gradient: LinearGradient(
                             colors: [
-                              Colors.grey[700]!, 
-                              Colors.grey[800]!
+                              Colors.blue[600]!, 
+                              Colors.blue[900]!
                             ],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
                         ),
+                        curve: Curves.easeInOut,
                         child: Container(
                           width: double.infinity,
                           height: 56,
                           alignment: Alignment.center,
-                          child: Text(
-                            'Se connecter',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: _isFormValid() ? Colors.white : Color(0xFF151019),
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Se connecter',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                        letterSpacing: 1.2,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Icon(
+                                      Icons.login,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ],
+                                ),
                         ),
                       ),
                     ),

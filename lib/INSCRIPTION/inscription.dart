@@ -1,7 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+@override
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:votely/INSCRIPTION/confirmation_email.dart';
+import 'package:votely/INSCRIPTION/mail_confirm.dart';
 import 'package:votely/main.dart';
+// Importer le service
 
 class InscriptionPage extends StatefulWidget {
   const InscriptionPage({super.key});
@@ -76,62 +81,101 @@ class _InscriptionPageState extends State<InscriptionPage> {
     }
   }
 
+  String _generateVerificationCode() {
+    return EmailConfirmationService.generateVerificationCode();
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Veuillez entrer un mot de passe';
+    }
+
+    if (value.length < 6) {
+      return 'Le mot de passe doit contenir au moins 6 caractères';
+    }
+
+    return null;
+  }
+
   Future<void> _register() async {
-    if (_formKey.currentState!.validate()) {
+    // Vérifier la validité du formulaire
+    if (!_isFormValid() || _pseudoErrorMessage != null) {
+      return;
+    }
+
+    // Validation du mot de passe
+    final passwordValidation = _validatePassword(_passwordController.text);
+    if (passwordValidation != null) {
       setState(() {
-        _isLoading = true;
+        _errorMessage = passwordValidation;
+      });
+      return;
+    }
+
+    // Commencer le chargement
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Créer un utilisateur avec Firebase Authentication
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      // Générer un code de vérification
+      String verificationCode = _generateVerificationCode();
+
+      // Stocker les informations de l'utilisateur dans Firestore
+      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        'email': _emailController.text.trim(),
+        'pseudo': _pseudoController.text.trim(),
+        'emailVerified': false,
+        'verificationCode': verificationCode,
+        'createdAt': FieldValue.serverTimestamp(),
       });
 
-      try {
-        // Vérifier si l'e-mail existe déjà
-        List<String> signInMethods = await FirebaseAuth.instance
-            .fetchSignInMethodsForEmail(_emailController.text);
-        
-        if (signInMethods.isNotEmpty) {
-          setState(() {
-            _errorMessage = "Cette adresse e-mail est déjà utilisée";
-            _isLoading = false;
-          });
-          return;
+      // Naviguer vers la page de confirmation
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => ConfirmationEmailPage(
+            email: _emailController.text.trim(),
+            verificationCode: verificationCode,
+          ),
+        ),
+      );
+
+      // Marquer l'inscription comme terminée
+      setState(() {
+        _inscriptionTerminee = true;
+      });
+
+    } on FirebaseAuthException catch (e) {
+      // Gérer les erreurs de création de compte
+      setState(() {
+        switch (e.code) {
+          case 'email-already-in-use':
+            _errorMessage = 'Cet email est déjà utilisé';
+            break;
+          case 'weak-password':
+            _errorMessage = 'Le mot de passe est trop faible';
+            break;
+          default:
+            _errorMessage = 'Erreur lors de l\'inscription. Réessayez.';
         }
-
-        UserCredential userCredential =
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _emailController.text,
-          password: _passwordController.text,
-        );
-
-        // Mettre à jour le profil utilisateur avec le pseudo
-        await userCredential.user!.updateProfile(
-          displayName: _pseudoController.text,
-        );
-
-        await userCredential.user!.sendEmailVerification();
-
-        FirebaseAuth.instance.authStateChanges().listen((User? user) async {
-          if (user != null && user.emailVerified) {
-            await FirebaseFirestore.instance
-                .collection('users')
-                .doc(user.uid)
-                .set({
-              'pseudo': _pseudoController.text,
-              'email': _emailController.text,
-              'createdAt': Timestamp.now(), // Nouvelle ligne pour ajouter la date d'inscription
-            });
-
-            Navigator.pop(context);
-          }
-        });
-        setState(() {
-          _inscriptionTerminee = true;
-          _isLoading = false;
-        });
-      } on FirebaseAuthException catch (e) {
-        setState(() {
-          _errorMessage = e.message;
-          _isLoading = false;
-        });
-      }
+      });
+    } catch (e) {
+      // Gérer les autres erreurs
+      setState(() {
+        _errorMessage = 'Une erreur est survenue. Réessayez.';
+      });
+    } finally {
+      // Toujours arrêter le chargement
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -181,37 +225,14 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     icon: Icons.person_outline,
                   ),
                   if (_pseudoErrorMessage != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      margin: const EdgeInsets.only(top: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.red.withOpacity(0.3),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, left: 16),
+                      child: Text(
+                        _pseudoErrorMessage!,
+                        style: TextStyle(
+                          color: Colors.red[400],
+                          fontSize: 14,
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            color: Colors.red[400],
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _pseudoErrorMessage!,
-                              style: TextStyle(
-                                color: Colors.red[400],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   const SizedBox(height: 20),
@@ -240,6 +261,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
                         });
                       },
                     ),
+                    validator: _validatePassword,
                   ),
                   const SizedBox(height: 20),
                   _buildTextField(
@@ -317,48 +339,68 @@ class _InscriptionPageState extends State<InscriptionPage> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: Ink(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           gradient: LinearGradient(
                             colors: [
-                              Colors.grey[700]!, 
-                              Colors.grey[800]!
+                              Colors.blue[600]!, 
+                              Colors.blue[900]!
                             ],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
                         ),
+                        curve: Curves.easeInOut,
                         child: Container(
                           width: double.infinity,
                           height: 56,
                           alignment: Alignment.center,
                           child: _isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
-                              : Text(
-                                  'S\'inscrire',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: _isFormValid() ? Colors.white : Color(0xFF151019),
-                                  ),
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'S\'inscrire',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                        letterSpacing: 1.2,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Icon(
+                                      Icons.person_add_outlined,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ],
                                 ),
                         ),
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20.0),
-                    child: _inscriptionTerminee 
-                      ? Text(
-                          "🚀 Vérifie ta boite mail ! Un lien t'attend pour confirmer ton compte.",
-                          style: TextStyle(
-                            color: Colors.grey[100],
-                            fontSize: 12,
-                          ),
-                          textAlign: TextAlign.center,
+                  const SizedBox(height: 24),
+                  // Bouton de test pour la page de confirmation d'e-mail
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context, 
+                        MaterialPageRoute(
+                          builder: (context) => ConfirmationEmailPage(
+                            email: _emailController.text, 
+                            verificationCode: '123456' // Code de test
+                          )
                         )
-                      : Container(), // N'affiche rien si l'inscription n'est pas terminée
+                      );
+                    },
+                    child: Text('Tester Confirmation Email'),
                   ),
                   const SizedBox(height: 24),
                 ],
