@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:votely/INSCRIPTION/confirmation_email.dart';
 import 'package:votely/INSCRIPTION/mail_confirm.dart';
 import 'package:votely/main.dart';
-// Importer le service
+import 'package:votely/navBar.dart'; 
+
 
 class InscriptionPage extends StatefulWidget {
   const InscriptionPage({super.key});
@@ -26,7 +27,6 @@ class _InscriptionPageState extends State<InscriptionPage> {
   String? _pseudoErrorMessage;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
-  bool _inscriptionTerminee = false;
   bool _isLoading = false;
 
   @override
@@ -119,6 +119,25 @@ class _InscriptionPageState extends State<InscriptionPage> {
     });
 
     try {
+      // Vérifier si l'email existe déjà
+      QuerySnapshot userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: _emailController.text.trim())
+          .get();
+
+      if (userQuery.docs.isNotEmpty) {
+        // L'email existe déjà, rediriger vers la page de confirmation
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => ConfirmationEmailPage(
+              email: _emailController.text.trim(),
+              verificationCode: userQuery.docs.first['verificationCode'] ?? '',
+            ),
+          ),
+        );
+        return;
+      }
+
       // Créer un utilisateur avec Firebase Authentication
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
@@ -139,18 +158,8 @@ class _InscriptionPageState extends State<InscriptionPage> {
 
       // Naviguer vers la page de confirmation
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => ConfirmationEmailPage(
-            email: _emailController.text.trim(),
-            verificationCode: verificationCode,
-          ),
-        ),
+        MaterialPageRoute(builder: (context) => const NavBar()),
       );
-
-      // Marquer l'inscription comme terminée
-      setState(() {
-        _inscriptionTerminee = true;
-      });
 
     } on FirebaseAuthException catch (e) {
       // Gérer les erreurs de création de compte

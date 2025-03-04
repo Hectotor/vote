@@ -4,6 +4,7 @@ import 'package:votely/INSCRIPTION/inscription.dart';
 import 'package:votely/main.dart';
 import 'package:votely/navBar.dart'; // Add this import
 import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
+import 'package:votely/INSCRIPTION/confirmation_email.dart';
 
 class ConnexionPage extends StatefulWidget {
   const ConnexionPage({super.key});
@@ -63,41 +64,52 @@ class _ConnexionPageState extends State<ConnexionPage> {
     return null;
   }
 
-  void _login() async {
-    // Vérifier la validité du formulaire
+  Future<void> _login() async {
     if (!_isFormValid()) {
       return;
     }
 
-    // Commencer le chargement
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
     });
 
     try {
-      // Connexion avec Firebase Authentication
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      // Vérifier si l'utilisateur existe et est vérifié
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+      // Récupérer l'utilisateur par email
+      QuerySnapshot userQuery = await FirebaseFirestore.instance
           .collection('users')
-          .doc(userCredential.user!.uid)
+          .where('email', isEqualTo: _emailController.text.trim())
           .get();
 
-      if (userDoc.exists) {
-        // Rediriger vers la page d'accueil
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const NavBar()),
-        );
-      } else {
-        // Gérer le cas où l'utilisateur n'existe pas dans Firestore
+      if (userQuery.docs.isEmpty) {
         setState(() {
-          _errorMessage = 'Compte introuvable';
+          _errorMessage = 'Aucun utilisateur trouvé avec cet email';
         });
+        return;
       }
+
+      // Vérifier si le compte est vérifié
+      bool isEmailVerified = userQuery.docs.first['emailVerified'] ?? false;
+
+
+      if (!isEmailVerified) {
+        // Rediriger vers la page de confirmation d'email
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => ConfirmationEmailPage(
+              email: _emailController.text.trim(),
+              verificationCode: userQuery.docs.first['verificationCode'] ?? '',
+            ),
+          ),
+        );
+        return;
+      }
+
+      // Si le compte est vérifié, aller à la page principale
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const NavBar()),
+      );
+
     } on FirebaseAuthException catch (e) {
       // Gérer les erreurs de connexion
       setState(() {
