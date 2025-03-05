@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:toplyke/INSCRIPTION/confirmation_email.dart';
 import 'package:toplyke/INSCRIPTION/mail_confirm.dart';
 import 'package:toplyke/main.dart';
-import 'package:toplyke/navBar.dart'; 
+
 
 
 class InscriptionPage extends StatefulWidget {
@@ -81,9 +81,6 @@ class _InscriptionPageState extends State<InscriptionPage> {
     }
   }
 
-  String _generateVerificationCode() {
-    return EmailConfirmationService.generateVerificationCode();
-  }
 
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) {
@@ -98,8 +95,11 @@ class _InscriptionPageState extends State<InscriptionPage> {
   }
 
   Future<void> _register() async {
+    print('Méthode _register appelée'); // Log pour vérifier l'appel de la méthode
+
     // Vérifier la validité du formulaire
     if (!_isFormValid() || _pseudoErrorMessage != null) {
+      print('Formulaire invalide ou pseudo déjà utilisé'); // Log pour le statut du formulaire
       return;
     }
 
@@ -109,6 +109,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
       setState(() {
         _errorMessage = passwordValidation;
       });
+      print('Validation du mot de passe échouée : $passwordValidation'); // Log d'erreur
       return;
     }
 
@@ -117,6 +118,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
       setState(() {
         _errorMessage = 'Les mots de passe ne correspondent pas.';
       });
+      print('Les mots de passe ne correspondent pas'); // Log d'erreur
       return;
     }
 
@@ -127,23 +129,33 @@ class _InscriptionPageState extends State<InscriptionPage> {
     });
 
     try {
-      // Vérifier si l'email existe déjà
-      QuerySnapshot userQuery = await FirebaseFirestore.instance
-          .collection('mails')
+      // Vérifier si l'email est déjà utilisé
+      var emailQuery = await FirebaseFirestore.instance
+          .collection('users')
           .where('email', isEqualTo: _emailController.text.trim())
           .get();
 
-      if (userQuery.docs.isNotEmpty) {
-        // L'email existe déjà, rediriger vers la page de confirmation
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => ConfirmationEmailPage(
+      if (emailQuery.docs.isNotEmpty) {
+        // L'email existe déjà, récupérer les données de l'utilisateur
+        var userData = emailQuery.docs.first.data();
+        
+        if (userData['emailVerified'] == false) {
+          // Rediriger vers la page de confirmation si l'email n'est pas vérifié
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ConfirmationEmailPage(
               email: _emailController.text.trim(),
-              verificationCode: userQuery.docs.first['verificationCode'] ?? '',
-            ),
-          ),
-        );
-        return;
+              verificationCode: userData['verificationCode'] ?? '', // Assurez-vous que ce champ existe
+            )),
+          );
+          return;
+        } else {
+          // Afficher un message si l'email est déjà utilisé et vérifié
+          setState(() {
+            _errorMessage = 'Cet email est déjà utilisé.';
+          });
+          return;
+        }
       }
 
       // Créer un utilisateur avec Firebase Authentication
@@ -151,55 +163,46 @@ class _InscriptionPageState extends State<InscriptionPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-
-      // Générer un code de vérification
-      String verificationCode = _generateVerificationCode();
+      print('Utilisateur créé avec succès : ${userCredential.user!.uid}'); // Log de succès
 
       // Stocker les informations de l'utilisateur dans Firestore
       await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
         'email': _emailController.text.trim(),
         'pseudo': _pseudoController.text.trim(),
         'emailVerified': false,
-        'verificationCode': verificationCode,
+        'verificationCode': EmailConfirmationService.generateVerificationCode(),
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // Enregistrer le pseudo dans la collection 'pseudos'
-      await FirebaseFirestore.instance.collection('pseudos').add({
-        'pseudo': _pseudoController.text.trim(),
-      });
+      // Générer un code de vérification
+      String verificationCode = EmailConfirmationService.generateVerificationCode();
 
-      // Enregistrer le mail dans la collection 'mails'
-      await FirebaseFirestore.instance.collection('mails').add({
-        'email': _emailController.text.trim(),
-      });
+      // Envoi d'un email à l'utilisateur
+      await EmailConfirmationService.sendConfirmationEmail(_emailController.text.trim(), verificationCode);
 
-      // Naviguer vers la page de confirmation
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const NavBar()),
+      // Rediriger vers la page de confirmation
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ConfirmationEmailPage(
+          email: _emailController.text.trim(),
+          verificationCode: verificationCode,
+        )),
       );
 
-    } on FirebaseAuthException catch (e) {
-      // Gérer les erreurs de création de compte
-      setState(() {
-        switch (e.code) {
-          case 'email-already-in-use':
-            _errorMessage = 'Cet email est déjà utilisé';
-            break;
-          case 'weak-password':
-            _errorMessage = 'Le mot de passe est trop faible';
-            break;
-          default:
-            _errorMessage = 'Erreur lors de l\'inscription. Réessayez.';
-        }
-      });
+    } on FirebaseAuthException catch (_) {
+        // Gérer d'autres erreurs si nécessaire
     } catch (e) {
-      // Gérer les autres erreurs
-      setState(() {
-        _errorMessage = 'Une erreur est survenue. Réessayez.';
-      });
+      if (e is FirebaseAuthException) {
+        setState(() {
+          _errorMessage = 'Erreur : ${e.message}';
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Une erreur est survenue. Réessayez.';
+        });
+      }
+      print('Erreur : ${e.toString()}');
     } finally {
-      // Toujours arrêter le chargement
       setState(() {
         _isLoading = false;
       });

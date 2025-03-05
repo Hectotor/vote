@@ -27,6 +27,8 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
   );
   String? _errorMessage;
   bool _isLoading = false;
+  String? enteredCode;
+  bool _isCodeResent = false;
 
   @override
   void initState() {
@@ -60,12 +62,12 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
 
   void _verifyCode() async {
     // Combiner les 6 chiffres en un seul code
-    String enteredCode = _codeControllers
+    enteredCode = _codeControllers
         .map((controller) => controller.text)
         .join();
 
     // Vérifier que tous les champs sont remplis
-    if (enteredCode.length != 6) {
+    if (enteredCode!.length != 6) {
       setState(() {
         _errorMessage = 'Veuillez saisir le code complet';
       });
@@ -79,7 +81,7 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
     });
 
     try {
-      if (enteredCode == widget.verificationCode) {
+      if (verifyCode(enteredCode!)) {
         // Code de vérification correct
         await FirebaseFirestore.instance
             .collection('users')
@@ -117,6 +119,9 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
     }
   }
 
+  bool verifyCode(String inputCode) {
+    return inputCode == widget.verificationCode;
+  }
 
   @override
   void dispose() {
@@ -326,18 +331,27 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
                 // Bouton de renvoi de code
                 Padding(
                   padding: const EdgeInsets.only(top: 20.0),
-                  child: TextButton(
-                    onPressed: _isLoading ? null : () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Nouveau code en cours d\'envoi...')),
-                      );
-                    },
-                    child: Text(
-                      'Renvoyer le code',
-                      style: TextStyle(
-                        color: Colors.grey[400],
+                  child: Column(
+                    children: [
+                      TextButton(
+                        onPressed: _isLoading ? null : () {
+                          setState(() {
+                            _isCodeResent = true;
+                          });
+                        },
+                        child: Text(
+                          'Renvoyer le code',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                          ),
+                        ),
                       ),
-                    ),
+                      if (_isCodeResent)
+                        Text(
+                          'Code renvoyé avec succès!',
+                          style: TextStyle(color: Colors.green),
+                        ),
+                    ],
                   ),
                 ),
               ],
