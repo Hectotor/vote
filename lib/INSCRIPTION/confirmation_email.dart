@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toplyke/home/home_page.dart';
+import 'mail_confirm.dart'; // Assurez-vous que le chemin est correct
 
 class ConfirmationEmailPage extends StatefulWidget {
   final String email;
@@ -334,10 +335,22 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
                   child: Column(
                     children: [
                       TextButton(
-                        onPressed: _isLoading ? null : () {
+                        onPressed: _isLoading ? null : () async {
                           setState(() {
-                            _isCodeResent = true;
+                            _isLoading = true;
                           });
+                          try {
+                            String verificationCode = EmailConfirmationService.generateVerificationCode();
+                            await EmailConfirmationService.sendConfirmationEmail(widget.email, verificationCode);
+                            print('Email envoyé avec succès');
+                          } catch (e) {
+                            print('Erreur lors de l\'envoi de l\'email : $e');
+                          } finally {
+                            setState(() {
+                              _isLoading = false;
+                              _isCodeResent = true;
+                            });
+                          }
                         },
                         child: Text(
                           'Renvoyer le code',

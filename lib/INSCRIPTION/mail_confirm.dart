@@ -40,6 +40,7 @@ class EmailConfirmationService {
     );
 
     print('Tentative d\'envoi depuis $smtpEmail via $smtpServer:$smtpPort');
+    print('Configuration SMTP : $smtpEmail, $smtpServer:$smtpPort');
     final message = Message()
       ..from = Address(smtpEmail, 'TopLyke')
       ..recipients.add(email)
@@ -59,6 +60,7 @@ class EmailConfirmationService {
 
     try {
       await send(message, server);
+      print('Email envoyé avec succès à $email');
     } catch (e) {
       print('Erreur lors de l\'envoi de l\'e-mail : $e');
     }
