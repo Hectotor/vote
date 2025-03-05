@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:votely/INSCRIPTION/connexion.dart';
-//import 'package:vote_app/INSCRIPTION/inscription.dart';
+import 'package:toplyke/splash_screen.dart';
+//import 'package:toplyke/INSCRIPTION/inscription.dart';
 
 //import 'navBar.dart';
 
@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Firebase Demo',
+      title: 'Toplyke',
       theme: ThemeData(
         useMaterial3: true,
         splashFactory: NoSplash.splashFactory,
@@ -65,9 +65,9 @@ class MyApp extends StatelessWidget {
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: const [
         Locale('fr', 'FR'), // Add French locale
+        Locale('en', ''),
       ],
-      home: const GradientBackground(
-          child: ConnexionPage()), // Use GradientBackground
+      home: const SplashScreen(), // Set ScreenPage as the home widget
     );
   }
 }

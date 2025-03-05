@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:votely/home/home_page.dart';
+import 'package:toplyke/home/home_page.dart';
 
 class ConfirmationEmailPage extends StatefulWidget {
   final String email;

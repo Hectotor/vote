@@ -3,10 +3,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:votely/INSCRIPTION/confirmation_email.dart';
-import 'package:votely/INSCRIPTION/mail_confirm.dart';
-import 'package:votely/main.dart';
-import 'package:votely/navBar.dart'; 
+import 'package:toplyke/INSCRIPTION/confirmation_email.dart';
+import 'package:toplyke/INSCRIPTION/mail_confirm.dart';
+import 'package:toplyke/main.dart';
+import 'package:toplyke/navBar.dart'; 
 
 
 class InscriptionPage extends StatefulWidget {
@@ -66,7 +66,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
 
   void _checkPseudoExists() async {
     final querySnapshot = await FirebaseFirestore.instance
-        .collection('users')
+        .collection('pseudos')
         .where('pseudo', isEqualTo: _pseudoController.text)
         .get();
 
@@ -154,6 +154,11 @@ class _InscriptionPageState extends State<InscriptionPage> {
         'emailVerified': false,
         'verificationCode': verificationCode,
         'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // Enregistrer le pseudo dans la collection 'pseudos'
+      await FirebaseFirestore.instance.collection('pseudos').add({
+        'pseudo': _pseudoController.text.trim(),
       });
 
       // Naviguer vers la page de confirmation

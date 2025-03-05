@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:votely/main.dart';
+import 'package:toplyke/main.dart';
 import 'home/home_page.dart';
 import 'search/search_page.dart';
 import 'add/add_page.dart';

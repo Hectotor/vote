@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:votely/INSCRIPTION/inscription.dart';
-import 'package:votely/main.dart';
-import 'package:votely/navBar.dart'; // Add this import
+import 'package:toplyke/INSCRIPTION/inscription.dart';
+import 'package:toplyke/main.dart';
+import 'package:toplyke/navBar.dart'; // Add this import
 import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
-import 'package:votely/INSCRIPTION/confirmation_email.dart';
+import 'package:toplyke/INSCRIPTION/confirmation_email.dart';
 
 class ConnexionPage extends StatefulWidget {
   const ConnexionPage({super.key});

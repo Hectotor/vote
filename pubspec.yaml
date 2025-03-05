@@ -1,5 +1,5 @@
-name: votely
-description: "A new Flutter project."
+name: toplyke
+description: "Vote"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -35,6 +35,8 @@ flutter:
   uses-material-design: true
   
   assets:
+    - assets/logo/icon.png
+    
     - assets/fonts/
     
   fonts:

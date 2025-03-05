@@ -41,16 +41,18 @@ class EmailConfirmationService {
 
       print('Tentative d\'envoi depuis $smtpEmail via $smtpServer:$smtpPort');
       final message = Message()
-        ..from = Address(smtpEmail, 'Votely')
+        ..from = Address(smtpEmail, 'TopLyke')
         ..recipients.add(email)
-        ..subject = '🔐 Votre code de vérification Votely'
+        ..subject = '🔐 Votre code de vérification Toplyke'
         ..text = 'Votre code de vérification est : $verificationCode'
         ..html = '''
           <html>
             <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2>Confirmation de votre compte Votely</h2>
+              <h2>🎉 Bienvenue dans l'univers de Toplyke !</h2>
               <p>Votre code de vérification est : <strong>$verificationCode</strong></p>
-              <p>Ce code expirera dans 15 minutes.</p>
+              <p style="text-align: center; margin-top: 20px; margin-bottom: 20px;"><strong>$verificationCode</strong></p>
+              <p>Utilisez-le pour débloquer votre compte et commencer l'aventure avec nous ! 🚀</p>
+              <p>Attention, ce code est comme un super-héros : il expire dans 15 minutes ! ⏳</p>
             </body>
           </html>
         ''';
