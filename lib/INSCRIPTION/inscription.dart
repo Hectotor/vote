@@ -91,7 +91,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
     }
 
     if (value.length < 6) {
-      return 'Le mot de passe doit contenir au moins 6 caractères';
+      return 'Mot de passe : minimum 6 caractères.';
     }
 
     return null;
@@ -112,6 +112,14 @@ class _InscriptionPageState extends State<InscriptionPage> {
       return;
     }
 
+    // Vérifier si les mots de passe correspondent
+    if (_passwordController.text != _confirmPasswordController.text) {
+      setState(() {
+        _errorMessage = 'Les mots de passe ne correspondent pas.';
+      });
+      return;
+    }
+
     // Commencer le chargement
     setState(() {
       _isLoading = true;
@@ -121,7 +129,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
     try {
       // Vérifier si l'email existe déjà
       QuerySnapshot userQuery = await FirebaseFirestore.instance
-          .collection('users')
+          .collection('mails')
           .where('email', isEqualTo: _emailController.text.trim())
           .get();
 
@@ -159,6 +167,11 @@ class _InscriptionPageState extends State<InscriptionPage> {
       // Enregistrer le pseudo dans la collection 'pseudos'
       await FirebaseFirestore.instance.collection('pseudos').add({
         'pseudo': _pseudoController.text.trim(),
+      });
+
+      // Enregistrer le mail dans la collection 'mails'
+      await FirebaseFirestore.instance.collection('mails').add({
+        'email': _emailController.text.trim(),
       });
 
       // Naviguer vers la page de confirmation
@@ -304,36 +317,11 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     },
                   ),
                   if (_errorMessage != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      margin: const EdgeInsets.only(top: 24),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.red.withOpacity(0.3),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            color: Colors.red[400],
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              _errorMessage!,
-                              style: TextStyle(
-                                color: Colors.red[400],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ],
+                    Text(
+                      _errorMessage!,
+                      style: TextStyle(
+                        color: Colors.red[400],
+                        fontSize: 14,
                       ),
                     ),
                   const SizedBox(height: 32),
