@@ -163,26 +163,30 @@ class _InscriptionPageState extends State<InscriptionPage> {
       );
       print('Utilisateur créé avec succès : ${userCredential.user!.uid}'); // Log de succès
 
-      // Stocker les informations de l'utilisateur dans Firestore
+      // Générer un code de vérification
+      String verificationCode = EmailConfirmationService.generateVerificationCode();
+
+      // Enregistrement des données de l'utilisateur dans Firestore
       await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
         'email': _emailController.text.trim().toLowerCase(),
         'pseudo': _pseudoController.text.trim(),
         'emailVerified': false,
         'createdAt': FieldValue.serverTimestamp(),
+        'verificationCode': verificationCode, // Ajout du code de vérification
       });
 
-      // Générer un code de vérification
-      String verificationCode = EmailConfirmationService.generateVerificationCode();
-
-      // Envoi d'un email à l'utilisateur
-      await EmailConfirmationService.sendConfirmationEmail(_emailController.text.trim(), verificationCode);
+      // Envoi du code de vérification par e-mail
+      await EmailConfirmationService.sendConfirmationEmail(
+        _emailController.text.trim().toLowerCase(),
+        verificationCode,
+      );
 
       // Rediriger vers la page de confirmation
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => ConfirmationEmailPage(
           email: _emailController.text.trim(),
-          verificationCode: verificationCode,
+          verificationCode: verificationCode, // Génération du code de vérification
         )),
       );
 

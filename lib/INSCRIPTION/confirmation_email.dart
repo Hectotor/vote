@@ -5,9 +5,9 @@ import 'mail_confirm.dart'; // Assurez-vous que le chemin est correct
 
 class ConfirmationEmailPage extends StatefulWidget {
   final String email;
-  final String verificationCode;
+  final String verificationCode; // Rendre ce champ final
 
-  const ConfirmationEmailPage({
+  ConfirmationEmailPage({
     Key? key, 
     required this.email, 
     required this.verificationCode
@@ -122,6 +122,40 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
 
   bool verifyCode(String inputCode) {
     return inputCode == widget.verificationCode;
+  }
+
+  void _resendCode() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      String newVerificationCode = EmailConfirmationService.generateVerificationCode(); // Générer un nouveau code
+      await FirebaseFirestore.instance.collection('users').where('email', isEqualTo: widget.email).get().then((querySnapshot) {
+        if (querySnapshot.docs.isNotEmpty) {
+          querySnapshot.docs.first.reference.update({
+            'verificationCode': newVerificationCode, // Mettre à jour le code dans Firestore
+          });
+        }
+      });
+      await EmailConfirmationService.sendConfirmationEmail(widget.email, newVerificationCode); // Envoyer le nouveau code par e-mail
+      print('Nouveau code envoyé avec succès');
+
+      // Rediriger vers une nouvelle instance de ConfirmationEmailPage avec le nouveau code
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => ConfirmationEmailPage(
+          email: widget.email,
+          verificationCode: newVerificationCode,
+        )),
+      );
+    } catch (e) {
+      print('Erreur lors de la mise à jour du code : $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+        _isCodeResent = true;
+      });
+    }
   }
 
   @override
@@ -335,23 +369,7 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
                   child: Column(
                     children: [
                       TextButton(
-                        onPressed: _isLoading ? null : () async {
-                          setState(() {
-                            _isLoading = true;
-                          });
-                          try {
-                            String verificationCode = EmailConfirmationService.generateVerificationCode();
-                            await EmailConfirmationService.sendConfirmationEmail(widget.email, verificationCode);
-                            print('Email envoyé avec succès');
-                          } catch (e) {
-                            print('Erreur lors de l\'envoi de l\'email : $e');
-                          } finally {
-                            setState(() {
-                              _isLoading = false;
-                              _isCodeResent = true;
-                            });
-                          }
-                        },
+                        onPressed: _isLoading ? null : _resendCode,
                         child: Text(
                           'Renvoyer le code',
                           style: TextStyle(

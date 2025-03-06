@@ -64,4 +64,28 @@ class EmailConfirmationService {
       print('Erreur lors de l\'envoi de l\'e-mail : $e');
     }
   }
+
+  static Future<void> newGenerateVerificationCode(String email) async {
+    String verificationCode = generateVerificationCode();
+
+    try {
+      // Mettre à jour Firestore avec le nouveau code
+      await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get()
+          .then((querySnapshot) {
+        if (querySnapshot.docs.isNotEmpty) {
+          querySnapshot.docs.first.reference.update({
+            'verificationCode': verificationCode,
+          });
+        }
+      });
+
+      // Envoyer l'email avec le nouveau code
+      await sendConfirmationEmail(email, verificationCode);
+    } catch (e) {
+      print('Erreur lors de la génération ou de l\'envoi du code : $e');
+    }
+  }
 }
