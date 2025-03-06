@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toplyke/navBar.dart';
@@ -30,6 +32,8 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
   bool _isLoading = false;
   String? enteredCode;
   bool _isCodeResent = false;
+  int _remainingTime = 229; // 3 minutes 49 secondes en secondes
+  Timer? _timer;
 
   @override
   void initState() {
@@ -97,11 +101,10 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
           }
         });
 
-        // Navigation vers la page suivante
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => NavBar(), // Remplacez par votre page d'accueil
-          ),
+        // Redirection vers navBar
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => NavBar()),
         );
       } else {
         setState(() {
@@ -124,9 +127,23 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
     return inputCode == widget.verificationCode;
   }
 
+  void _startTimer() {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_remainingTime > 0) {
+        setState(() {
+          _remainingTime--;
+        });
+      } else {
+        _timer?.cancel();
+      }
+    });
+  }
+
   void _resendCode() async {
     setState(() {
       _isLoading = true;
+      _remainingTime = 229; // Réinitialiser le temps restant
+      _startTimer(); // Démarrer le chronomètre
     });
     try {
       String newVerificationCode = EmailConfirmationService.generateVerificationCode(); // Générer un nouveau code
@@ -160,6 +177,7 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
 
   @override
   void dispose() {
+    _timer?.cancel();
     for (var controller in _codeControllers) {
       controller.dispose();
     }
@@ -368,8 +386,12 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
                   padding: const EdgeInsets.only(top: 20.0),
                   child: Column(
                     children: [
+                      Text(
+                        'Temps restant: ${_remainingTime ~/ 60}:${(_remainingTime % 60).toString().padLeft(2, '0')}',
+                        style: TextStyle(color: Colors.grey[400]),
+                      ),
                       TextButton(
-                        onPressed: _isLoading ? null : _resendCode,
+                        onPressed: _isLoading || _remainingTime > 0 ? null : _resendCode,
                         child: Text(
                           'Renvoyer le code',
                           style: TextStyle(
