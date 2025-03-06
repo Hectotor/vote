@@ -187,9 +187,8 @@ class _AddPageState extends State<AddPage> {
         ),
         leading: IconButton(
           icon: const Icon(
-            Icons.arrow_back_ios,
+            Icons.arrow_back,
             color: Colors.white,
-            size: 20,
           ),
           onPressed: _cancel,
         ),

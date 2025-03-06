@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:toplyke/home/home_page.dart';
+import 'package:toplyke/navBar.dart';
 import 'mail_confirm.dart'; // Assurez-vous que le chemin est correct
 
 class ConfirmationEmailPage extends StatefulWidget {
@@ -100,7 +100,7 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
         // Navigation vers la page suivante
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => HomePage(), // Remplacez par votre page d'accueil
+            builder: (context) => NavBar(), // Remplacez par votre page d'accueil
           ),
         );
       } else {

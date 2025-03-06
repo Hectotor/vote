@@ -165,10 +165,9 @@ class _InscriptionPageState extends State<InscriptionPage> {
 
       // Stocker les informations de l'utilisateur dans Firestore
       await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
-        'email': _emailController.text.trim(),
+        'email': _emailController.text.trim().toLowerCase(),
         'pseudo': _pseudoController.text.trim(),
         'emailVerified': false,
-        'verificationCode': EmailConfirmationService.generateVerificationCode(),
         'createdAt': FieldValue.serverTimestamp(),
       });
 
@@ -223,7 +222,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
               Navigator.pop(context);
             },
