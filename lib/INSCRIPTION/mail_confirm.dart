@@ -44,16 +44,15 @@ class EmailConfirmationService {
     final message = Message()
       ..from = Address(smtpEmail, 'TopLyke')
       ..recipients.add(email)
-      ..subject = '🔐 Votre code de vérification Toplyke'
+      ..subject = '📨 Votre code de vérification Toplyke'
       ..text = 'Votre code de vérification est : $verificationCode'
       ..html = '''
         <html>
-          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>🎉 Bienvenue dans l'univers de Toplyke !</h2>
-            <p>Votre code de vérification est : <strong>$verificationCode</strong></p>
-            <p style="text-align: center; margin-top: 20px; margin-bottom: 20px;"><strong>$verificationCode</strong></p>
-            <p>Utilisez-le pour débloquer votre compte et commencer l'aventure avec nous ! 🚀</p>
-            <p>Attention, ce code est comme un super-héros : il expire dans 15 minutes ! ⏳</p>
+          <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px; max-width: 600px; margin: 0 auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+            <h2 style="color: #3C507F;">👋 Confirmation de votre adresse e-mail</h2>
+            <p style="font-size: 18px;">Nous vous avons envoyé ce code pour vérifier votre adresse e-mail :</p>
+            <p style="text-align: center; margin: 20px 0; font-size: 48px; font-weight: bold; color: #333; padding: 10px; border: 2px solid #3C507F; border-radius: 5px;"><strong><span style="font-size: 64px;">$verificationCode</span></strong></p>
+            <p style="font-size: 16px;">Entrez ce code pour activer votre compte ! 🔓</p>
           </body>
         </html>
       ''';
