@@ -12,7 +12,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   /// Duration for splash screen animation
-  final int _splashScreenDuration = 4;
+  final int _splashScreenDuration = 3;
 
   /// Duration for animation
   final int _animationDuration = 2;

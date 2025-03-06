@@ -247,13 +247,74 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  _buildTextField(
+                  TextFormField(
                     controller: _pseudoController,
-                    label: 'Pseudo',
-                    icon: Icons.person_outline,
                     onChanged: (value) {
+                      // Remplacer les espaces par des underscores
+                      String updatedValue = value.replaceAll(' ', '_');
+                      // Empêcher l'utilisation du caractère '|'
+                      if (updatedValue.contains('|')) {
+                        updatedValue = updatedValue.replaceAll('|', '');
+                      }
+                      // Vérifier si le premier caractère est un espace ou un underscore
+                      if (updatedValue.isNotEmpty && (updatedValue[0] == '_' || updatedValue[0] == ' ')) {
+                        updatedValue = updatedValue.substring(1); // Retirer le premier caractère
+                      }
+                      // Mettre à jour le contrôleur avec la nouvelle valeur
+                      _pseudoController.value = TextEditingValue(
+                        text: updatedValue,
+                        selection: TextSelection.collapsed(offset: updatedValue.length),
+                      );
                       _checkPseudoExists(); // Vérifiez instantanément si le pseudo existe
                     },
+                    decoration: InputDecoration(
+                      labelText: 'Pseudo',
+                      labelStyle: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 16,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.person_outline,
+                        color: Colors.grey[400],
+                        size: 22,
+                      ),
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: Colors.grey[800]!,
+                          width: 1,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.white,
+                          width: 1,
+                        ),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: Colors.red[400]!,
+                          width: 1,
+                        ),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: Colors.red[400]!,
+                          width: 1.5,
+                        ),
+                      ),
+                      errorStyle: TextStyle(
+                        color: Colors.red[400],
+                      ),
+                    ),
                   ),
                   if (_pseudoErrorMessage != null)
                     Padding(
