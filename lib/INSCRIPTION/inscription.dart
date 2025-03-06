@@ -33,7 +33,6 @@ class _InscriptionPageState extends State<InscriptionPage> {
   void initState() {
     super.initState();
     _pseudoController.addListener(_updateButtonState);
-    _pseudoController.addListener(_checkPseudoExists);
     _emailController.addListener(_updateButtonState);
     _passwordController.addListener(_updateButtonState);
     _confirmPasswordController.addListener(_updateButtonState);
@@ -42,7 +41,6 @@ class _InscriptionPageState extends State<InscriptionPage> {
   @override
   void dispose() {
     _pseudoController.removeListener(_updateButtonState);
-    _pseudoController.removeListener(_checkPseudoExists);
     _emailController.removeListener(_updateButtonState);
     _passwordController.removeListener(_updateButtonState);
     _confirmPasswordController.removeListener(_updateButtonState);
@@ -66,7 +64,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
 
   void _checkPseudoExists() async {
     final querySnapshot = await FirebaseFirestore.instance
-        .collection('pseudos')
+        .collection('users')
         .where('pseudo', isEqualTo: _pseudoController.text)
         .get();
 
@@ -253,6 +251,9 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     controller: _pseudoController,
                     label: 'Pseudo',
                     icon: Icons.person_outline,
+                    onChanged: (value) {
+                      _checkPseudoExists(); // Vérifiez instantanément si le pseudo existe
+                    },
                   ),
                   if (_pseudoErrorMessage != null)
                     Padding(
@@ -424,23 +425,14 @@ class _InscriptionPageState extends State<InscriptionPage> {
     bool obscureText = false,
     Widget? suffixIcon,
     String? Function(String?)? validator,
+    void Function(String)? onChanged,
   }) {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
       validator: validator,
+      onChanged: onChanged,
       textCapitalization: TextCapitalization.none,
-      onChanged: (value) {
-        if (label == 'Pseudo' || label == 'Adresse e-mail') {
-          final lowercase = value.toLowerCase();
-          if (value != lowercase) {
-            controller.value = controller.value.copyWith(
-              text: lowercase,
-              selection: TextSelection.collapsed(offset: lowercase.length),
-            );
-          }
-        }
-      },
       style: const TextStyle(
         color: Colors.white,
         fontSize: 16,
