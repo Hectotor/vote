@@ -4,6 +4,15 @@ import 'package:toplyke/main.dart';
 import 'package:toplyke/navBar.dart';
 
 class ChangePasswordPage extends StatefulWidget {
+  final String email;
+  final String code;
+
+  const ChangePasswordPage({
+    Key? key,
+    required this.email,
+    required this.code,
+  }) : super(key: key);
+
   @override
   _ChangePasswordPageState createState() => _ChangePasswordPageState();
 }
@@ -21,7 +30,6 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   @override
   void initState() {
     super.initState();
-    // Donne le focus au champ de texte 'Nouveau mot de passe'
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_newPasswordFocusNode);
     });
@@ -41,7 +49,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       _errorMessage = null;
     });
 
-    // Check if passwords match
+    // Vérification de la correspondance des mots de passe
     if (_newPasswordController.text != _confirmPasswordController.text) {
       setState(() {
         _errorMessage = 'Les mots de passe ne correspondent pas.';
@@ -50,7 +58,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       return;
     }
 
-    // Check if the new password is valid
+    // Vérification de la validité du mot de passe
     if (_newPasswordController.text.isEmpty || _newPasswordController.text.length < 6) {
       setState(() {
         _errorMessage = 'Le mot de passe doit contenir au moins 6 caractères.';
@@ -68,20 +76,55 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     }
 
     try {
-      User? user = FirebaseAuth.instance.currentUser; // Get the current user
-      if (user != null) {
-        await user.updatePassword(_newPasswordController.text); // Update password
-        setState(() {
-          _isPasswordChanged = true;
-        });
-      }
+      // Utiliser confirmPasswordReset au lieu de updatePassword
+      await FirebaseAuth.instance.confirmPasswordReset(
+        code: widget.code,
+        newPassword: _newPasswordController.text,
+      );
+      
+      setState(() {
+        _isPasswordChanged = true;
+      });
+      
+      // Afficher un message de succès
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Votre mot de passe a été réinitialisé avec succès'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      // Rediriger vers la page de connexion après un court délai
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/login',
+          (route) => false,
+        );
+      });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Erreur lors du changement de mot de passe : ${e.toString()}';
+        if (e is FirebaseAuthException) {
+          switch (e.code) {
+            case 'expired-action-code':
+              _errorMessage = 'Le code de réinitialisation a expiré. Veuillez recommencer le processus.';
+              break;
+            case 'invalid-action-code':
+              _errorMessage = 'Le code de réinitialisation est invalide. Veuillez recommencer le processus.';
+              break;
+            case 'weak-password':
+              _errorMessage = 'Le mot de passe est trop faible. Veuillez en choisir un plus fort.';
+              break;
+            default:
+              _errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
+          }
+        } else {
+          _errorMessage = 'Une erreur inattendue est survenue. Veuillez réessayer.';
+        }
       });
     } finally {
       setState(() {
-        _isLoading = false; // Stop loading
+        _isLoading = false;
       });
     }
   }
@@ -92,7 +135,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          title: Text('Changer mot de passe'),
+          title: Text('Réinitialiser le mot de passe'),
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
@@ -182,7 +225,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     children: [
                       const SizedBox(height: 20),
                       Text(
-                        'Mot de passe changé avec succès',
+                        'Mot de passe réinitialisé avec succès',
                         style: TextStyle(color: Colors.green, fontSize: 16),
                       ),
                       const SizedBox(height: 10),
@@ -227,7 +270,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'Confirmer',
+                                  'Réinitialiser',
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,

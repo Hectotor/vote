@@ -41,6 +41,8 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
   @override
   void initState() {
     super.initState();
+    // Démarrer le timer dès le lancement de la page
+    _startTimer();
     // Ajouter un listener pour détecter le collage
     for (var controller in _codeControllers) {
       controller.addListener(_handlePastedCode);
@@ -107,7 +109,12 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
         if (widget.isPasswordReset) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ChangePasswordPage()),
+            MaterialPageRoute(
+              builder: (context) => ChangePasswordPage(
+                email: widget.email,
+                code: widget.verificationCode,
+              ),
+            ),
           );
         } else {
           // Redirection vers navBar
