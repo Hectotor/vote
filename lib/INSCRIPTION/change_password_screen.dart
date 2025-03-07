@@ -49,6 +49,15 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       return;
     }
 
+    // Check if the new password is valid
+    if (_newPasswordController.text.isEmpty || _newPasswordController.text.length < 6) {
+      setState(() {
+        _errorMessage = 'Le mot de passe doit contenir au moins 6 caractères.';
+        _isLoading = false;
+      });
+      return;
+    }
+
     try {
       User? user = FirebaseAuth.instance.currentUser; // Get the current user
       if (user != null) {
@@ -236,7 +245,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       obscureText: obscureText,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Ce champ ne peut pas être vide';
+          return 'Le champ est vide';
+        }
+        if (value.length < 6) {
+          return 'Le mot de passe doit contenir au moins 6 caractères';
         }
         return null;
       },
