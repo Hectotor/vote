@@ -203,6 +203,7 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
     return Scaffold(
       backgroundColor: Color(0xFF151019),
       appBar: AppBar(
+        title: widget.isPasswordReset ? Text('Mot de passe oublié') : Text('Confirmation d\'email'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
@@ -220,7 +221,7 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
               children: [
                 // Titre
                 Text(
-                  widget.isPasswordReset ? 'Mot de Passe oublié\nConfirmation Email' : 'Confirmation Email',
+                  'Confirmation Email',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,

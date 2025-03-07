@@ -63,6 +63,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
+          title: Text('Changer mot de passe'),
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
@@ -78,16 +79,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 20),
-                Text(
-                  'Changer Mot de Passe',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[300],
-                  ),
-                ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 10),
                 _buildTextField(
                   controller: _newPasswordController,
                   label: 'Nouveau mot de passe',

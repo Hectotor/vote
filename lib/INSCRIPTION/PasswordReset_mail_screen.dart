@@ -106,7 +106,9 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          children: [
+          
+          children: [ 
+            const SizedBox(height: 10),
             Container(
               margin: const EdgeInsets.only(bottom: 20),
               child: TextField(
