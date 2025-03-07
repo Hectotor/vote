@@ -8,11 +8,13 @@ import 'mail_confirm.dart'; // Assurez-vous que le chemin est correct
 class ConfirmationEmailPage extends StatefulWidget {
   final String email;
   final String verificationCode; // Rendre ce champ final
+  final bool isPasswordReset;
 
   ConfirmationEmailPage({
     Key? key, 
     required this.email, 
-    required this.verificationCode
+    required this.verificationCode,
+    this.isPasswordReset = false,
   }) : super(key: key);
 
   @override
@@ -163,6 +165,7 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
         MaterialPageRoute(builder: (context) => ConfirmationEmailPage(
           email: widget.email,
           verificationCode: newVerificationCode,
+          isPasswordReset: widget.isPasswordReset,
         )),
       );
     } catch (e) {
@@ -209,7 +212,7 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
               children: [
                 // Titre
                 Text(
-                  'Confirmation Email',
+                  widget.isPasswordReset ? 'Confirmation Email\n Mot de Passe oublié' : 'Confirmation Email',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,

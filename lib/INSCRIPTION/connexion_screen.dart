@@ -5,7 +5,7 @@ import 'package:toplyke/main.dart';
 import 'package:toplyke/navBar.dart'; // Add this import
 import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
 import 'package:toplyke/INSCRIPTION/confirmation_email_screen.dart';
-import 'package:toplyke/INSCRIPTION/PasswordReset_screen.dart'; // Assurez-vous que le chemin est correct
+import 'package:toplyke/INSCRIPTION/PasswordReset_mail_screen.dart'; // Assurez-vous que le chemin est correct
 
 class ConnexionPage extends StatefulWidget {
   const ConnexionPage({super.key});

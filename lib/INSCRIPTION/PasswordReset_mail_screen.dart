@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Si vous utilisez Firestore pour envoyer le code
 import 'mail_confirm.dart'; // Assurez-vous que le chemin est correct
+import 'confirmation_email_screen.dart'; // Import the new screen
 
 class PasswordResetPage extends StatefulWidget {
   @override
@@ -177,6 +178,22 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
                         ),
                 ),
               ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ConfirmationEmailPage(
+                      email: emailController.text.trim(),
+                      verificationCode: '123456', // Remplacez ceci par le code réel si nécessaire
+                      isPasswordReset: true, // Indiquer que l'utilisateur vient de la page de réinitialisation
+                    ),
+                  ),
+                );
+              },
+              child: Text('Ouvrir Confirmation Email'),
             ),
           ],
         ),
