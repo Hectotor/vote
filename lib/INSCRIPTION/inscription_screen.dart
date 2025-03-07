@@ -3,7 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:toplyke/INSCRIPTION/confirmation_email.dart';
+import 'package:toplyke/INSCRIPTION/confirmation_email_screen.dart';
 import 'package:toplyke/INSCRIPTION/mail_confirm.dart';
 import 'package:toplyke/main.dart';
 

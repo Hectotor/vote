@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:toplyke/INSCRIPTION/connexion.dart';
+import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
 
 /// SplashScreen widget that displays a splash screen with animation
 class SplashScreen extends StatefulWidget {

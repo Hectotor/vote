@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:toplyke/INSCRIPTION/inscription.dart';
+import 'package:toplyke/INSCRIPTION/inscription_screen.dart';
 import 'package:toplyke/main.dart';
 import 'package:toplyke/navBar.dart'; // Add this import
 import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
-import 'package:toplyke/INSCRIPTION/confirmation_email.dart';
+import 'package:toplyke/INSCRIPTION/confirmation_email_screen.dart';
+import 'package:toplyke/INSCRIPTION/PasswordReset_screen.dart'; // Assurez-vous que le chemin est correct
 
 class ConnexionPage extends StatefulWidget {
   const ConnexionPage({super.key});
@@ -46,16 +47,6 @@ class _ConnexionPageState extends State<ConnexionPage> {
         _passwordController.text.isNotEmpty;
   }
 
-  void _showErrorMessage(String message) {
-    setState(() {
-      _errorMessage = message;
-    });
-    Future.delayed(const Duration(seconds: 3), () {
-      setState(() {
-        _errorMessage = null;
-      });
-    });
-  }
 
   String? _validateEmail(String? value) {
     if (!value!.contains('@')) {
@@ -137,30 +128,6 @@ class _ConnexionPageState extends State<ConnexionPage> {
     }
   }
 
-  void _resetPassword() async {
-    if (_emailController.text.isNotEmpty) {
-      try {
-        // Vérifier d'abord si l'utilisateur existe
-        List<String> signInMethods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(_emailController.text);
-        
-        if (signInMethods.isNotEmpty) {
-          // L'utilisateur existe, envoyer l'email de réinitialisation
-          await FirebaseAuth.instance.sendPasswordResetEmail(
-            email: _emailController.text,
-          );
-          _showErrorMessage('Un email de réinitialisation a été envoyé.');
-        } else {
-          _showErrorMessage('Aucun compte associé à cet email.');
-        }
-      } on FirebaseAuthException catch (_) {
-        _showErrorMessage(
-          'Entre une adresse e-mail valide.' 
-        );
-      }
-    } else {
-      _showErrorMessage('Entre ton e-mail.');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -227,10 +194,12 @@ class _ConnexionPageState extends State<ConnexionPage> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: _resetPassword,
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => PasswordResetPage()),
+                        );
+                      },
                       child: Text(
                         'Mot de passe oublié ?',
                         style: TextStyle(
