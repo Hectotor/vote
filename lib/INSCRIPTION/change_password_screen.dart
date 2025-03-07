@@ -12,7 +12,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   String? _errorMessage;
-  bool _isPasswordVisible = false;
+  bool _isNewPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
   bool _isPasswordChanged = false;
   final FocusNode _newPasswordFocusNode = FocusNode();
@@ -53,6 +54,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     if (_newPasswordController.text.isEmpty || _newPasswordController.text.length < 6) {
       setState(() {
         _errorMessage = 'Le mot de passe doit contenir au moins 6 caractères.';
+        _isLoading = false;
+      });
+      return;
+    }
+
+    if (!RegExp(r'(?=.*[!@#\$%\^&\*])').hasMatch(_newPasswordController.text)) {
+      setState(() {
+        _errorMessage = 'Le mot de passe doit contenir au moins un caractère spécial.';
         _isLoading = false;
       });
       return;
@@ -100,40 +109,64 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 10),
-                _buildTextField(
+                TextFormField(
                   controller: _newPasswordController,
-                  label: 'Nouveau mot de passe',
                   focusNode: _newPasswordFocusNode,
-                  icon: Icons.lock_outline,
-                  obscureText: !_isPasswordVisible,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                      color: Colors.grey[400],
+                  obscureText: !_isNewPasswordVisible,
+                  decoration: InputDecoration(
+                    labelText: 'Nouveau Mot de Passe',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      });
-                    },
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isNewPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.grey[400],
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isNewPasswordVisible = !_isNewPasswordVisible;
+                        });
+                      },
+                    ),
                   ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Le champ est vide';
+                    }
+                    if (value.length < 6) {
+                      return 'Le mot de passe doit contenir au moins 6 caractères';
+                    }
+                    if (!RegExp(r'(?=.*[!@#\$%\^&\*])').hasMatch(value)) {
+                      return 'Le mot de passe doit contenir au moins un caractère spécial';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 20),
-                _buildTextField(
+                TextFormField(
                   controller: _confirmPasswordController,
-                  label: 'Confirmer le mot de passe',
-                  icon: Icons.lock_outline,
-                  obscureText: !_isPasswordVisible,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                      color: Colors.grey[400],
+                  obscureText: !_isConfirmPasswordVisible,
+                  decoration: InputDecoration(
+                    labelText: 'Confirmer le mot de passe',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      });
-                    },
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isConfirmPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.grey[400],
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                        });
+                      },
+                    ),
                   ),
                 ),
                 if (_errorMessage != null)
@@ -219,39 +252,6 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    IconData? icon,
-    FocusNode? focusNode,
-    bool obscureText = false,
-    Widget? suffixIcon,
-  }) {
-    return TextFormField(
-      controller: controller,
-      focusNode: focusNode,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.grey[400]),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        filled: true,
-        fillColor: Colors.transparent,
-      ),
-      obscureText: obscureText,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Le champ est vide';
-        }
-        if (value.length < 6) {
-          return 'Le mot de passe doit contenir au moins 6 caractères';
-        }
-        return null;
-      },
     );
   }
 }

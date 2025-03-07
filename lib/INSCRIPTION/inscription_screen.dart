@@ -89,6 +89,10 @@ class _InscriptionPageState extends State<InscriptionPage> {
       return 'Mot de passe : minimum 6 caractères.';
     }
 
+    if (!RegExp(r'(?=.*[!@#\$%\^&\*])').hasMatch(value)) {
+      return 'Le mot de passe doit contenir au moins un caractère spécial';
+    }
+
     return null;
   }
 
