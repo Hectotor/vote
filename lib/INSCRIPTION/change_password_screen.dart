@@ -15,11 +15,22 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   bool _isPasswordVisible = false;
   bool _isLoading = false;
   bool _isPasswordChanged = false;
+  final FocusNode _newPasswordFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    // Donne le focus au champ de texte 'Nouveau mot de passe'
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_newPasswordFocusNode);
+    });
+  }
 
   @override
   void dispose() {
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
+    _newPasswordFocusNode.dispose();
     super.dispose();
   }
 
@@ -83,6 +94,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 _buildTextField(
                   controller: _newPasswordController,
                   label: 'Nouveau mot de passe',
+                  focusNode: _newPasswordFocusNode,
                   icon: Icons.lock_outline,
                   obscureText: !_isPasswordVisible,
                   suffixIcon: IconButton(
@@ -204,12 +216,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
-    required IconData icon,
+    IconData? icon,
+    FocusNode? focusNode,
     bool obscureText = false,
     Widget? suffixIcon,
   }) {
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: Colors.grey[400]),
