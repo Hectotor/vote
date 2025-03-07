@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Si vous utilisez Firestore pour envoyer le code
-import 'package:firebase_auth/firebase_auth.dart'; // Si vous utilisez Firebase Authentication
+import 'mail_confirm.dart'; // Assurez-vous que le chemin est correct
 
 class PasswordResetPage extends StatefulWidget {
   @override
@@ -28,10 +28,42 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
     });
 
     try {
-      // Logique pour envoyer le code à l'e-mail
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      // Fetch user data from Firestore
+      var userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (userQuery.docs.isEmpty) {
+        setState(() {
+          _errorMessage = 'Aucun utilisateur trouvé avec cet e-mail.';
+        });
+        return;
+      }
+
+      var userData = userQuery.docs.first.data();
+      bool emailVerified = userData['emailVerified'] ?? false;
+
+      if (!emailVerified) {
+        setState(() {
+          _errorMessage = 'L\'email n\'est pas vérifié.';
+        });
+        return;
+      }
+
+      // Générer un nouveau code de vérification
+      String newVerificationCode = EmailConfirmationService.generateVerificationCode();
+
+      // Mettre à jour le code dans Firestore
+      await userQuery.docs.first.reference.update({
+        'verificationCode': newVerificationCode,
+      });
+
+      // Envoyer le nouvel e-mail avec le code de vérification
+      await EmailConfirmationService.sendConfirmationEmail(email, newVerificationCode);
+      
       // Afficher un message de confirmation
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Code envoyé à $email')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Nouveau code envoyé à $email')));
       Navigator.pop(context);
     } catch (e) {
       setState(() {
