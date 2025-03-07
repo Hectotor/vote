@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toplyke/navBar.dart';
 import 'mail_confirm.dart'; // Assurez-vous que le chemin est correct
+import 'change_password_screen.dart'; // Importer le nouveau fichier
 
 class ConfirmationEmailPage extends StatefulWidget {
   final String email;
@@ -103,11 +104,18 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
           }
         });
 
-        // Redirection vers navBar
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => NavBar()),
-        );
+        if (widget.isPasswordReset) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ChangePasswordPage()),
+          );
+        } else {
+          // Redirection vers navBar
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => NavBar()),
+          );
+        }
       } else {
         setState(() {
           _errorMessage = 'Code de vérification incorrect';
@@ -212,7 +220,7 @@ class _ConfirmationEmailPageState extends State<ConfirmationEmailPage> {
               children: [
                 // Titre
                 Text(
-                  widget.isPasswordReset ? 'Confirmation Email\n Mot de Passe oublié' : 'Confirmation Email',
+                  widget.isPasswordReset ? 'Mot de Passe oublié\nConfirmation Email' : 'Confirmation Email',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
