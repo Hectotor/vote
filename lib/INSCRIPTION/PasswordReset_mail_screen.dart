@@ -63,9 +63,17 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
       // Envoyer le nouvel e-mail avec le code de vérification
       await EmailConfirmationService.sendConfirmationEmail(email, newVerificationCode);
       
-      // Afficher un message de confirmation
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Nouveau code envoyé à $email')));
-      Navigator.pop(context);
+      // Naviguer vers l'écran de confirmation
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ConfirmationEmailPage(
+            email: email,
+            verificationCode: newVerificationCode,
+            isPasswordReset: true,
+          ),
+        ),
+      );
     } catch (e) {
       setState(() {
         _errorMessage = 'Erreur lors de l’envoi du code. Veuillez réessayer.';
@@ -126,58 +134,64 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
               ),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-              ),
-              onPressed: _isLoading ? null : () => _sendCode(context),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.blue[600]!, 
-                      Colors.blue[900]!
-                    ],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : () => _sendCode(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                curve: Curves.easeInOut,
-                child: Container(
-                  width: double.infinity,
-                  height: 56,
-                  alignment: Alignment.center,
-                  child: _isLoading
-                      ? const CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 3,
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Envoyer le code',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                letterSpacing: 1.2,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.blue[600]!, 
+                        Colors.blue[900]!
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                  ),
+                  curve: Curves.easeInOut,
+                  child: Container(
+                    width: double.infinity,
+                    height: 56,
+                    alignment: Alignment.center,
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 3,
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Envoyer le code',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                  letterSpacing: 1.2,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            const Icon(
-                              Icons.send,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ],
-                        ),
+                              const SizedBox(width: 10),
+                              const Icon(
+                                Icons.send,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
               ),
             ),
