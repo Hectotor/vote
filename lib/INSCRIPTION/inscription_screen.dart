@@ -3,8 +3,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:toplyke/INSCRIPTION/confirmation_email_screen.dart';
-import 'package:toplyke/INSCRIPTION/mail_confirm.dart';
 import 'package:toplyke/main.dart';
 
 
@@ -142,14 +140,10 @@ class _InscriptionPageState extends State<InscriptionPage> {
         var userData = emailQuery.docs.first.data();
         
         if (userData['emailVerified'] == false) {
-          // Rediriger vers la page de confirmation si l'email n'est pas vérifié
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ConfirmationEmailPage(
-              email: _emailController.text.trim(),
-              verificationCode: userData['verificationCode'] ?? '', // Assurez-vous que ce champ existe
-            )),
-          );
+          // Afficher un message si l'email n'est pas vérifié
+          setState(() {
+            _errorMessage = 'Cet email est déjà utilisé.';
+          });
           return;
         } else {
           // Afficher un message si l'email est déjà utilisé et vérifié
@@ -167,32 +161,13 @@ class _InscriptionPageState extends State<InscriptionPage> {
       );
       print('Utilisateur créé avec succès : ${userCredential.user!.uid}'); // Log de succès
 
-      // Générer un code de vérification
-      String verificationCode = EmailConfirmationService.generateVerificationCode();
-
       // Enregistrement des données de l'utilisateur dans Firestore
       await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
         'email': _emailController.text.trim().toLowerCase(),
         'pseudo': _pseudoController.text.trim(),
         'emailVerified': false,
         'createdAt': FieldValue.serverTimestamp(),
-        'verificationCode': verificationCode, // Ajout du code de vérification
       });
-
-      // Envoi du code de vérification par e-mail
-      await EmailConfirmationService.sendConfirmationEmail(
-        _emailController.text.trim().toLowerCase(),
-        verificationCode,
-      );
-
-      // Rediriger vers la page de confirmation
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ConfirmationEmailPage(
-          email: _emailController.text.trim(),
-          verificationCode: verificationCode, // Génération du code de vérification
-        )),
-      );
 
     } on FirebaseAuthException catch (_) {
         // Gérer d'autres erreurs si nécessaire
@@ -459,22 +434,6 @@ class _InscriptionPageState extends State<InscriptionPage> {
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  // Bouton de test pour la page de confirmation d'e-mail
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context, 
-                        MaterialPageRoute(
-                          builder: (context) => ConfirmationEmailPage(
-                            email: _emailController.text, 
-                            verificationCode: '123456' // Code de test
-                          )
-                        )
-                      );
-                    },
-                    child: Text('Tester Confirmation Email'),
                   ),
                   const SizedBox(height: 24),
                 ],

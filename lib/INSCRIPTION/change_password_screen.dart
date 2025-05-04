@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:toplyke/main.dart';
-import 'package:toplyke/navBar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'connexion_screen.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   final String email;
@@ -21,8 +21,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   String? _errorMessage;
-  bool _isNewPasswordVisible = false;
-  bool _isConfirmPasswordVisible = false;
+  bool _isNewPasswordVisible = false; // Déjà false par défaut
+  bool _isConfirmPasswordVisible = false; // Déjà false par défaut
   bool _isLoading = false;
   bool _isPasswordChanged = false;
   final FocusNode _newPasswordFocusNode = FocusNode();
@@ -76,179 +76,196 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     }
 
     try {
-      // Utiliser confirmPasswordReset au lieu de updatePassword
-      await FirebaseAuth.instance.confirmPasswordReset(
-        code: widget.code,
-        newPassword: _newPasswordController.text,
-      );
-      
-      setState(() {
-        _isPasswordChanged = true;
-      });
-      
-      // Afficher un message de succès
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Votre mot de passe a été réinitialisé avec succès'),
-          duration: Duration(seconds: 3),
-        ),
-      );
+      // Vérifier que le code correspond toujours dans Firestore
+      var userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: widget.email)
+          .where('verificationCode', isEqualTo: widget.code)
+          .get();
 
-      // Rediriger vers la page de connexion après un court délai
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/login',
-          (route) => false,
+      if (userDoc.docs.isEmpty) {
+        setState(() {
+          _errorMessage = 'Code de vérification invalide ou expiré.';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      try {
+        // Se connecter avec l'email et le code comme mot de passe temporaire
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: widget.email,
+          password: widget.code,
         );
-      });
-    } catch (e) {
-      setState(() {
-        if (e is FirebaseAuthException) {
-          switch (e.code) {
-            case 'expired-action-code':
-              _errorMessage = 'Le code de réinitialisation a expiré. Veuillez recommencer le processus.';
-              break;
-            case 'invalid-action-code':
-              _errorMessage = 'Le code de réinitialisation est invalide. Veuillez recommencer le processus.';
-              break;
-            case 'weak-password':
-              _errorMessage = 'Le mot de passe est trop faible. Veuillez en choisir un plus fort.';
-              break;
-            default:
-              _errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
-          }
-        } else {
-          _errorMessage = 'Une erreur inattendue est survenue. Veuillez réessayer.';
+        
+        // Mettre à jour le mot de passe
+        if (FirebaseAuth.instance.currentUser != null) {
+          await FirebaseAuth.instance.currentUser!.updatePassword(_newPasswordController.text);
+          
+          // Mettre à jour Firestore
+          await userDoc.docs.first.reference.update({
+            'passwordReset': true,
+            'verificationCode': null,
+          });
+
+          setState(() {
+            _isPasswordChanged = true;
+          });
+
+          // Déconnecter l'utilisateur
+          await FirebaseAuth.instance.signOut();
+
+          // Rediriger vers la page de connexion après 2 secondes
+          Future.delayed(const Duration(seconds: 2), () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => ConnexionPage()),
+              (route) => false,
+            );
+          });
         }
+      } catch (authError) {
+        print('Erreur d\'authentification: $authError');
+        setState(() {
+          if (authError is FirebaseAuthException) {
+            switch (authError.code) {
+              case 'wrong-password':
+                _errorMessage = 'Le code de vérification est incorrect.';
+                break;
+              case 'user-not-found':
+                _errorMessage = 'Utilisateur non trouvé.';
+                break;
+              default:
+                _errorMessage = 'Erreur: ${authError.message}';
+            }
+          } else {
+            _errorMessage = 'Une erreur est survenue lors de la mise à jour du mot de passe.';
+          }
+        });
+      }
+    } catch (e) {
+      print('Erreur détaillée: $e');
+      setState(() {
+        _errorMessage = 'Une erreur est survenue lors du changement de mot de passe.';
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return GradientBackground(
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          title: Text('Réinitialiser le mot de passe'),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _newPasswordController,
-                  focusNode: _newPasswordFocusNode,
-                  obscureText: !_isNewPasswordVisible,
-                  decoration: InputDecoration(
-                    labelText: 'Nouveau Mot de Passe',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isNewPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                        color: Colors.grey[400],
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isNewPasswordVisible = !_isNewPasswordVisible;
-                        });
-                      },
-                    ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Nouveau mot de passe'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        physics: BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+            Text(
+              'Créez votre nouveau mot de passe',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Le mot de passe doit contenir au moins 6 caractères et un caractère spécial.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 30),
+            TextField(
+              controller: _newPasswordController,
+              focusNode: _newPasswordFocusNode,
+              obscureText: !_isNewPasswordVisible,
+              decoration: InputDecoration(
+                labelText: 'Nouveau mot de passe',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isNewPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.grey[400],
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Le champ est vide';
-                    }
-                    if (value.length < 6) {
-                      return 'Le mot de passe doit contenir au moins 6 caractères';
-                    }
-                    if (!RegExp(r'(?=.*[!@#\$%\^&\*])').hasMatch(value)) {
-                      return 'Le mot de passe doit contenir au moins un caractère spécial';
-                    }
-                    return null;
+                  onPressed: () {
+                    setState(() {
+                      _isNewPasswordVisible = !_isNewPasswordVisible;
+                    });
                   },
                 ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: !_isConfirmPasswordVisible,
-                  decoration: InputDecoration(
-                    labelText: 'Confirmer le mot de passe',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isConfirmPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                        color: Colors.grey[400],
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                        });
-                      },
-                    ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _confirmPasswordController,
+              obscureText: !_isConfirmPasswordVisible,
+              decoration: InputDecoration(
+                labelText: 'Confirmer le mot de passe',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.grey[400],
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                    });
+                  },
+                ),
+              ),
+            ),
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text(
+                  _errorMessage!,
+                  style: TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            const SizedBox(height: 30),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _changePassword,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      _errorMessage!,
-                      style: TextStyle(color: Colors.red, fontSize: 14),
-                    ),
-                  ),
-                if (_isPasswordChanged)
-                  Column(
-                    children: [
-                      const SizedBox(height: 20),
-                      Text(
-                        'Mot de passe réinitialisé avec succès',
-                        style: TextStyle(color: Colors.green, fontSize: 16),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => NavBar()), // Navigate to home
-                          );
-                        },
-                        child: Text('Retour à l\'accueil'),
-                      ),
-                    ],
-                  ),
-                const SizedBox(height: 30),
-                AnimatedContainer(
+                child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     gradient: LinearGradient(
                       colors: [
-                        Colors.blue[600]!,
-                        Colors.blue[900]!,
+                        Colors.blue[600]!, 
+                        Colors.blue[900]!
                       ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
@@ -264,35 +281,44 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                             color: Colors.white,
                             strokeWidth: 3,
                           )
-                        : GestureDetector(
-                            onTap: _changePassword, // Call the change password method
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Réinitialiser',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                    letterSpacing: 1.2,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Icon(
-                                  Icons.check_circle_outline,
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Changer le mot de passe',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
                                   color: Colors.white,
-                                  size: 24,
+                                  letterSpacing: 1.2,
                                 ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(width: 10),
+                              const Icon(
+                                Icons.lock_reset,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ],
                           ),
                   ),
                 ),
-                const SizedBox(height: 20),
-              ],
+              ),
             ),
-          ),
+            if (_isPasswordChanged)
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Text(
+                  'Votre mot de passe a été changé avec succès. Veuillez vous reconnecter.',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+          ],
         ),
       ),
     );
