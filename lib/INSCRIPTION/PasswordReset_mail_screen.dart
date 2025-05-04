@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Si vous utilisez Firestore pour envoyer le code
-import 'mail_confirm.dart'; // Assurez-vous que le chemin est correct
-import 'confirmation_email_screen.dart'; // Import the new screen
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PasswordResetPage extends StatefulWidget {
   @override
@@ -14,7 +12,7 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
   bool _isLoading = false;
   FocusNode? emailFocusNode;
 
-  void _sendCode(BuildContext context) async {
+  void _sendResetEmail(BuildContext context) async {
     String email = emailController.text.trim();
     if (!_isValidEmail(email)) {
       setState(() {
@@ -29,54 +27,86 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
     });
 
     try {
-      // Fetch user data from Firestore
-      var userQuery = await FirebaseFirestore.instance
-          .collection('users')
-          .where('email', isEqualTo: email)
-          .get();
-
-      if (userQuery.docs.isEmpty) {
-        setState(() {
-          _errorMessage = 'Aucun utilisateur trouvé avec cet e-mail.';
-        });
-        return;
-      }
-
-      var userData = userQuery.docs.first.data();
-      bool emailVerified = userData['emailVerified'] ?? false;
-
-      if (!emailVerified) {
-        setState(() {
-          _errorMessage = 'L\'email n\'est pas vérifié.';
-        });
-        return;
-      }
-
-      // Générer un nouveau code de vérification
-      String newVerificationCode = EmailConfirmationService.generateVerificationCode();
-
-      // Mettre à jour le code dans Firestore
-      await userQuery.docs.first.reference.update({
-        'verificationCode': newVerificationCode,
-      });
-
-      // Envoyer le nouvel e-mail avec le code de vérification
-      await EmailConfirmationService.sendConfirmationEmail(email, newVerificationCode);
+      // Utiliser Firebase pour envoyer l'email de réinitialisation
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
       
-      // Naviguer vers l'écran de confirmation
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ConfirmationEmailPage(
-            email: email,
-            verificationCode: newVerificationCode,
-            isPasswordReset: true,
-          ),
-        ),
+      // Afficher un popup de succès
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Icon(Icons.check_circle, color: Colors.green, size: 48),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '📩 C\'est envoyé !',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Vérifie ta boîte mail pour réinitialiser ton mot de passe. 📬✨',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    height: 1.5,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.pop(context);
+                  },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    backgroundColor: Colors.transparent,
+                  ),
+                  child: Container(
+                    width: 100,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue[600]!, 
+                          Colors.blue[900]!
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'OK',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       );
     } catch (e) {
       setState(() {
-        _errorMessage = 'Erreur lors de l’envoi du code. Veuillez réessayer.';
+        _errorMessage = 'Erreur lors de l\'envoi de l\'email. Veuillez réessayer.';
       });
     } finally {
       setState(() {
@@ -86,7 +116,6 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
   }
 
   bool _isValidEmail(String email) {
-    // Simple regex for email validation
     final RegExp emailRegExp = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
     return emailRegExp.hasMatch(email);
   }
@@ -114,7 +143,7 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [ 
             const SizedBox(height: 10),
             Container(
@@ -127,9 +156,93 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
                   errorText: _errorMessage,
                   border: OutlineInputBorder(),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey[400] ?? Colors.grey), // Fix the color assignment error
+                    borderSide: BorderSide(color: Colors.grey[400] ?? Colors.grey),
                   ),
                   prefixIcon: Icon(Icons.email_outlined),
+                ),
+              ),
+            ),
+            // Bouton de test
+            TextButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Icon(Icons.check_circle, color: Colors.green, size: 48),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '📩 C\'est envoyé !',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Vérifie ta boîte mail pour réinitialiser ton mot de passe. 📬✨',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              height: 1.5,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        Center(
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              Navigator.pop(context);
+                            },
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              backgroundColor: Colors.transparent,
+                            ),
+                            child: Container(
+                              width: 100,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.blue[600]!, 
+                                    Colors.blue[900]!
+                                  ],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'OK',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: Text(
+                'Voir le popup de succès',
+                style: TextStyle(
+                  color: Colors.blue,
                 ),
               ),
             ),
@@ -138,7 +251,7 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : () => _sendCode(context),
+                onPressed: _isLoading ? null : () => _sendResetEmail(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   foregroundColor: Colors.white,
@@ -175,7 +288,7 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Envoyer le code',
+                                'Réinitialiser',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -194,22 +307,6 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ConfirmationEmailPage(
-                      email: emailController.text.trim(),
-                      verificationCode: '123456', // Remplacez ceci par le code réel si nécessaire
-                      isPasswordReset: true, // Indiquer que l'utilisateur vient de la page de réinitialisation
-                    ),
-                  ),
-                );
-              },
-              child: Text('Ouvrir Confirmation Email'),
             ),
           ],
         ),

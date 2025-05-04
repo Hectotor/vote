@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:toplyke/INSCRIPTION/inscription_screen.dart';
 import 'package:toplyke/main.dart';
-import 'package:toplyke/navBar.dart'; // Add this import
-import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
-import 'package:toplyke/INSCRIPTION/confirmation_email_screen.dart';
-import 'package:toplyke/INSCRIPTION/PasswordReset_mail_screen.dart'; // Assurez-vous que le chemin est correct
+import 'package:toplyke/navBar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:toplyke/INSCRIPTION/PasswordReset_mail_screen.dart';
 
 class ConnexionPage extends StatefulWidget {
   const ConnexionPage({super.key});
@@ -21,12 +20,17 @@ class _ConnexionPageState extends State<ConnexionPage> {
   String? _errorMessage;
   bool _isPasswordVisible = false;
   bool _isLoading = false;
+  FocusNode? _emailFocusNode;
 
   @override
   void initState() {
     super.initState();
     _emailController.addListener(_updateButtonState);
     _passwordController.addListener(_updateButtonState);
+    _emailFocusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_emailFocusNode);
+    });
   }
 
   @override
@@ -35,6 +39,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
     _passwordController.removeListener(_updateButtonState);
     _emailController.dispose();
     _passwordController.dispose();
+    _emailFocusNode?.dispose();
     super.dispose();
   }
 
@@ -82,17 +87,10 @@ class _ConnexionPageState extends State<ConnexionPage> {
       // Vérifier si le compte est vérifié
       bool isEmailVerified = userQuery.docs.first['emailVerified'] ?? false;
 
-
       if (!isEmailVerified) {
-        // Rediriger vers la page de confirmation d'email
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => ConfirmationEmailPage(
-              email: _emailController.text.trim(),
-              verificationCode: userQuery.docs.first['verificationCode'] ?? '',
-            ),
-          ),
-        );
+        setState(() {
+          _errorMessage = 'Veuillez vérifier votre e-mail avant de vous connecter.';
+        });
         return;
       }
 
@@ -114,7 +112,6 @@ class _ConnexionPageState extends State<ConnexionPage> {
       }
 
     } on FirebaseAuthException catch (e) {
-      // Gérer les erreurs de connexion
       setState(() {
         switch (e.code) {
           case 'user-not-found':
@@ -128,12 +125,10 @@ class _ConnexionPageState extends State<ConnexionPage> {
         }
       });
     } catch (e) {
-      // Gérer les autres erreurs
       setState(() {
         _errorMessage = 'Une erreur est survenue. Réessayez.';
       });
     } finally {
-      // Toujours arrêter le chargement
       setState(() {
         _isLoading = false;
       });
@@ -150,7 +145,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
             onPressed: () {
               Navigator.pushReplacement(
                 context,
@@ -182,6 +177,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
                     label: 'Adresse e-mail',
                     icon: Icons.email_outlined,
                     validator: _validateEmail,
+                    focusNode: _emailFocusNode,
                   ),
                   const SizedBox(height: 20),
                   _buildTextField(
@@ -341,9 +337,11 @@ class _ConnexionPageState extends State<ConnexionPage> {
     bool obscureText = false,
     Widget? suffixIcon,
     String? Function(String?)? validator,
+    FocusNode? focusNode,
   }) {
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       validator: validator,
       obscureText: obscureText,
       onChanged: (value) {
