@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:toplyke/main.dart';
 import 'home/home_page.dart';
 import 'search/search_page.dart';
 import 'add/add_page.dart';
 import 'notification/notifications_page.dart';
 import 'users/user_page.dart';
+import 'INSCRIPTION/connexion_screen.dart';
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
@@ -25,6 +27,18 @@ class _NavBarState extends State<NavBar> {
   ];
 
   void _onItemTapped(int index) {
+    // Vérifier la connexion avant d'ouvrir la page d'ajout ou la page utilisateur
+    if (index == 2 || index == 4) { // Index de la page AddPage (2) et UserPage (4)
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ConnexionPage()),
+        );
+        return;
+      }
+    }
+    
     setState(() {
       _selectedIndex = index;
     });

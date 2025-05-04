@@ -96,10 +96,22 @@ class _ConnexionPageState extends State<ConnexionPage> {
         return;
       }
 
-      // Si le compte est vérifié, aller à la page principale
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const NavBar()),
-      );
+      // Si le compte est vérifié, se connecter
+      try {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+        
+        // Redirection vers la page principale
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const NavBar()),
+        );
+      } catch (e) {
+        setState(() {
+          _errorMessage = 'Erreur de connexion : ${e.toString()}';
+        });
+      }
 
     } on FirebaseAuthException catch (e) {
       // Gérer les erreurs de connexion
