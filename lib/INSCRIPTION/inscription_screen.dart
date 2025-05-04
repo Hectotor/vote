@@ -1,9 +1,10 @@
 @override
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:toplyke/main.dart';
+import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
+import 'popup_email_confirmation.dart';
 
 
 
@@ -60,23 +61,20 @@ class _InscriptionPageState extends State<InscriptionPage> {
         _confirmPasswordController.text.isNotEmpty;
   }
 
-  void _checkPseudoExists() async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('pseudo', isEqualTo: _pseudoController.text)
-        .get();
+  Future<bool> _isPseudoAvailable(String pseudo) async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('authentification')
+          .where('pseudo', isEqualTo: pseudo.toLowerCase())
+          .limit(1)
+          .get();
 
-    if (querySnapshot.docs.isNotEmpty) {
-      setState(() {
-        _pseudoErrorMessage = 'Ce pseudo est déjà utilisé';
-      });
-    } else {
-      setState(() {
-        _pseudoErrorMessage = null;
-      });
+      return querySnapshot.docs.isEmpty;
+    } catch (e) {
+      print('Erreur lors de la vérification du pseudo : $e');
+      return false;
     }
   }
-
 
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) {
@@ -95,34 +93,10 @@ class _InscriptionPageState extends State<InscriptionPage> {
   }
 
   Future<void> _register() async {
-    print('Méthode _register appelée'); // Log pour vérifier l'appel de la méthode
-
-    // Vérifier la validité du formulaire
-    if (!_isFormValid() || _pseudoErrorMessage != null) {
-      print('Formulaire invalide ou pseudo déjà utilisé'); // Log pour le statut du formulaire
+    if (!_isFormValid()) {
       return;
     }
 
-    // Validation du mot de passe
-    final passwordValidation = _validatePassword(_passwordController.text);
-    if (passwordValidation != null) {
-      setState(() {
-        _errorMessage = passwordValidation;
-      });
-      print('Validation du mot de passe échouée : $passwordValidation'); // Log d'erreur
-      return;
-    }
-
-    // Vérifier si les mots de passe correspondent
-    if (_passwordController.text != _confirmPasswordController.text) {
-      setState(() {
-        _errorMessage = 'Les mots de passe ne correspondent pas.';
-      });
-      print('Les mots de passe ne correspondent pas'); // Log d'erreur
-      return;
-    }
-
-    // Commencer le chargement
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -131,27 +105,15 @@ class _InscriptionPageState extends State<InscriptionPage> {
     try {
       // Vérifier si l'email est déjà utilisé
       var emailQuery = await FirebaseFirestore.instance
-          .collection('users')
+          .collection('authentification')
           .where('email', isEqualTo: _emailController.text.trim())
           .get();
 
       if (emailQuery.docs.isNotEmpty) {
-        // L'email existe déjà, récupérer les données de l'utilisateur
-        var userData = emailQuery.docs.first.data();
-        
-        if (userData['emailVerified'] == false) {
-          // Afficher un message si l'email n'est pas vérifié
-          setState(() {
-            _errorMessage = 'Cet email est déjà utilisé.';
-          });
-          return;
-        } else {
-          // Afficher un message si l'email est déjà utilisé et vérifié
-          setState(() {
-            _errorMessage = 'Cet email est déjà utilisé.';
-          });
-          return;
-        }
+        setState(() {
+          _errorMessage = 'Cette adresse e-mail est déjà utilisée';
+        });
+        return;
       }
 
       // Créer un utilisateur avec Firebase Authentication
@@ -159,29 +121,40 @@ class _InscriptionPageState extends State<InscriptionPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      print('Utilisateur créé avec succès : ${userCredential.user!.uid}'); // Log de succès
+
+      // Envoyer l'email de vérification
+      await userCredential.user!.sendEmailVerification();
 
       // Enregistrement des données de l'utilisateur dans Firestore
-      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+      await FirebaseFirestore.instance.collection('authentification').doc(userCredential.user!.uid).set({
         'email': _emailController.text.trim().toLowerCase(),
         'pseudo': _pseudoController.text.trim(),
         'emailVerified': false,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-    } on FirebaseAuthException catch (_) {
-        // Gérer d'autres erreurs si nécessaire
+      // Afficher le popup de confirmation
+      await showDialog(
+        context: context,
+        builder: (context) => EmailConfirmationPopup(
+          email: _emailController.text.trim(),
+        ),
+      );
+
+      // Redirection vers la page de connexion
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ConnexionPage()),
+      );
+
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _errorMessage = 'Erreur : ${e.message}';
+      });
     } catch (e) {
-      if (e is FirebaseAuthException) {
-        setState(() {
-          _errorMessage = 'Erreur : ${e.message}';
-        });
-      } else {
-        setState(() {
-          _errorMessage = 'Une erreur est survenue. Réessayez.';
-        });
-      }
-      print('Erreur : ${e.toString()}');
+      setState(() {
+        _errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
+      });
     } finally {
       setState(() {
         _isLoading = false;
@@ -200,7 +173,6 @@ class _InscriptionPageState extends State<InscriptionPage> {
   Widget build(BuildContext context) {
     return GradientBackground(
       child: Scaffold(
-        extendBodyBehindAppBar: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -231,7 +203,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
                   const SizedBox(height: 40),
                   TextFormField(
                     controller: _pseudoController,
-                    onChanged: (value) {
+                    onChanged: (value) async {
                       // Remplacer les espaces par des underscores
                       String updatedValue = value.replaceAll(' ', '_');
                       // Empêcher l'utilisation du caractère '|'
@@ -247,7 +219,10 @@ class _InscriptionPageState extends State<InscriptionPage> {
                         text: updatedValue,
                         selection: TextSelection.collapsed(offset: updatedValue.length),
                       );
-                      _checkPseudoExists(); // Vérifiez instantanément si le pseudo existe
+                      final isAvailable = await _isPseudoAvailable(updatedValue);
+                      setState(() {
+                        _pseudoErrorMessage = isAvailable ? null : 'Ce pseudo est déjà utilisé';
+                      });
                     },
                     decoration: InputDecoration(
                       labelText: 'Pseudo',
