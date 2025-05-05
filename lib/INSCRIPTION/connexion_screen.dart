@@ -5,6 +5,7 @@ import 'package:toplyke/main.dart';
 import 'package:toplyke/navBar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toplyke/INSCRIPTION/PasswordReset_mail_screen.dart';
+import 'package:toplyke/INSCRIPTION/email_verification_popup.dart';
 
 class ConnexionPage extends StatefulWidget {
   const ConnexionPage({super.key});
@@ -52,7 +53,6 @@ class _ConnexionPageState extends State<ConnexionPage> {
         _passwordController.text.isNotEmpty;
   }
 
-
   String? _validateEmail(String? value) {
     if (!value!.contains('@')) {
       return 'Entre une adresse e-mail valide';
@@ -71,45 +71,45 @@ class _ConnexionPageState extends State<ConnexionPage> {
     });
 
     try {
-      // Récupérer l'utilisateur par email
-      QuerySnapshot userQuery = await FirebaseFirestore.instance
-          .collection('users')
-          .where('email', isEqualTo: _emailController.text.trim())
-          .get();
+      // Se connecter avec Firebase Auth
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
-      if (userQuery.docs.isEmpty) {
-        setState(() {
-          _errorMessage = 'Aucun utilisateur trouvé avec cet email';
-        });
-        return;
-      }
-
-      // Vérifier si le compte est vérifié
-      bool isEmailVerified = userQuery.docs.first['emailVerified'] ?? false;
-
-      if (!isEmailVerified) {
-        setState(() {
-          _errorMessage = 'Veuillez vérifier votre e-mail avant de vous connecter.';
-        });
-        return;
-      }
-
-      // Si le compte est vérifié, se connecter
-      try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
+      // Vérifier si l'email est vérifié
+      if (!userCredential.user!.emailVerified) {
+        // Afficher le popup pour l'email non vérifié
+        await showDialog(
+          context: context,
+          builder: (context) => EmailVerificationPopup(
+            email: _emailController.text.trim(),
+            isUnverified: true,
+          ),
         );
         
-        // Redirection vers la page principale
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const NavBar()),
-        );
-      } catch (e) {
+        // Déconnecter l'utilisateur
+        await FirebaseAuth.instance.signOut();
+        
         setState(() {
-          _errorMessage = 'Erreur de connexion : ${e.toString()}';
+          _isLoading = false;
         });
+        return;
       }
+
+      // Mettre à jour le statut emailVerified dans Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .update({
+            'emailVerified': true,
+            'lastSeen': FieldValue.serverTimestamp(),
+          });
+
+      // Redirection vers la page principale
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const NavBar()),
+      );
 
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -134,7 +134,6 @@ class _ConnexionPageState extends State<ConnexionPage> {
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

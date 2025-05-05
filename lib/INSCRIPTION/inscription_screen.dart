@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:toplyke/main.dart';
 import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
-import 'popup_email_confirmation.dart';
+import 'package:toplyke/INSCRIPTION/email_verification_popup.dart';
 
 
 
@@ -186,7 +186,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
       // Afficher le popup de confirmation
       await showDialog(
         context: context,
-        builder: (context) => EmailConfirmationPopup(
+        builder: (context) => EmailVerificationPopup(
           email: _emailController.text.trim(),
         ),
       );
