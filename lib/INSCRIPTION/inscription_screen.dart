@@ -61,7 +61,8 @@ class _InscriptionPageState extends State<InscriptionPage> {
         _emailController.text.isNotEmpty &&
         _passwordController.text.isNotEmpty &&
         _confirmPasswordController.text.isNotEmpty &&
-        _pseudoErrorMessage == null;
+        _pseudoErrorMessage == null &&
+        _passwordController.text == _confirmPasswordController.text;
   }
 
   Future<void> _checkPseudoAvailability() async {
@@ -135,6 +136,15 @@ class _InscriptionPageState extends State<InscriptionPage> {
         setState(() {
           _isLoading = false;
           _pseudoErrorMessage = 'Ce pseudo est déjà utilisé';
+        });
+        return;
+      }
+
+      // Vérifier si les mots de passe correspondent
+      if (_passwordController.text != _confirmPasswordController.text) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Les mots de passe ne correspondent pas';
         });
         return;
       }
