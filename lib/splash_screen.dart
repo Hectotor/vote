@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:toplyke/navBar.dart';
 
 /// SplashScreen widget that displays a splash screen with animation
 class SplashScreen extends StatefulWidget {
@@ -12,7 +14,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   /// Duration for splash screen animation
-  final int _splashScreenDuration = 3;
+  //final int _splashScreenDuration = 3;
 
   /// Duration for animation
   final int _animationDuration = 2;
@@ -20,37 +22,47 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigateToLogin();
+    _initializeApp();
   }
 
-  /// Function to navigate to the login page after a delay
-  void _navigateToLogin() async {
+  Future<void> _initializeApp() async {
     try {
-      /// Delay for splash screen
-      await Future.delayed(Duration(seconds: _splashScreenDuration));
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => ConnexionPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
+      // Attendre que Firebase soit initialisé
+      await Future.delayed(const Duration(seconds: 2));
 
-            var tween = Tween(begin: begin, end: end);
-            var offsetAnimation = animation.drive(tween);
+      // Vérifier si l'utilisateur est connecté
+      final user = FirebaseAuth.instance.currentUser;
 
-            return SlideTransition(
-              position: offsetAnimation,
-              child: FadeTransition(
-                opacity: animation,
-                child: child,
-              ),
-            );
-          },
-        ),
-      );
+      if (user != null) {
+        // Vérifier si l'email est vérifié
+        if (!user.emailVerified) {
+          // Rediriger vers la page de connexion
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ConnexionPage()),
+          );
+          return;
+        }
+
+        // Rediriger vers la page principale
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const NavBar()),
+        );
+      } else {
+        // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ConnexionPage()),
+        );
+      }
     } catch (e) {
-      /// Handle navigation error
-      print('Error navigating to login: $e');
+      print('Erreur lors de l\'initialisation : $e');
+      // En cas d\'erreur, rediriger vers la page de connexion
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ConnexionPage()),
+      );
     }
   }
 

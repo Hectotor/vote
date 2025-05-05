@@ -16,14 +16,14 @@ class EmailVerificationPopup extends StatelessWidget {
     return AlertDialog(
       title: Icon(
         Icons.email_outlined,
-        color: isUnverified ? Colors.orange : Colors.blue,
+        color: Colors.blue,
         size: 48,
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '📩 Vérification de l\'email',
+            'Vérification de l\'email',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -41,18 +41,41 @@ class EmailVerificationPopup extends StatelessWidget {
           ),
           if (isUnverified) ...[
             SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                final user = FirebaseAuth.instance.currentUser;
-                if (user != null) {
-                  user.sendEmailVerification();
-                }
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  final user = FirebaseAuth.instance.currentUser;
+                  if (user != null) {
+                    user.sendEmailVerification();
+                  }
+                  Navigator.pop(context);
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  backgroundColor: Colors.transparent,
+                ),
+                child: Container(
+                  width: 100,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.blue),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Renvoyer',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              child: Text('Renvoyer l\'email de vérification'),
             ),
           ],
         ],
