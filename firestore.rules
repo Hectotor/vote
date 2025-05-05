@@ -1,20 +1,49 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permettre la lecture des hashtags à tout le monde
-    match /hashtags/{hashtag} {
+    // Collection users
+    match /users/{userId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Permettre la lecture des mentions à tout le monde
-    match /mentions/{mention} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-    
-    // Règles pour les posts
+    // Collection posts
     match /posts/{postId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // Collection comments
+    match /comments/{commentId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // Collection likes
+    match /likes/{likeId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // Collection followers
+    match /followers/{userId} {
+      // Lecture publique pour voir qui suit qui
+      allow read: if true;
+      // Écriture uniquement pour l'utilisateur lui-même
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Collection notifications
+    match /notifications/{notificationId} {
+      allow read: if resource.data.userId == request.auth.uid;
+      allow write: if request.auth != null;
+    }
+    
+    // Collection hashtags
+    match /hashtags/{hashtag} {
       allow read: if true;
       allow write: if request.auth != null;
     }

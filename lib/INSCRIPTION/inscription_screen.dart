@@ -24,9 +24,11 @@ class _InscriptionPageState extends State<InscriptionPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? _errorMessage;
   String? _pseudoErrorMessage;
+  String? _emailErrorMessage;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
+  bool _isCheckingPseudo = false;
 
   @override
   void initState() {
@@ -58,13 +60,38 @@ class _InscriptionPageState extends State<InscriptionPage> {
     return _pseudoController.text.isNotEmpty &&
         _emailController.text.isNotEmpty &&
         _passwordController.text.isNotEmpty &&
-        _confirmPasswordController.text.isNotEmpty;
+        _confirmPasswordController.text.isNotEmpty &&
+        _pseudoErrorMessage == null;
+  }
+
+  Future<void> _checkPseudoAvailability() async {
+    if (_pseudoController.text.isEmpty) return;
+
+    if (!_isCheckingPseudo) {
+      setState(() {
+        _isCheckingPseudo = true;
+      });
+
+      try {
+        bool isAvailable = await _isPseudoAvailable(_pseudoController.text.trim());
+        setState(() {
+          _isCheckingPseudo = false;
+          _pseudoErrorMessage = isAvailable ? null : 'Ce pseudo est déjà utilisé';
+        });
+      } catch (e) {
+        setState(() {
+          _isCheckingPseudo = false;
+          _pseudoErrorMessage = 'Erreur lors de la vérification du pseudo';
+        });
+      }
+    }
   }
 
   Future<bool> _isPseudoAvailable(String pseudo) async {
     try {
+      // Vérifier dans la collection users
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('authentification')
+          .collection('users')
           .where('pseudo', isEqualTo: pseudo.toLowerCase())
           .limit(1)
           .get();
@@ -72,24 +99,8 @@ class _InscriptionPageState extends State<InscriptionPage> {
       return querySnapshot.docs.isEmpty;
     } catch (e) {
       print('Erreur lors de la vérification du pseudo : $e');
-      return false;
+      throw e;
     }
-  }
-
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Veuillez entrer un mot de passe';
-    }
-
-    if (value.length < 6) {
-      return 'Mot de passe : minimum 6 caractères.';
-    }
-
-    if (!RegExp(r'(?=.*[!@#\$%\^&\*])').hasMatch(value)) {
-      return 'Le mot de passe doit contenir au moins un caractère spécial';
-    }
-
-    return null;
   }
 
   Future<void> _register() async {
@@ -100,18 +111,30 @@ class _InscriptionPageState extends State<InscriptionPage> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _emailErrorMessage = null;
     });
 
     try {
       // Vérifier si l'email est déjà utilisé
       var emailQuery = await FirebaseFirestore.instance
-          .collection('authentification')
+          .collection('users')
           .where('email', isEqualTo: _emailController.text.trim())
           .get();
 
       if (emailQuery.docs.isNotEmpty) {
         setState(() {
-          _errorMessage = 'Cette adresse e-mail est déjà utilisée';
+          _isLoading = false;
+          _emailErrorMessage = 'Cette adresse e-mail est déjà utilisée';
+        });
+        return;
+      }
+
+      // Vérifier définitivement le pseudo
+      bool isPseudoAvailable = await _isPseudoAvailable(_pseudoController.text.trim());
+      if (!isPseudoAvailable) {
+        setState(() {
+          _isLoading = false;
+          _pseudoErrorMessage = 'Ce pseudo est déjà utilisé';
         });
         return;
       }
@@ -126,11 +149,28 @@ class _InscriptionPageState extends State<InscriptionPage> {
       await userCredential.user!.sendEmailVerification();
 
       // Enregistrement des données de l'utilisateur dans Firestore
-      await FirebaseFirestore.instance.collection('authentification').doc(userCredential.user!.uid).set({
+      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
         'email': _emailController.text.trim().toLowerCase(),
         'pseudo': _pseudoController.text.trim(),
+        'profilePhotoUrl': '',
+        'bio': '',
         'emailVerified': false,
         'createdAt': FieldValue.serverTimestamp(),
+        'lastSeen': FieldValue.serverTimestamp(),
+        'followersCount': 0,
+        'followingCount': 0,
+        'postsCount': 0,
+      });
+
+      // Initialiser la collection followers
+      await FirebaseFirestore.instance.collection('followers').doc(userCredential.user!.uid).set({
+        'following': [],
+        'followers': [],
+      });
+
+      // Initialiser la collection notifications
+      await FirebaseFirestore.instance.collection('notifications').doc(userCredential.user!.uid).set({
+        'unreadCount': 0,
       });
 
       // Afficher le popup de confirmation
@@ -149,17 +189,31 @@ class _InscriptionPageState extends State<InscriptionPage> {
 
     } on FirebaseAuthException catch (e) {
       setState(() {
-        _errorMessage = 'Erreur : ${e.message}';
+        _isLoading = false;
+        _errorMessage = e.message;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
-      });
-    } finally {
-      setState(() {
         _isLoading = false;
+        _errorMessage = 'Une erreur est survenue lors de l\'inscription';
       });
     }
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Veuillez entrer un mot de passe';
+    }
+
+    if (value.length < 6) {
+      return 'Mot de passe : minimum 6 caractères.';
+    }
+
+    if (!RegExp(r'(?=.*[!@#\$%\^&\*])').hasMatch(value)) {
+      return 'Le mot de passe doit contenir au moins un caractère spécial';
+    }
+
+    return null;
   }
 
   String? _validateEmail(String? value) {
@@ -219,10 +273,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
                         text: updatedValue,
                         selection: TextSelection.collapsed(offset: updatedValue.length),
                       );
-                      final isAvailable = await _isPseudoAvailable(updatedValue);
-                      setState(() {
-                        _pseudoErrorMessage = isAvailable ? null : 'Ce pseudo est déjà utilisé';
-                      });
+                      _checkPseudoAvailability();
                     },
                     decoration: InputDecoration(
                       labelText: 'Pseudo',
@@ -291,6 +342,17 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     icon: Icons.email_outlined,
                     validator: _validateEmail,
                   ),
+                  if (_emailErrorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, left: 16),
+                      child: Text(
+                        _emailErrorMessage!,
+                        style: TextStyle(
+                          color: Colors.red[400],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 20),
                   _buildTextField(
                     controller: _passwordController,
@@ -351,7 +413,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: _isLoading || !_isFormValid() || _pseudoErrorMessage != null
+                      onPressed: _isLoading || !_isFormValid() || _pseudoErrorMessage != null || _isCheckingPseudo
                           ? null
                           : _register,
                       style: ElevatedButton.styleFrom(
