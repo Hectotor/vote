@@ -17,14 +17,7 @@ class NavBar extends StatefulWidget {
 
 class _NavBarState extends State<NavBar> {
   int _selectedIndex = 0;
-
-  static const List<Widget> _pages = <Widget>[
-    HomePage(),
-    SearchPage(),
-    AddPage(),
-    NotificationsPage(),
-    UserPage(),
-  ];
+  List<Widget> _pages = [];
 
   void _onItemTapped(int index) {
     // Vérifier la connexion avant d'ouvrir la page d'ajout ou la page utilisateur
@@ -45,10 +38,25 @@ class _NavBarState extends State<NavBar> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _pages = [
+      const HomePage(),
+      const SearchPage(),
+      const AddPage(),
+      const NotificationsPage(),
+      const UserPage(),
+    ];
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GradientBackground(
       child: Scaffold(
-        body: _pages[_selectedIndex],
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: _pages,
+        ),
         bottomNavigationBar: _selectedIndex == 2
             ? null // Hide the navigation bar when on AddPage
             : BottomNavigationBar(
