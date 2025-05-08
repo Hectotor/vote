@@ -43,15 +43,19 @@ class _UserPageState extends State<UserPage> {
         title: FutureBuilder(
           future: _getUserPseudo(),
           builder: (context, snapshot) {
-            return Text(
-              snapshot.data ?? 'Utilisateur',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            return Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                snapshot.data ?? 'Utilisateur',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             );
           },
         ),
+        centerTitle: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.menu),
