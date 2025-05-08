@@ -57,6 +57,21 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
+          // Texte du post
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Container(
+              height: 24,
+              child: Text(
+                post.description,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+
           // Grille d'images
           if (post.blocs.isNotEmpty)
             GridView.builder(
@@ -74,11 +89,28 @@ class _HomePageState extends State<HomePage> {
                 if (bloc.postImageUrl != null) {
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: bloc.filterColor != null
-                        ? Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              CachedNetworkImage(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Image avec filtre
+                        bloc.filterColor != null
+                            ? Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  CachedNetworkImage(
+                                    imageUrl: bloc.postImageUrl!,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                                  ),
+                                  Container(
+                                    color: bloc.filterColor!.withOpacity(0.5),
+                                  ),
+                                ],
+                              )
+                            : CachedNetworkImage(
                                 imageUrl: bloc.postImageUrl!,
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) => const Center(
@@ -86,39 +118,42 @@ class _HomePageState extends State<HomePage> {
                                 ),
                                 errorWidget: (context, url, error) => const Icon(Icons.error),
                               ),
-                              Container(
-                                color: bloc.filterColor!.withOpacity(0.5),
+                        
+                        // Texte du bloc (s'il existe)
+                        if (bloc.text != null && bloc.text!.isNotEmpty)
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.black.withOpacity(0.0),
+                                    Colors.black.withOpacity(0.8),
+                                  ],
+                                ),
                               ),
-                            ],
-                          )
-                        : CachedNetworkImage(
-                            imageUrl: bloc.postImageUrl!,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => const Center(
-                              child: CircularProgressIndicator(),
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                bloc.text!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
                             ),
-                            errorWidget: (context, url, error) => const Icon(Icons.error),
                           ),
+                      ],
+                    ),
                   );
                 }
                 return Container();
               },
             ),
-
-          // Texte du post
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Container(
-              height: 24, // Hauteur minimale pour le texte
-              child: Text(
-                post.text,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ),
 
           // Hashtags et mentions
           if (post.hashtags.isNotEmpty || post.mentions.isNotEmpty)
@@ -190,7 +225,7 @@ class _HomePageState extends State<HomePage> {
               postId: doc.id,
               userId: data['userId'],
               pseudo: data['pseudo'],
-              text: data['text'] ?? '',
+              description: data['description'] ?? '',
               hashtags: List<String>.from(data['hashtags'] ?? []),
               mentions: List<String>.from(data['mentions'] ?? []),
               blocs: (data['blocs'] as List<dynamic>).map((bloc) {
@@ -222,7 +257,7 @@ class PostData {
   final String postId;
   final String userId;
   final String pseudo;
-  final String text;
+  final String description;
   final List<String> hashtags;
   final List<String> mentions;
   final List<BlocData> blocs;
@@ -231,7 +266,7 @@ class PostData {
     required this.postId,
     required this.userId,
     required this.pseudo,
-    required this.text,
+    required this.description,
     required this.hashtags,
     required this.mentions,
     required this.blocs,

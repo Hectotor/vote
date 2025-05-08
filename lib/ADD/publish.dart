@@ -3,11 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import 'package:flutter/material.dart' show TextEditingController;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'dart:io';
 
 class PublishService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -58,7 +58,7 @@ class PublishService {
       final postRef = await _firestore.collection('posts').add({
         'userId': user.uid,
         'pseudo': pseudo,
-        'text': description,
+        'description': description,
         'hashtags': extractedHashtags,
         'mentions': extractedMentions,
         'blocs': [],
@@ -109,7 +109,7 @@ class PublishService {
     }
   }
 
-  // Préparer les données des blocs avec upload des images
+  // Préparer les données des blocs
   Future<List<Map<String, dynamic>>> _prepareBlocData(
     List<XFile?> images, 
     List<Color> imageFilters, 
@@ -117,14 +117,12 @@ class PublishService {
     String? postId
   ) async {
     final List<Map<String, dynamic>> blocData = [];
-    print('Starting to prepare bloc data for ${images.length} images');
 
     for (int i = 0; i < images.length; i++) {
       final bloc = <String, dynamic>{};
 
-      if (textControllers[i].text.isNotEmpty) {
-        bloc['text'] = textControllers[i].text;
-      }
+      // Toujours enregistrer le texte, même s'il est vide
+      bloc['text'] = textControllers[i].text;
 
       if (images[i] != null) {
         try {
@@ -147,6 +145,8 @@ class PublishService {
     print('Successfully prepared bloc data with ${blocData.length} blocs');
     return blocData;
   }
+
+
 
   // Méthode pour compresser une image
   Future<File> _compressImage(File file) async {
