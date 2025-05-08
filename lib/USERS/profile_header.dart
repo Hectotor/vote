@@ -129,7 +129,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
               Container(
                 padding: const EdgeInsets.only(top: 10, bottom: 10, left: 16, right: 16),
                 decoration: BoxDecoration(
-                  color: Colors.grey[900],
+                  color: const Color(0xFF2C2730),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: Colors.grey[800]!,

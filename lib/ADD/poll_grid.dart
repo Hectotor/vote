@@ -35,12 +35,21 @@ class PollGrid extends StatefulWidget {
 class _PollGridState extends State<PollGrid> {
   List<bool> _isTextVisible = [];
 
-final List<Color> vibrantGradients = [
-  Color(0xFF2C2730),   // Deep Navy
-  Color(0xFF2C2730),   // Dark Midnight Blue
-  Color(0xFF2C2730),   // Rich Indigo
-  Color(0xFF2C2730)    // Bright Indigo
-];
+  final List<Color> vibrantGradients = [
+    Color(0xFF2C2730),   // Deep Navy
+    Color(0xFF2C2730),   // Dark Midnight Blue
+    Color(0xFF2C2730),   // Rich Indigo
+    Color(0xFF2C2730)    // Bright Indigo
+  ];
+
+  List<Color> _getColors() {
+    return [
+      Colors.blue,
+      Colors.purple,
+      Colors.orange,
+      Colors.green,
+    ];
+  }
 
   @override
   void initState() {
@@ -128,6 +137,9 @@ final List<Color> vibrantGradients = [
       ],
     );
 
+    final colors = _getColors();
+    final color = colors[index % colors.length];
+
     return GestureDetector(
       onTap: () => _showAddOptionDialog(index),
       child: Container(
@@ -174,7 +186,7 @@ final List<Color> vibrantGradients = [
                     icon: Icon(
                       Icons.add_photo_alternate_outlined, 
                       size: 40, 
-                      color: Colors.white.withOpacity(0.7),
+                      color: color.withOpacity(0.7),
                     ),
                     onPressed: () => _showAddOptionDialog(index),
                   ),
@@ -201,7 +213,7 @@ final List<Color> vibrantGradients = [
                 right: 0,
                 top: 0,
                 child: IconButton(
-                  icon: Icon(Icons.close_sharp, color: Colors.red),
+                  icon: Icon(Icons.close_sharp, color: color),
                   onPressed: () {
                     // Vérifier que l'index est valide avant la suppression
                      if (index >= 2 && index < widget.textControllers.length) {
