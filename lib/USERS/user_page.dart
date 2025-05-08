@@ -43,6 +43,7 @@ class _UserPageState extends State<UserPage> {
         title: FutureBuilder(
           future: _getUserPseudo(),
           builder: (context, snapshot) {
+            const SizedBox(width: 16);
             return Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -58,11 +59,18 @@ class _UserPageState extends State<UserPage> {
         centerTitle: false,
         actions: [
           IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // Action de recherche
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.menu),
             onPressed: () {
               // Action du menu
             },
           ),
+          const SizedBox(width: 16),
         ],
       ),
       body: ProfileHeader(userId: _userId!),
