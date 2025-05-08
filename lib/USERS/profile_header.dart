@@ -1,13 +1,91 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
+import '../ADD/addoption.dart';
 
-class ProfileHeader extends StatelessWidget {
+class ProfileHeader extends StatefulWidget {
   final String userId;
 
   const ProfileHeader({
     Key? key,
     required this.userId,
   }) : super(key: key);
+
+  @override
+  State<ProfileHeader> createState() => _ProfileHeaderState();
+}
+
+class _ProfileHeaderState extends State<ProfileHeader> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  String? _profileImageUrl;
+  Color? _filterColor;
+  bool _isLoading = false;
+
+  Future<void> _uploadProfileImage(XFile image, Color filterColor) async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      // Uploader l'image vers Firebase Storage
+      final Reference ref = _storage.ref().child('users/${widget.userId}/profilePhotoUrl');
+      await ref.putFile(File(image.path));
+      
+      // Obtenir l'URL de l'image
+      final String downloadUrl = await ref.getDownloadURL();
+      
+      // Vérifier que l'URL est valide
+      if (downloadUrl.isEmpty) {
+        throw Exception('URL de téléchargement invalide');
+      }
+      
+      // Mettre à jour l'URL dans Firestore
+      await _firestore.collection('users').doc(widget.userId).update({
+        'profilePhotoUrl': downloadUrl,
+        'filterColor': filterColor.value.toString(),
+      });
+      
+      setState(() {
+        _profileImageUrl = downloadUrl;
+        _filterColor = filterColor;
+      });
+    } catch (e) {
+      print('Erreur lors de l\'upload de l\'image: $e');
+      // Réinitialiser l'URL si l'upload échoue
+      setState(() {
+        _profileImageUrl = null;
+        _filterColor = null;
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _showAddOptionDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AddOption(
+        onAddPhoto: (image, filterColor) {
+          // Fermer le popup
+          Navigator.of(context).pop();
+          // Traiter l'image
+          _uploadProfileImage(image, filterColor);
+        },
+        onTakePhoto: (image, filterColor) {
+          // Fermer le popup
+          Navigator.of(context).pop();
+          // Traiter l'image
+          _uploadProfileImage(image, filterColor);
+        },
+        hasImage: _profileImageUrl != null,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,38 +111,61 @@ class ProfileHeader extends StatelessWidget {
               Row(
                 children: [
                   // Avatar
-                  Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.blue,
-                        width: 2,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                  GestureDetector(
+                    onTap: _showAddOptionDialog,
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.grey[600]!,
+                          width: 2,
                         ),
-                        child: userData['photoUrl'] != null
-                            ? ClipOval(
-                                child: Image.network(
-                                  userData['photoUrl'],
-                                  fit: BoxFit.cover,
-                                  width: 80,
-                                  height: 80,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.transparent,
+                          ),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              if (_profileImageUrl != null)
+                                ClipOval(
+                                  child: Image.network(
+                                    _profileImageUrl!,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                              )
-                            : Icon(
-                                Icons.person,
-                                size: 40,
-                                color: Colors.grey[600],
-                              ),
+                              if (_profileImageUrl != null && _filterColor != null)
+                                Positioned.fill(
+                                  child: ClipOval(
+                                    child: Container(
+                                      color: _filterColor!.withOpacity(0.3),
+                                    ),
+                                  ),
+                                ),
+                              if (_isLoading)
+                                const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.0,
+                                  ),
+                                )
+                              else if (_profileImageUrl == null)
+                                Icon(
+                                  Icons.person,
+                                  size: 40,
+                                  color: Colors.grey[600],
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -110,12 +211,8 @@ class ProfileHeader extends StatelessWidget {
   }
 
   Future<Map<String, dynamic>> _getUserData() async {
-    final doc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .get();
-
-    return doc.data() ?? {};
+    final doc = await _firestore.collection('users').doc(widget.userId).get();
+    return doc.data() as Map<String, dynamic>;
   }
 
   Widget _buildStatColumn({
