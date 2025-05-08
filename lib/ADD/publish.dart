@@ -72,11 +72,28 @@ class PublishService {
       // Mettre à jour le document avec les blocs
       await postRef.update({'blocs': blocData});
 
-      // Gérer les hashtags
-      await _manageHashtags(extractedHashtags, postRef.id);
+      // Gérer les hashtags et mentions dans une transaction
+      await _firestore.runTransaction((transaction) async {
+        // Gérer les hashtags
+        for (String hashtag in extractedHashtags) {
+          final hashtagDoc = _firestore.collection('hashtags').doc(hashtag);
+          transaction.set(hashtagDoc, {
+            'name': '#$hashtag',
+            'postIds': FieldValue.arrayUnion([postRef.id]),
+            'createdAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        }
 
-      // Gérer les mentions
-      await _manageMentions(extractedMentions, postRef.id);
+        // Gérer les mentions
+        for (String mention in extractedMentions) {
+          final mentionDoc = _firestore.collection('mentions').doc(mention);
+          transaction.set(mentionDoc, {
+            'name': '@$mention',
+            'postIds': FieldValue.arrayUnion([postRef.id]),
+            'createdAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        }
+      });
 
       return true;
     } catch (e) {
@@ -135,28 +152,6 @@ class PublishService {
     final downloadUrl = await uploadTask.ref.getDownloadURL();
     
     return downloadUrl;
-  }
-
-  // Gestion des hashtags
-  Future<void> _manageHashtags(List<String> hashtags, String postId) async {
-    for (String hashtag in hashtags) {
-      await _firestore.collection('hashtags').doc(hashtag).set({
-        'name': '#$hashtag',
-        'postIds': FieldValue.arrayUnion([postId]),
-        'createdAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    }
-  }
-
-  // Gestion des mentions
-  Future<void> _manageMentions(List<String> mentions, String postId) async {
-    for (String mention in mentions) {
-      await _firestore.collection('mentions').doc(mention).set({
-        'name': '@$mention',
-        'postIds': FieldValue.arrayUnion([postId]),
-        'createdAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    }
   }
 
   // Générer la disposition des blocs
