@@ -154,10 +154,6 @@ class _AddPageState extends State<AddPage> {
     // Compter le nombre d'images non nulles
     final numberOfImages = _images.where((img) => img != null).length;
     
-    // Afficher des informations de débogage
-    print('Nombre d\'images : $numberOfImages');
-    print('Images : $_images');
-
     // Le bouton est actif seulement s'il y a au moins 2 images
     return numberOfImages >= 2;
   }
