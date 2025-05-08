@@ -91,8 +91,6 @@ class _AddPageState extends State<AddPage> {
         images: _images,
         imageFilters: _imageFilters,
         textControllers: textControllers,
-        hashtags: _hashtags, // Add hashtags to the method call
-        mentions: _mentions, // Add mentions to the method call
         context: context,
       );
 

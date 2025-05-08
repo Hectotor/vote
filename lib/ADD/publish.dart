@@ -34,8 +34,6 @@ class PublishService {
     required List<XFile?> images,
     required List<Color> imageFilters,
     required List<TextEditingController> textControllers,
-    List<String> hashtags = const [],
-    List<String> mentions = const [],
     BuildContext? context,
   }) async {
     try {
@@ -53,17 +51,13 @@ class PublishService {
       final extractedHashtags = _extractHashtags(description);
       final extractedMentions = _extractMentions(description);
 
-      // Combine extracted and manually added hashtags and mentions, removing duplicates
-      final allHashtags = {...extractedHashtags, ...hashtags}.toList();
-      final allMentions = {...extractedMentions, ...mentions}.toList();
-
       // Créer la publication avec la nouvelle structure
       final postRef = await _firestore.collection('posts').add({
         'userId': user.uid,
         'pseudo': pseudo,
         'text': description,
-        'hashtags': allHashtags,
-        'mentions': allMentions,
+        'hashtags': extractedHashtags,
+        'mentions': extractedMentions,
         'blocs': [],
         'blocLayout': _generateBlocLayout(0),  // Disposition des blocs
         'createdAt': FieldValue.serverTimestamp(),
@@ -79,10 +73,10 @@ class PublishService {
       await postRef.update({'blocs': blocData});
 
       // Gérer les hashtags
-      await _manageHashtags(allHashtags, postRef.id);
+      await _manageHashtags(extractedHashtags, postRef.id);
 
       // Gérer les mentions
-      await _manageMentions(allMentions, postRef.id);
+      await _manageMentions(extractedMentions, postRef.id);
 
       return true;
     } catch (e) {
@@ -164,7 +158,6 @@ class PublishService {
       }, SetOptions(merge: true));
     }
   }
-
 
   // Générer la disposition des blocs
   Map<String, dynamic> _generateBlocLayout(int blocCount) {
