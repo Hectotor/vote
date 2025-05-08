@@ -178,13 +178,13 @@ class _DescriptionFieldState extends State<DescriptionField> {
     final newText = text.replaceRange(
       selection.baseOffset - lastWord.length,
       selection.baseOffset,
-      suggestion,
+      suggestion + ' ',  
     );
 
     widget.controller.value = TextEditingValue(
       text: newText,
       selection: TextSelection.collapsed(
-        offset: selection.baseOffset - lastWord.length + suggestion.length,
+        offset: selection.baseOffset - lastWord.length + suggestion.length + 1,  
       ),
     );
 

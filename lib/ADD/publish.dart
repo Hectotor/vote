@@ -89,7 +89,6 @@ class PublishService {
           transaction.set(hashtagDoc, {
             'name': '#$hashtag',
             'postIds': FieldValue.arrayUnion([postRef.id]),
-            'createdAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
         }
 
@@ -99,7 +98,6 @@ class PublishService {
           transaction.set(mentionDoc, {
             'name': '@$mention',
             'postIds': FieldValue.arrayUnion([postRef.id]),
-            'createdAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
         }
       });
@@ -122,10 +120,7 @@ class PublishService {
     print('Starting to prepare bloc data for ${images.length} images');
 
     for (int i = 0; i < images.length; i++) {
-      final bloc = <String, dynamic>{
-        'index': i,
-        'position': i,
-      };
+      final bloc = <String, dynamic>{};
 
       if (textControllers[i].text.isNotEmpty) {
         bloc['text'] = textControllers[i].text;
