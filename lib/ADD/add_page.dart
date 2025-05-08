@@ -66,6 +66,7 @@ class _AddPageState extends State<AddPage> {
   List<TextEditingController> textControllers = [];
   List<String> _hashtags = [];
   List<String> _mentions = [];
+  final ValueNotifier<bool> _isLoading = ValueNotifier(false); // Utiliser ValueNotifier
 
   @override
   void initState() {
@@ -82,6 +83,8 @@ class _AddPageState extends State<AddPage> {
   }
 
   Future<void> _publishContent() async {
+    _isLoading.value = true; // Utiliser ValueNotifier
+
     final description = _descriptionController.text;
     
     try {
@@ -118,16 +121,18 @@ class _AddPageState extends State<AddPage> {
           );
         });
       } else {
-        // Show error message
+        // Gérer l'erreur
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Échec de la publication')),
         );
+        _isLoading.value = false; // Utiliser ValueNotifier
       }
     } catch (e) {
-      // Handle any errors during publishing
+      // Gérer l'erreur
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: ${e.toString()}')),
+        SnackBar(content: Text('Échec de la publication')),
       );
+      _isLoading.value = false; // Utiliser ValueNotifier
     }
   }
 
@@ -194,99 +199,112 @@ class _AddPageState extends State<AddPage> {
           onPressed: _cancel,
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 10.0),
-            child: TextButton(
-              onPressed: _canPublish() ? () {
-                print('Publish button pressed'); // Debug print
-                _publishContent();
-              } : null,
-              style: TextButton.styleFrom(
-                foregroundColor: _canPublish() ? const Color(0xFF3498DB) : Colors.white70,
-                padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+          TextButton(
+            onPressed: _canPublish() ? _publishContent : null,
+            style: TextButton.styleFrom(
+              foregroundColor: _canPublish() ? const Color(0xFF3498DB) : Colors.white70,
+              padding: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                'Publier',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+            ),
+            child: Text(
+              'Publier',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white
-                  .withOpacity(0.1), // Ligne de séparation simplifiée
-            ),
-            height: 0.5,
-          ),
-        ),
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              child: Container(
-                alignment: Alignment.center,
-                color: Colors.transparent,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    DescriptionField(
-                      controller: _descriptionController,
-                      onTagsChanged: (hashtags, mentions) {
-                        setState(() {
-                          _hashtags = hashtags;
-                          _mentions = mentions;
-                        });
-                      },
+      body: ValueListenableBuilder<bool>(
+        valueListenable: _isLoading,
+        builder: (context, isLoading, child) {
+          return Stack(
+            children: [
+              AbsorbPointer(
+                absorbing: isLoading,
+                child: child,
+              ),
+              if (isLoading)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black.withOpacity(0.5),
+                    child: Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      ),
                     ),
-                    SizedBox(height: 10),
-                    PollGrid(
-                      images: _images,
-                      imageFilters: _imageFilters,
-                      numberOfBlocs: textControllers.length,
-                      textControllers: textControllers,
-                      onImageChange: (index) {
-                        _updateImageState(index);
-                      },
-                      onBlocRemoved: (index) {
-                        setState(() {
-                          // Supprimer uniquement le bloc à l'index spécifié
-                          if (index >= 2 && index < textControllers.length) {
-                            // Supprimer les éléments associés
-                            textControllers.removeAt(index);
-                            _images.removeAt(index);
-                            _imageFilters.removeAt(index);
-                          }
-                        });
-                      },
-                      onStateUpdate: () {
-                        setState(() {});
-                      },
-                    ),
-                    SizedBox(height: 26),
-                    BottomAddBloc(
-                      showPoll: true,
-                      numberOfPollBlocs: textControllers.length,
-                      onPressed: _addBloc,
-                    ),
-                  ],
+                  ),
+                ),
+            ],
+          );
+        },
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                child: Container(
+                  alignment: Alignment.center,
+                  color: Colors.transparent,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DescriptionField(
+                        controller: _descriptionController,
+                        onTagsChanged: (hashtags, mentions) {
+                          setState(() {
+                            _hashtags = hashtags;
+                            _mentions = mentions;
+                          });
+                        },
+                      ),
+                      SizedBox(height: 10),
+                      PollGrid(
+                        images: _images,
+                        imageFilters: _imageFilters,
+                        numberOfBlocs: textControllers.length,
+                        textControllers: textControllers,
+                        onImageChange: (index) {
+                          _updateImageState(index);
+                        },
+                        onBlocRemoved: (index) {
+                          setState(() {
+                            // Supprimer uniquement le bloc à l'index spécifié
+                            if (index >= 2 && index < textControllers.length) {
+                              // Supprimer les éléments associés
+                              textControllers.removeAt(index);
+                              _images.removeAt(index);
+                              _imageFilters.removeAt(index);
+                            }
+                          });
+                        },
+                        onStateUpdate: () {
+                          setState(() {});
+                        },
+                      ),
+                      SizedBox(height: 26),
+                      BottomAddBloc(
+                        showPoll: true,
+                        numberOfPollBlocs: textControllers.length,
+                        onPressed: _addBloc,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -299,6 +317,7 @@ class _AddPageState extends State<AddPage> {
     for (var controller in textControllers) {
       controller.dispose();
     }
+    _isLoading.dispose(); // Dispose of ValueNotifier
     super.dispose();
   }
 }
