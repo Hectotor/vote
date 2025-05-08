@@ -131,7 +131,7 @@ class PublishService {
           print('Starting upload for image $i');
           final imageUrl = await _uploadImage(images[i]!, postId ?? '');
           bloc['postImageUrl'] = imageUrl;
-          bloc['filterColor'] = imageFilters[i].value.toString();
+          bloc['filterColor'] = imageFilters[i].value == 0 ? null : imageFilters[i].value.toString();
           print('Successfully uploaded image $i: $imageUrl');
         } catch (e) {
           print('Error uploading image $i: $e');
@@ -191,7 +191,7 @@ class PublishService {
     print('User ID: ${user.uid}');
     print('Post ID: $postId');
 
-    final fileName = 'postImageUrl_${DateTime.now().millisecondsSinceEpoch}';
+    final fileName = 'img_${DateTime.now().millisecondsSinceEpoch}';
     final storageRef = _storage.ref().child('users/${user.uid}/posts/$postId/${fileName}');
     
     print('Storage path: ${storageRef.fullPath}');
