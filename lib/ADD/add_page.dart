@@ -146,20 +146,15 @@ class _AddPageState extends State<AddPage> {
   }
 
   bool _canPublish() {
-    // La description est maintenant optionnelle
-    final hasDescription = true;
+    // Compter le nombre d'images non nulles
+    final numberOfImages = _images.where((img) => img != null).length;
     
-    // Utiliser la nouvelle méthode de validation des images
-    final publishService = PublishService();
-    final hasValidBlocs = publishService.canPublish(images: _images);
+    // Afficher des informations de débogage
+    print('Nombre d\'images : $numberOfImages');
+    print('Images : $_images');
 
-    // Afficher des informations de débogage détaillées
-    print('Description non vide : $hasDescription');
-    print('Images valides : $hasValidBlocs');
-    print('Liste des images : $_images');
-    print('Images non nulles : ${_images.where((img) => img != null).toList()}');
-
-    return hasDescription && hasValidBlocs;
+    // Le bouton est actif seulement s'il y a au moins 2 images
+    return numberOfImages >= 2;
   }
 
   void _addBloc() {

@@ -72,8 +72,14 @@ class PublishService {
       // Préparer les données des blocs avec l'ID du post
       final blocData = await _prepareBlocData(images, imageFilters, textControllers, postRef.id);
 
-      // Mettre à jour le document avec les blocs
-      await postRef.update({'blocs': blocData});
+      // Filtrer les blocs pour ne garder que ceux qui ont une image
+      final blocsWithImages = blocData.where((bloc) => bloc['postImageUrl'] != null).toList();
+
+      // Mettre à jour le document avec les blocs qui ont des images
+      await postRef.update({
+        'blocs': blocsWithImages,
+        'blocLayout': _generateBlocLayout(blocsWithImages.length)  // Mettre à jour la disposition
+      });
 
       // Gérer les hashtags et mentions dans une transaction
       await _firestore.runTransaction((transaction) async {
