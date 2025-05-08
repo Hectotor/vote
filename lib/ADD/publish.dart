@@ -183,8 +183,14 @@ class PublishService {
     print('User ID: ${user.uid}');
     print('Post ID: $postId');
 
-    final fileName = 'postImageUrl_${DateTime.now().millisecondsSinceEpoch}';
-    final storageRef = _storage.ref().child('users/${user.uid}/posts/${fileName}');
+    // Vérifier si le postId est défini
+    if (postId == null || postId.isEmpty) {
+      // Créer un ID temporaire pour le dossier du post
+      postId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    }
+
+    final fileName = 'image_${DateTime.now().millisecondsSinceEpoch}';
+    final storageRef = _storage.ref().child('users/${user.uid}/posts/$postId/$fileName');
     
     print('Storage path: ${storageRef.fullPath}');
     
