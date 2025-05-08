@@ -89,6 +89,18 @@ class _ProfileHeaderState extends State<ProfileHeader> {
     );
   }
 
+  Future<Map<String, dynamic>> _getUserData() async {
+    final doc = await _firestore.collection('users').doc(widget.userId).get();
+    final userData = doc.data() as Map<String, dynamic>;
+    
+    // Initialiser le contrôleur de bio avec la valeur existante
+    if (userData['bio'] != null) {
+      _bioController.text = userData['bio'];
+    }
+    
+    return userData;
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -103,6 +115,10 @@ class _ProfileHeaderState extends State<ProfileHeader> {
         }
 
         final userData = snapshot.data!;
+        _profileImageUrl = userData['profilePhotoUrl'];
+        if (userData['filterColor'] != null) {
+          _filterColor = Color(int.parse(userData['filterColor'].substring(6), radix: 16) + 0xFF000000);
+        }
 
         return Container(
           padding: const EdgeInsets.only(top: 0, bottom: 0, left: 16, right: 16),
@@ -249,18 +265,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
         );
       },
     );
-  }
-
-  Future<Map<String, dynamic>> _getUserData() async {
-    final doc = await _firestore.collection('users').doc(widget.userId).get();
-    final userData = doc.data() as Map<String, dynamic>;
-    
-    // Initialiser le contrôleur de bio avec la valeur existante
-    if (userData['bio'] != null) {
-      _bioController.text = userData['bio'];
-    }
-    
-    return userData;
   }
 
   Widget _buildStatColumn({
