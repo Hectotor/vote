@@ -54,9 +54,6 @@ class PublishService {
       final extractedHashtags = _extractHashtags(description);
       final extractedMentions = _extractMentions(description);
 
-      // Préparer les données des blocs avec l'ID du post
-      final blocData = await _prepareBlocData(images, imageFilters, textControllers, null);
-
       // Créer la publication avec la nouvelle structure
       final postRef = await _firestore.collection('posts').add({
         'userId': user.uid,
@@ -64,13 +61,19 @@ class PublishService {
         'text': description,
         'hashtags': extractedHashtags,
         'mentions': extractedMentions,
-        'blocs': blocData,
-        'blocLayout': _generateBlocLayout(blocData.length),  // Disposition des blocs
+        'blocs': [],
+        'blocLayout': _generateBlocLayout(0),  // Disposition des blocs
         'createdAt': FieldValue.serverTimestamp(),
       });
 
       // Mettre à jour le document avec son propre ID (pour faciliter les références)
       await postRef.update({'postId': postRef.id});
+
+      // Préparer les données des blocs avec l'ID du post
+      final blocData = await _prepareBlocData(images, imageFilters, textControllers, postRef.id);
+
+      // Mettre à jour le document avec les blocs
+      await postRef.update({'blocs': blocData});
 
       // Gérer les hashtags et mentions dans une transaction
       await _firestore.runTransaction((transaction) async {
@@ -180,11 +183,15 @@ class PublishService {
       throw Exception('Utilisateur non connecté');
     }
 
+    if (postId == null) {
+      throw Exception('Post ID is required for image upload');
+    }
+
     print('User ID: ${user.uid}');
     print('Post ID: $postId');
 
     final fileName = 'postImageUrl_${DateTime.now().millisecondsSinceEpoch}';
-    final storageRef = _storage.ref().child('users/${user.uid}/posts/${fileName}');
+    final storageRef = _storage.ref().child('users/${user.uid}/posts/$postId/${fileName}');
     
     print('Storage path: ${storageRef.fullPath}');
     
