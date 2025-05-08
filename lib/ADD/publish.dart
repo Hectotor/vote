@@ -51,6 +51,9 @@ class PublishService {
       final extractedHashtags = _extractHashtags(description);
       final extractedMentions = _extractMentions(description);
 
+      // Préparer les données des blocs avec l'ID du post
+      final blocData = await _prepareBlocData(images, imageFilters, textControllers, null);
+
       // Créer la publication avec la nouvelle structure
       final postRef = await _firestore.collection('posts').add({
         'userId': user.uid,
@@ -58,19 +61,13 @@ class PublishService {
         'text': description,
         'hashtags': extractedHashtags,
         'mentions': extractedMentions,
-        'blocs': [],
-        'blocLayout': _generateBlocLayout(0),  // Disposition des blocs
+        'blocs': blocData,
+        'blocLayout': _generateBlocLayout(blocData.length),  // Disposition des blocs
         'createdAt': FieldValue.serverTimestamp(),
       });
 
       // Mettre à jour le document avec son propre ID (pour faciliter les références)
       await postRef.update({'postId': postRef.id});
-
-      // Préparer les données des blocs avec l'ID du post
-      final blocData = await _prepareBlocData(images, imageFilters, textControllers, postRef.id);
-
-      // Mettre à jour le document avec les blocs
-      await postRef.update({'blocs': blocData});
 
       // Gérer les hashtags et mentions dans une transaction
       await _firestore.runTransaction((transaction) async {
@@ -107,7 +104,7 @@ class PublishService {
     List<XFile?> images, 
     List<Color> imageFilters, 
     List<TextEditingController> textControllers,
-    String postId
+    String? postId
   ) async {
     final List<Map<String, dynamic>> blocData = [];
 
@@ -125,7 +122,7 @@ class PublishService {
       // Ajouter l'image si présente
       if (images[i] != null) {
         // Uploader l'image et obtenir l'URL
-        final postImageUrl = await _uploadImage(images[i]!, postId);
+        final postImageUrl = await _uploadImage(images[i]!, postId ?? '');
         bloc['postImageUrl'] = postImageUrl;
         
         // Ajouter les informations du filtre de manière plus simple
