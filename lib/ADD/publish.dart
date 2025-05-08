@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:flutter/material.dart' show TextEditingController;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 class PublishService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -107,46 +110,91 @@ class PublishService {
     String? postId
   ) async {
     final List<Map<String, dynamic>> blocData = [];
+    print('Starting to prepare bloc data for ${images.length} images');
 
     for (int i = 0; i < images.length; i++) {
       final bloc = <String, dynamic>{
         'index': i,
-        'position': i,  // Position initiale dans la grille
+        'position': i,
       };
 
-      // Ajouter le texte si présent
       if (textControllers[i].text.isNotEmpty) {
         bloc['text'] = textControllers[i].text;
       }
 
-      // Ajouter l'image si présente
       if (images[i] != null) {
-        // Uploader l'image et obtenir l'URL
-        final postImageUrl = await _uploadImage(images[i]!, postId ?? '');
-        bloc['postImageUrl'] = postImageUrl;
-        
-        // Ajouter les informations du filtre de manière plus simple
-        bloc['filterColor'] = imageFilters[i].value.toString();
+        try {
+          print('Starting upload for image $i');
+          final imageUrl = await _uploadImage(images[i]!, postId ?? '');
+          bloc['postImageUrl'] = imageUrl;
+          bloc['filterColor'] = imageFilters[i].value.toString();
+          print('Successfully uploaded image $i: $imageUrl');
+        } catch (e) {
+          print('Error uploading image $i: $e');
+          // Si une image échoue, on annule tout
+          blocData.clear();
+          throw Exception('Échec de l\'upload d\'une image: $e');
+        }
       }
 
       blocData.add(bloc);
     }
 
+    print('Successfully prepared bloc data with ${blocData.length} blocs');
     return blocData;
   }
 
-  // Méthode pour uploader une image et obtenir son URL
-  Future<String> _uploadImage(XFile imageFile, String postId) async {
+  // Méthode pour compresser une image
+  Future<File> _compressImage(File file) async {
+    try {
+      final dir = await getTemporaryDirectory();
+      final targetPath = path.join(dir.path, '${path.basename(file.path)}_compressed.jpg');
+      
+      print('Compressing image: ${file.path}');
+      print('Original size: ${await file.length()} bytes');
+      
+      final result = await FlutterImageCompress.compressAndGetFile(
+        file.path,
+        targetPath,
+        quality: 70,
+        format: CompressFormat.jpeg,
+      );
+      
+      if (result == null) {
+        print('Compression failed, using original file');
+        return file;  // Retourne le fichier original en cas d'échec de compression
+      }
+      
+      print('Compressed size: ${await result.length()} bytes');
+      return File(result.path);  // Conversion explicite en File
+    } catch (e) {
+      print('Error during compression: $e');
+      return file;  // Retourne le fichier original en cas d'erreur
+    }
+  }
+
+  // Méthode pour uploader une image
+  Future<String> _uploadImage(XFile imageFile, String? postId) async {
     final user = _auth.currentUser;
     if (user == null) {
       throw Exception('Utilisateur non connecté');
     }
 
+    print('User ID: ${user.uid}');
+    print('Post ID: $postId');
+
     final fileName = 'postImageUrl_${DateTime.now().millisecondsSinceEpoch}';
-    final storageRef = _storage.ref().child('users/${user.uid}/posts/$postId/$fileName');
+    final storageRef = _storage.ref().child('users/${user.uid}/posts/${fileName}');
     
-    final uploadTask = await storageRef.putFile(File(imageFile.path));
+    print('Storage path: ${storageRef.fullPath}');
+    
+    // Compresser l'image avant l'upload
+    final compressedFile = await _compressImage(File(imageFile.path));
+    
+    final uploadTask = await storageRef.putFile(compressedFile);
     final downloadUrl = await uploadTask.ref.getDownloadURL();
+    
+    print('Upload successful. Download URL: $downloadUrl');
     
     return downloadUrl;
   }

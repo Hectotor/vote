@@ -106,8 +106,16 @@ class _AddPageState extends State<AddPage> {
           _textWidgets.fillRange(0, _textWidgets.length, null);
           _images.fillRange(0, _images.length, null);
           _imageFilters.fillRange(0, _imageFilters.length, Colors.transparent);
-          _hashtags.clear(); // Clear hashtags after publishing
-          _mentions.clear(); // Clear mentions after publishing
+          _hashtags.clear();
+          _mentions.clear();
+        });
+
+        // Navigate to NavBar after a short delay
+        Future.delayed(const Duration(milliseconds: 500), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const NavBar()),
+          );
         });
       } else {
         // Show error message
