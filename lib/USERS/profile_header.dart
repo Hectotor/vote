@@ -136,19 +136,38 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                             fit: StackFit.expand,
                             children: [
                               if (_profileImageUrl != null)
-                                ClipOval(
-                                  child: Image.network(
-                                    _profileImageUrl!,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              if (_profileImageUrl != null && _filterColor != null)
-                                Positioned.fill(
-                                  child: ClipOval(
-                                    child: Container(
-                                      color: _filterColor!.withOpacity(0.3),
+                                Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    // Image
+                                    ClipOval(
+                                      child: Image.network(
+                                        _profileImageUrl!,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress.expectedTotalBytes != null
+                                                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                                  : null,
+                                              color: Colors.white,
+                                              strokeWidth: 2.0,
+                                            ),
+                                          );
+                                        },
+                                      ),
                                     ),
-                                  ),
+                                    // Filtre
+                                    if (_filterColor != null)
+                                      Positioned.fill(
+                                        child: ClipOval(
+                                          child: Container(
+                                            color: _filterColor!.withOpacity(0.3),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               if (_isLoading)
                                 const Center(
