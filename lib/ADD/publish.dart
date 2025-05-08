@@ -44,6 +44,11 @@ class PublishService {
         throw Exception('Utilisateur non connecté');
       }
 
+      // Obtenir les données de l'utilisateur pour le pseudo
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+      final userData = userDoc.data() as Map<String, dynamic>;
+      final pseudo = userData['pseudo'] ?? '';
+
       // Extraire hashtags et mentions
       final extractedHashtags = _extractHashtags(description);
       final extractedMentions = _extractMentions(description);
@@ -52,18 +57,26 @@ class PublishService {
       final allHashtags = {...extractedHashtags, ...hashtags}.toList();
       final allMentions = {...extractedMentions, ...mentions}.toList();
 
-      // Préparer les données des blocs
-      final blocData = await _prepareBlocData(images, imageFilters, textControllers);
-
-      // Créer la publication
+      // Créer la publication avec la nouvelle structure
       final postRef = await _firestore.collection('posts').add({
         'userId': user.uid,
-        'description': description,
+        'pseudo': pseudo,
+        'text': description,
         'hashtags': allHashtags,
         'mentions': allMentions,
-        'blocs': blocData,
-        'timestamp': FieldValue.serverTimestamp(),
+        'blocs': [],
+        'blocLayout': _generateBlocLayout(0),  // Disposition des blocs
+        'createdAt': FieldValue.serverTimestamp(),
       });
+
+      // Mettre à jour le document avec son propre ID (pour faciliter les références)
+      await postRef.update({'postId': postRef.id});
+
+      // Préparer les données des blocs avec l'ID du post
+      final blocData = await _prepareBlocData(images, imageFilters, textControllers, postRef.id);
+
+      // Mettre à jour le document avec les blocs
+      await postRef.update({'blocs': blocData});
 
       // Gérer les hashtags
       await _manageHashtags(allHashtags, postRef.id);
@@ -82,13 +95,15 @@ class PublishService {
   Future<List<Map<String, dynamic>>> _prepareBlocData(
     List<XFile?> images, 
     List<Color> imageFilters, 
-    List<TextEditingController> textControllers
+    List<TextEditingController> textControllers,
+    String postId
   ) async {
     final List<Map<String, dynamic>> blocData = [];
 
     for (int i = 0; i < images.length; i++) {
       final bloc = <String, dynamic>{
         'index': i,
+        'position': i,  // Position initiale dans la grille
       };
 
       // Ajouter le texte si présent
@@ -99,16 +114,11 @@ class PublishService {
       // Ajouter l'image si présente
       if (images[i] != null) {
         // Uploader l'image et obtenir l'URL
-        final imageUrl = await _uploadImage(images[i]!);
-        bloc['imageUrl'] = imageUrl;
+        final postImageUrl = await _uploadImage(images[i]!, postId);
+        bloc['postImageUrl'] = postImageUrl;
         
-        // Ajouter les informations du filtre
-        bloc['imageFilter'] = {
-          'red': imageFilters[i].red,
-          'green': imageFilters[i].green,
-          'blue': imageFilters[i].blue,
-          'opacity': imageFilters[i].opacity,
-        };
+        // Ajouter les informations du filtre de manière plus simple
+        bloc['filterColor'] = imageFilters[i].value.toString();
       }
 
       blocData.add(bloc);
@@ -118,14 +128,14 @@ class PublishService {
   }
 
   // Méthode pour uploader une image et obtenir son URL
-  Future<String> _uploadImage(XFile imageFile) async {
+  Future<String> _uploadImage(XFile imageFile, String postId) async {
     final user = _auth.currentUser;
     if (user == null) {
       throw Exception('Utilisateur non connecté');
     }
 
-    final fileName = '${user.uid}_${DateTime.now().millisecondsSinceEpoch}';
-    final storageRef = _storage.ref().child('post_images/$fileName');
+    final fileName = 'postImageUrl_${DateTime.now().millisecondsSinceEpoch}';
+    final storageRef = _storage.ref().child('users/${user.uid}/posts/$postId/$fileName');
     
     final uploadTask = await storageRef.putFile(File(imageFile.path));
     final downloadUrl = await uploadTask.ref.getDownloadURL();
@@ -156,6 +166,17 @@ class PublishService {
   }
 
 
+  // Générer la disposition des blocs
+  Map<String, dynamic> _generateBlocLayout(int blocCount) {
+    // Vous pouvez implémenter différentes mises en page selon le nombre de blocs
+    // Cette implémentation simple utilise une grille
+    return {
+      'type': 'grid',
+      'columns': 2,
+      'spacing': 4.0,
+    };
+  }
+  
   // Valider la présence d'images dans les blocs 1 et 2
   bool canPublish({
     required List<XFile?> images,
