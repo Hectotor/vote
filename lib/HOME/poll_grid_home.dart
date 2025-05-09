@@ -5,12 +5,14 @@ class PollGridHome extends StatelessWidget {
   final List<String?> images; // Accepte uniquement les URLs d'images
   final List<Color> imageFilters;
   final int numberOfBlocs;
+  final List<String?> textes; // Liste des textes pour chaque bloc
 
   const PollGridHome({
     Key? key,
     required this.images,
     required this.imageFilters,
     required this.numberOfBlocs,
+    required this.textes,
   }) : super(key: key);
 
   @override
@@ -53,7 +55,7 @@ class PollGridHome extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 2),
+              SizedBox(height: 0),
               // Deuxième rangée (blocs 3 et 4)
               if (numberOfBlocs == 3)
                 Row(
@@ -152,6 +154,37 @@ class PollGridHome extends StatelessWidget {
               decoration: BoxDecoration(
                 color: imageFilters[index],
                 borderRadius: BorderRadius.circular(15.0),
+              ),
+            ),
+          if (textes[index] != null && textes[index]!.isNotEmpty)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.7),
+                    ],
+                  ),
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(15),
+                  ),
+                ),
+                child: Text(
+                  textes[index]!,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
         ],
