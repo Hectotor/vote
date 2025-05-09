@@ -20,13 +20,6 @@ class PostDescription extends StatelessWidget {
         text: TextSpan(
           children: [
             TextSpan(
-              text: '$pseudo ',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: isDarkMode ? Colors.white : Colors.black,
-              ),
-            ),
-            TextSpan(
               text: description,
               style: TextStyle(
                 color: isDarkMode ? Colors.white : Colors.black,

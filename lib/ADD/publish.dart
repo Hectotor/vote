@@ -61,6 +61,8 @@ class PublishService {
         'description': description,
         'hashtags': extractedHashtags,
         'mentions': extractedMentions,
+        'profilePhotoUrl': userData['profilePhotoUrl'],
+        'filterColor': userData['filterColor'],
         'blocs': [],
         'blocLayout': _generateBlocLayout(0),  // Disposition des blocs
         'createdAt': FieldValue.serverTimestamp(),

@@ -5,6 +5,8 @@ import 'package:toplyke/COMPONENTS/report_button.dart';
 
 class PostHeader extends StatelessWidget {
   final String pseudo;
+  final String? profilePhotoUrl;
+  final Color? filterColor;
   final Timestamp createdAt;
   final bool isDarkMode;
   final String postId;
@@ -12,6 +14,8 @@ class PostHeader extends StatelessWidget {
   const PostHeader({
     Key? key,
     required this.pseudo,
+    this.profilePhotoUrl,
+    this.filterColor,
     required this.createdAt,
     required this.isDarkMode,
     required this.postId,
@@ -20,15 +24,17 @@ class PostHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), // ajuster le padding vertical de 10 à 5
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: Colors.grey[300],
-            backgroundImage: NetworkImage(
-              'https://ui-avatars.com/api/?name=$pseudo&background=random'
-            ),
+            backgroundColor: filterColor ?? Colors.grey[300],
+            backgroundImage: profilePhotoUrl != null
+                ? NetworkImage(profilePhotoUrl!)
+                : NetworkImage(
+                    'https://ui-avatars.com/api/?name=$pseudo&background=random'
+                  ),
           ),
           const SizedBox(width: 10),
           Expanded(
