@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toplyke/COMPONENTS/date_formatter.dart';
+import 'package:toplyke/COMPONENTS/report_button.dart';
 
 class PostHeader extends StatelessWidget {
   final String pseudo;
   final Timestamp createdAt;
   final bool isDarkMode;
-  final VoidCallback? onMorePressed;
+  final String postId;
 
   const PostHeader({
     Key? key,
     required this.pseudo,
     required this.createdAt,
     required this.isDarkMode,
-    this.onMorePressed,
+    required this.postId,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), // ajuster le padding vertical de 10 à 5
       child: Row(
         children: [
           CircleAvatar(
@@ -51,12 +52,9 @@ class PostHeader extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            icon: Icon(
-              Icons.more_vert,
-              color: isDarkMode ? Colors.white : Colors.black,
-            ),
-            onPressed: onMorePressed,
+          ReportButton(
+            postId: postId,
+            isDarkMode: isDarkMode,
           ),
         ],
       ),

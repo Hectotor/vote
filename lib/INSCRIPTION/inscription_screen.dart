@@ -160,6 +160,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
 
       // Enregistrement des données de l'utilisateur dans Firestore
       await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        'userId': userCredential.user!.uid,
         'email': _emailController.text.trim().toLowerCase(),
         'pseudo': _pseudoController.text.trim(),
         'profilePhotoUrl': '',

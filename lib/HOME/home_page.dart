@@ -115,8 +115,8 @@ class _HomePageState extends State<HomePage> {
                     PostHeader(
                       pseudo: post.pseudo,
                       createdAt: post.createdAt,
+                      postId: post.postId,
                       isDarkMode: _isDarkMode,
-                      onMorePressed: () {},
                     ),
 
                     // Description
