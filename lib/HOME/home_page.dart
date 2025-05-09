@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-
+import 'poll_grid_home.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,160 +25,79 @@ class _HomePageState extends State<HomePage> {
   Widget _buildPost(PostData post) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(15),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header avec pseudo
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: Colors.white.withOpacity(0.1),
-                  child: Text(
-                    post.pseudo[0].toUpperCase(),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  post.pseudo,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Texte du post
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Container(
-              height: 24,
-              child: Text(
-                post.description,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
+          // En-tête du post
+          Row(
+            children: [
+              const CircleAvatar(
+                radius: 16,
+                backgroundColor: Colors.grey,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      post.pseudo,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      post.description,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
+            ],
           ),
 
           // Grille d'images
           if (post.blocs.isNotEmpty)
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(4),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 4,
-                mainAxisSpacing: 4,
-              ),
-              itemCount: post.blocs.length,
-              itemBuilder: (context, index) {
-                final bloc = post.blocs[index];
-                if (bloc.postImageUrl != null) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        // Image avec filtre
-                        bloc.filterColor != null
-                            ? Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  CachedNetworkImage(
-                                    imageUrl: bloc.postImageUrl!,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                    errorWidget: (context, url, error) => const Icon(Icons.error),
-                                  ),
-                                  Container(
-                                    color: bloc.filterColor!.withOpacity(0.5),
-                                  ),
-                                ],
-                              )
-                            : CachedNetworkImage(
-                                imageUrl: bloc.postImageUrl!,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                                errorWidget: (context, url, error) => const Icon(Icons.error),
-                              ),
-                        
-                        // Texte du bloc (s'il existe)
-                        if (bloc.text != null && bloc.text!.isNotEmpty)
-                          Positioned(
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.black.withOpacity(0.0),
-                                    Colors.black.withOpacity(0.8),
-                                  ],
-                                ),
-                              ),
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                bloc.text!,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
-                }
-                return Container();
-              },
+            PollGridHome(
+              images: post.blocs.map((bloc) => bloc.postImageUrl ?? null).toList(),
+              imageFilters: post.blocs.map((bloc) => bloc.filterColor ?? Colors.transparent).toList(),
+              numberOfBlocs: post.blocs.length,
+              textControllers: post.blocs.map((_) => TextEditingController()).toList(),
+              onImageChange: (index) {},
+              onBlocRemoved: (index) {},
+              onStateUpdate: () {},
             ),
 
           // Hashtags et mentions
           if (post.hashtags.isNotEmpty || post.mentions.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.all(12),
-              child: Wrap(
-                spacing: 8,
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ...post.hashtags.map(
-                    (hashtag) => Chip(
-                      label: Text(
-                        hashtag,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      backgroundColor: Colors.blue,
+                  if (post.hashtags.isNotEmpty)
+                    Wrap(
+                      spacing: 4,
+                      children: post.hashtags.map((hashtag) =>
+                        Chip(
+                          label: Text('#$hashtag'),
+                          backgroundColor: Colors.grey[800],
+                        )
+                      ).toList(),
                     ),
-                  ),
-                  ...post.mentions.map(
-                    (mention) => Chip(
-                      label: Text(
-                        mention,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      backgroundColor: Colors.purple,
+                  if (post.mentions.isNotEmpty)
+                    Wrap(
+                      spacing: 4,
+                      children: post.mentions.map((mention) =>
+                        Chip(
+                          label: Text('@$mention'),
+                          backgroundColor: Colors.grey[800],
+                        )
+                      ).toList(),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -192,22 +110,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
-          'Vote',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
-      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _postsStream,
         builder: (context, snapshot) {
@@ -241,7 +143,7 @@ class _HomePageState extends State<HomePage> {
           }).toList() ?? [];
 
           return ListView.builder(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: 20),
             itemCount: posts.length,
             itemBuilder: (context, index) {
               return _buildPost(posts[index]);
