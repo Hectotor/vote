@@ -69,7 +69,6 @@ class PostHeader extends StatelessWidget {
           ),
           ReportButton(
             postId: postId,
-            isDarkMode: true, // Maintenant toujours en mode sombre
             userId: userId,
 
           ),
