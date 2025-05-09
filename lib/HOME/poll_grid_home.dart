@@ -102,20 +102,11 @@ class PollGridHome extends StatelessWidget {
   Widget _buildBloc(BuildContext context, int index) {
     final screenWidth = MediaQuery.of(context).size.width;
     final blockWidth = (screenWidth - 24.0 - 8.0) / 2;
-    final gradient = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [
-        Colors.black,
-        Colors.black.withOpacity(0.7),
-      ],
-    );
 
     return Container(
       width: blockWidth,
       height: 200.0, 
       decoration: BoxDecoration(
-        gradient: gradient,
         borderRadius: BorderRadius.circular(15.0),
         boxShadow: [
           BoxShadow(
