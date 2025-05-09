@@ -78,6 +78,8 @@ class _HomePageState extends State<HomePage> {
               postId: doc.id,
               userId: data['userId'],
               pseudo: data['pseudo'],
+              profilePhotoUrl: data['profilePhotoUrl'],
+              filterColor: data['filterColor'] != null ? Color(int.parse(data['filterColor'])) : null,
               description: data['description'] ?? '',
               hashtags: List<String>.from(data['hashtags'] ?? []),
               mentions: List<String>.from(data['mentions'] ?? []),
@@ -114,6 +116,8 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     PostHeader(
                       pseudo: post.pseudo,
+                      profilePhotoUrl: post.profilePhotoUrl,
+                      filterColor: post.filterColor,
                       createdAt: post.createdAt,
                       postId: post.postId,
                       isDarkMode: _isDarkMode,
@@ -192,6 +196,8 @@ class PostData {
   final String postId;
   final String userId;
   final String pseudo;
+  final String? profilePhotoUrl;
+  final Color? filterColor;
   final String description;
   final List<String> hashtags;
   final List<String> mentions;
@@ -202,6 +208,8 @@ class PostData {
     required this.postId,
     required this.userId,
     required this.pseudo,
+    this.profilePhotoUrl,
+    this.filterColor,
     required this.description,
     required this.hashtags,
     required this.mentions,

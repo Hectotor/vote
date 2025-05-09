@@ -29,12 +29,21 @@ class PostHeader extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: filterColor ?? Colors.grey[300],
             backgroundImage: profilePhotoUrl != null
                 ? NetworkImage(profilePhotoUrl!)
                 : NetworkImage(
                     'https://ui-avatars.com/api/?name=$pseudo&background=random'
                   ),
+            child: filterColor != null
+                ? Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: BoxDecoration(
+                      color: filterColor!.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  )
+                : null,
           ),
           const SizedBox(width: 10),
           Expanded(
