@@ -10,16 +10,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  Stream<QuerySnapshot>? _postsStream;
-
   @override
   void initState() {
     super.initState();
-    _postsStream = _firestore
-        .collection('posts')
-        .orderBy('createdAt', descending: true)
-        .snapshots();
   }
 
   Widget _buildPost(PostData post) {
@@ -111,7 +104,10 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: StreamBuilder<QuerySnapshot>(
-        stream: _postsStream,
+        stream: FirebaseFirestore.instance
+          .collection('posts')
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
