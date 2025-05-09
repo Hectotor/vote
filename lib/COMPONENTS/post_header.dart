@@ -8,7 +8,6 @@ class PostHeader extends StatelessWidget {
   final String? profilePhotoUrl;
   final Color? filterColor;
   final Timestamp createdAt;
-  final bool isDarkMode;
   final String postId;
   final String userId;
 
@@ -18,7 +17,6 @@ class PostHeader extends StatelessWidget {
     this.profilePhotoUrl,
     this.filterColor,
     required this.createdAt,
-    required this.isDarkMode,
     required this.postId,
     required this.userId,
   }) : super(key: key);
@@ -54,15 +52,15 @@ class PostHeader extends StatelessWidget {
               children: [
                 Text(
                   pseudo,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                    color: Colors.white,
                   ),
                 ),
                 Text(
                   'Publié ${DateFormatter.formatDate(createdAt)}',
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.grey : Colors.grey[600],
+                  style: const TextStyle(
+                    color: Colors.grey,
                     fontSize: 12,
                   ),
                 ),
@@ -71,7 +69,7 @@ class PostHeader extends StatelessWidget {
           ),
           ReportButton(
             postId: postId,
-            isDarkMode: isDarkMode,
+            isDarkMode: true, // Maintenant toujours en mode sombre
             userId: userId,
 
           ),
