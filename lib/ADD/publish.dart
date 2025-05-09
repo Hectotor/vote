@@ -64,7 +64,6 @@ class PublishService {
         'profilePhotoUrl': userData['profilePhotoUrl'],
         'filterColor': userData['filterColor'],
         'blocs': [],
-        'blocLayout': _generateBlocLayout(0),  // Disposition des blocs
         'createdAt': FieldValue.serverTimestamp(),
       });
 
@@ -77,7 +76,6 @@ class PublishService {
       // Mettre à jour le document avec les blocs qui ont des images
       await postRef.update({
         'blocs': blocData,
-        'blocLayout': _generateBlocLayout(blocData.length)  // Mettre à jour la disposition
       });
 
       // Gérer les hashtags et mentions dans une transaction
@@ -219,17 +217,6 @@ class PublishService {
     return downloadUrl;
   }
 
-  // Générer la disposition des blocs
-  Map<String, dynamic> _generateBlocLayout(int blocCount) {
-    // Vous pouvez implémenter différentes mises en page selon le nombre de blocs
-    // Cette implémentation simple utilise une grille
-    return {
-      'type': 'grid',
-      'columns': 2,
-      'spacing': 4.0,
-    };
-  }
-  
   // Valider la présence d'images dans les blocs 1 et 2
   bool canPublish({
     required List<XFile?> images,
