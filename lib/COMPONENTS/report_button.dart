@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
+import 'package:toplyke/COMPONENTS/post_delete_service.dart';
 import 'dart:async';
 
 class ReportButton extends StatefulWidget {
   final String postId;
+  final String userId;
   final bool isDarkMode;
 
   const ReportButton({
     Key? key,
     required this.postId,
+    required this.userId,
     required this.isDarkMode,
   }) : super(key: key);
 
@@ -22,6 +25,7 @@ class _ReportButtonState extends State<ReportButton> {
   bool _isReportVisible = false;
   bool _isReported = false;
   Timer? _timer;
+  final PostDeleteService _deleteService = PostDeleteService();
 
   @override
   void initState() {
@@ -93,7 +97,7 @@ class _ReportButtonState extends State<ReportButton> {
 
   void _startTimer() {
     _timer?.cancel();
-    _timer = Timer(const Duration(seconds: 2), () {
+    _timer = Timer(const Duration(seconds: 3), () {
       if (mounted) {
         setState(() {
           _isReportVisible = false;
@@ -145,20 +149,49 @@ class _ReportButtonState extends State<ReportButton> {
                     ),
                   ],
                 ),
-                child: Row(
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.flag,
-                      color: _isReported ? Colors.red : Colors.white,
-                      size: 20,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.flag,
+                          color: _isReported ? Colors.red : Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Signaler',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Signaler',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                      ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.delete,
+                          color: Colors.red,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        TextButton(
+                          onPressed: () {
+                            _deleteService.deletePost(widget.postId, widget.userId, context);
+                          },
+                          child: const Text(
+                            'Supprimer',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

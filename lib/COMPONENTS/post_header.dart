@@ -10,6 +10,7 @@ class PostHeader extends StatelessWidget {
   final Timestamp createdAt;
   final bool isDarkMode;
   final String postId;
+  final String userId;
 
   const PostHeader({
     Key? key,
@@ -19,6 +20,7 @@ class PostHeader extends StatelessWidget {
     required this.createdAt,
     required this.isDarkMode,
     required this.postId,
+    required this.userId,
   }) : super(key: key);
 
   @override
@@ -70,6 +72,8 @@ class PostHeader extends StatelessWidget {
           ReportButton(
             postId: postId,
             isDarkMode: isDarkMode,
+            userId: userId,
+
           ),
         ],
       ),

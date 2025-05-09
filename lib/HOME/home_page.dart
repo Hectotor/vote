@@ -121,6 +121,7 @@ class _HomePageState extends State<HomePage> {
                       createdAt: post.createdAt,
                       postId: post.postId,
                       isDarkMode: _isDarkMode,
+                      userId: post.userId,
                     ),
 
                     // Description
