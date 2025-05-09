@@ -2,25 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
-import 'package:toplyke/COMPONENTS/post_delete_service.dart';
+import 'package:toplyke/COMPONENTS/menu_delete.dart';
 
-class ReportButton extends StatefulWidget {
+class PostMenu extends StatefulWidget {
   final String postId;
   final String userId;
 
-  const ReportButton({
+  const PostMenu({
     Key? key,
     required this.postId,
     required this.userId,
   }) : super(key: key);
 
   @override
-  State<ReportButton> createState() => _ReportButtonState();
+  State<PostMenu> createState() => _PostMenuState();
 }
 
-class _ReportButtonState extends State<ReportButton> {
+class _PostMenuState extends State<PostMenu> {
   bool _isReported = false;
-  final PostDeleteService _deleteService = PostDeleteService();
+  final MenuDelete _deleteService = MenuDelete();
 
   Future<void> _checkIfReported() async {
     try {
@@ -54,21 +54,57 @@ class _ReportButtonState extends State<ReportButton> {
         return;
       }
 
-      await FirebaseFirestore.instance.collection('reports').doc(widget.postId).set({
-        'postId': widget.postId,
-        'reportCount': FieldValue.increment(1),
-        'reporters': FieldValue.arrayUnion([currentUser.uid]),
-      }, SetOptions(merge: true));
+      final reportRef = FirebaseFirestore.instance.collection('reports').doc(widget.postId);
+      final report = await reportRef.get();
 
-      setState(() {
-        _isReported = true;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Post signalé'),
-        ),
-      );
+      if (report.exists && report.data() != null) {
+        final reporters = report.data()!['reporters'] as List<dynamic>;
+        if (reporters.contains(currentUser.uid)) {
+          // Désigneraler
+          await reportRef.update({
+            'reportCount': FieldValue.increment(-1),
+            'reporters': FieldValue.arrayRemove([currentUser.uid]),
+          });
+          setState(() {
+            _isReported = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Signalement annulé'),
+            ),
+          );
+        } else {
+          // Signaler
+          await reportRef.set({
+            'postId': widget.postId,
+            'reportCount': FieldValue.increment(1),
+            'reporters': FieldValue.arrayUnion([currentUser.uid]),
+          }, SetOptions(merge: true));
+          setState(() {
+            _isReported = true;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Post signalé'),
+            ),
+          );
+        }
+      } else {
+        // Premier signalement
+        await reportRef.set({
+          'postId': widget.postId,
+          'reportCount': 1,
+          'reporters': [currentUser.uid],
+        });
+        setState(() {
+          _isReported = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Post signalé'),
+          ),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -106,7 +142,7 @@ class _ReportButtonState extends State<ReportButton> {
               ),
               const SizedBox(width: 8),
               Text(
-                'Signaler',
+                _isReported ? 'Annuler le signalement' : 'Signaler',
                 style: TextStyle(
                   color: _isReported ? Colors.red : Colors.white,
                   fontWeight: FontWeight.w500,

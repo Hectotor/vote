@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toplyke/COMPONENTS/date_formatter.dart';
-import 'package:toplyke/COMPONENTS/report_button.dart';
+import 'package:toplyke/COMPONENTS/post_menu.dart';
 
 class PostHeader extends StatelessWidget {
   final String pseudo;
@@ -67,10 +67,9 @@ class PostHeader extends StatelessWidget {
               ],
             ),
           ),
-          ReportButton(
+          PostMenu(
             postId: postId,
             userId: userId,
-
           ),
         ],
       ),
