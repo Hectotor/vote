@@ -72,13 +72,10 @@ class PublishService {
       // Préparer les données des blocs avec l'ID du post
       final blocData = await _prepareBlocData(images, imageFilters, textControllers, postRef.id);
 
-      // Filtrer les blocs pour ne garder que ceux qui ont une image
-      final blocsWithImages = blocData.where((bloc) => bloc['postImageUrl'] != null).toList();
-
       // Mettre à jour le document avec les blocs qui ont des images
       await postRef.update({
-        'blocs': blocsWithImages,
-        'blocLayout': _generateBlocLayout(blocsWithImages.length)  // Mettre à jour la disposition
+        'blocs': blocData,
+        'blocLayout': _generateBlocLayout(blocData.length)  // Mettre à jour la disposition
       });
 
       // Gérer les hashtags et mentions dans une transaction
@@ -118,19 +115,23 @@ class PublishService {
   ) async {
     final List<Map<String, dynamic>> blocData = [];
 
+    // Ne traiter que les images non null
     for (int i = 0; i < images.length; i++) {
-      final bloc = <String, dynamic>{};
-
-      // Toujours enregistrer le texte, même s'il est vide
-      bloc['text'] = textControllers[i].text;
-
       if (images[i] != null) {
+        final bloc = <String, dynamic>{};
+
+        // Enregistrer le texte, même s'il est vide
+        bloc['text'] = textControllers[i].text;
+
         try {
           print('Starting upload for image $i');
           final imageUrl = await _uploadImage(images[i]!, postId ?? '');
           bloc['postImageUrl'] = imageUrl;
           bloc['filterColor'] = imageFilters[i].value == 0 ? null : imageFilters[i].value.toString();
           print('Successfully uploaded image $i: $imageUrl');
+          
+          // Ajouter le bloc seulement s'il a une image
+          blocData.add(bloc);
         } catch (e) {
           print('Error uploading image $i: $e');
           // Si une image échoue, on annule tout
@@ -138,18 +139,14 @@ class PublishService {
           throw Exception('Échec de l\'upload d\'une image: $e');
         }
       }
-
-      blocData.add(bloc);
     }
 
     print('Successfully prepared bloc data with ${blocData.length} blocs');
     return blocData;
   }
 
-
-
   // Méthode pour compresser une image
-  Future<File> _compressImage(File file) async {
+  Future<File> _compressImage(File file, {int quality = 70}) async {
     try {
       final dir = await getTemporaryDirectory();
       final targetPath = path.join(dir.path, '${path.basename(file.path)}_compressed.jpg');
@@ -157,20 +154,32 @@ class PublishService {
       print('Compressing image: ${file.path}');
       print('Original size: ${await file.length()} bytes');
       
+      // Vérifier la taille maximale (5MB)
+      if (await file.length() > 5 * 1024 * 1024) {
+        print('Image too large, skipping compression');
+        return file;
+      }
+      
+      // Compresser l'image avec des paramètres optimisés pour les réseaux sociaux
       final result = await FlutterImageCompress.compressAndGetFile(
         file.path,
         targetPath,
-        quality: 70,
+        quality: quality,  // Qualité configurable
         format: CompressFormat.jpeg,
+        minWidth: 1080,  // Limite la largeur maximale à 1080px
+        minHeight: 1080, // Limite la hauteur maximale à 1080px
+        rotate: 0,
+        keepExif: false,  // Ne pas conserver les métadonnées inutiles
+        inSampleSize: 1,  // Pas de réduction de taille
       );
       
       if (result == null) {
         print('Compression failed, using original file');
-        return file;  // Retourne le fichier original en cas d'échec de compression
+        return file;
       }
       
       print('Compressed size: ${await result.length()} bytes');
-      return File(result.path);  // Conversion explicite en File
+      return File(result.path);
     } catch (e) {
       print('Error during compression: $e');
       return file;  // Retourne le fichier original en cas d'erreur
@@ -191,7 +200,8 @@ class PublishService {
     print('User ID: ${user.uid}');
     print('Post ID: $postId');
 
-    final fileName = 'img_${DateTime.now().millisecondsSinceEpoch}';
+    // Utiliser un nom de fichier plus court
+    final fileName = 'img_${DateTime.now().millisecondsSinceEpoch % 1000000}';  // Utiliser les 6 derniers chiffres
     final storageRef = _storage.ref().child('users/${user.uid}/posts/$postId/${fileName}');
     
     print('Storage path: ${storageRef.fullPath}');
