@@ -15,90 +15,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
   }
 
-  Widget _buildPost(PostData post) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // En-tête du post
-          Row(
-            children: [
-              const CircleAvatar(
-                radius: 16,
-                backgroundColor: Colors.grey,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      post.pseudo,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      post.description,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          // Grille d'images
-          if (post.blocs.isNotEmpty)
-            PollGridHome(
-              images: post.blocs.map((bloc) => bloc.postImageUrl ?? null).toList(),
-              imageFilters: post.blocs.map((bloc) => bloc.filterColor ?? Colors.transparent).toList(),
-              numberOfBlocs: post.blocs.length,
-              textControllers: post.blocs.map((_) => TextEditingController()).toList(),
-              onImageChange: (index) {},
-              onBlocRemoved: (index) {},
-              onStateUpdate: () {},
-            ),
-
-          // Hashtags et mentions
-          if (post.hashtags.isNotEmpty || post.mentions.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (post.hashtags.isNotEmpty)
-                    Wrap(
-                      spacing: 4,
-                      children: post.hashtags.map((hashtag) =>
-                        Chip(
-                          label: Text('#$hashtag'),
-                          backgroundColor: Colors.grey[800],
-                        )
-                      ).toList(),
-                    ),
-                  if (post.mentions.isNotEmpty)
-                    Wrap(
-                      spacing: 4,
-                      children: post.mentions.map((mention) =>
-                        Chip(
-                          label: Text('@$mention'),
-                          backgroundColor: Colors.grey[800],
-                        )
-                      ).toList(),
-                    ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -142,7 +58,44 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.only(top: 20),
             itemCount: posts.length,
             itemBuilder: (context, index) {
-              return _buildPost(posts[index]);
+              final post = posts[index];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.grey,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          post.pseudo,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      post.description,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    PollGridHome(
+                      images: post.blocs.map((bloc) => bloc.postImageUrl).toList(),
+                      imageFilters: post.blocs.map((bloc) => bloc.filterColor ?? Colors.transparent).toList(),
+                      numberOfBlocs: post.blocs.length,
+                    ),
+                  ],
+                ),
+              );
             },
           );
         },
