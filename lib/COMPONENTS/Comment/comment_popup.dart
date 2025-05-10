@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'like_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../INSCRIPTION/connexion_screen.dart';
-
 import '../../../COMPONENTS/avatar.dart';
 import '../../../COMPONENTS/date_formatter.dart';
 
@@ -24,7 +23,6 @@ class CommentPopup extends StatefulWidget {
 
 class _CommentPopupState extends State<CommentPopup> {
   final TextEditingController _commentController = TextEditingController();
-  final LikeService _likeService = LikeService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
@@ -33,28 +31,41 @@ class _CommentPopupState extends State<CommentPopup> {
     super.dispose();
   }
 
-
-
-  Future<void> _handleLike(String commentId) async {
+  void _handleLike(String commentId) async {
     try {
-      await _likeService.toggleLike(commentId);
-      setState(() {}); // Refresh the UI
-    } on UnauthenticatedException {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ConnexionPage(),
+          ),
+        );
+        return;
+      }
+
+      final commentRef = _firestore.collection('comments').doc(commentId);
+      final commentDoc = await commentRef.get();
+      final data = commentDoc.data() as Map<String, dynamic>;
+      final likes = data['likes'] as List<dynamic>;
+      final likeCount = data['likeCount'] as int;
+
+      if (likes.contains(user.uid)) {
+        // L'utilisateur a déjà liké, on ne fait rien
+        return;
+      }
+
+      // Ajouter le like
+      await commentRef.update({
+        'likes': FieldValue.arrayUnion([user.uid]),
+        'likeCount': likeCount + 1,
+      });
+
+      setState(() {});
+    } catch (e) {
+      print('Erreur lors du like: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez vous connecter pour liker un commentaire'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const ConnexionPage(),
-        ),
-      );
-    } on LikeException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: ${e.message}')),
+        SnackBar(content: Text('Erreur: ${e.toString()}')),
       );
     }
   }
@@ -65,12 +76,14 @@ class _CommentPopupState extends State<CommentPopup> {
       color: Colors.transparent,
       child: Container(
         height: 650,
+        padding: const EdgeInsets.only(top: 5),
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: _buildCommentsList(),
-            ),
+            Expanded(child: _buildCommentsList()),
           ],
         ),
       ),
@@ -78,7 +91,6 @@ class _CommentPopupState extends State<CommentPopup> {
   }
 
   Widget _buildCommentsList() {
-    print('Chargement des commentaires pour le post ${widget.postId}');
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore
           .collection('comments')
@@ -87,76 +99,62 @@ class _CommentPopupState extends State<CommentPopup> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
+          return Center(child: Text('Erreur: ${snapshot.error}'));
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Container(
-            padding: const EdgeInsets.all(20),
-            child: Center(
-              child: CircularProgressIndicator(
-                color: Colors.grey[600],
-                strokeWidth: 2,
-              ),
-            ),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
-        final comments = snapshot.data?.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          return {
-            'id': doc.id,
-            'postId': data['postId'],
-            'userId': data['userId'],
-            'text': data['text'],
-            'createdAt': data['createdAt'],
-            'likeCount': data['likeCount'] ?? 0,
-          };
-        }).toList() ?? [];
+        final comments = snapshot.data?.docs ?? [];
 
         if (comments.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
               'Aucun commentaire',
               style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
+                color: Colors.white54,
+                fontSize: 16,
               ),
             ),
           );
         }
 
-        return Container(
-          padding: const EdgeInsets.all(40),
-          child: Column(
-            children: [
-              if (comments.isEmpty)
-                const Center(
-                  child: Text(
-                    'Aucun commentaire',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
-              Expanded(
-                child: ListView.builder(
-                  controller: widget.scrollController,
-                  padding: EdgeInsets.zero,
-                  itemCount: comments.length,
-                  itemBuilder: (context, index) {
-                    final comment = comments[index];
-                    return CommentItem(
-                      comment: comment,
-                      onLike: () => _handleLike(comment['id']),
-                    );
-                  },
+        return Column(
+          children: [
+            Center(
+              child: Text(
+                'Aucun commentaire',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 16,
                 ),
               ),
-            ],
-          ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                controller: widget.scrollController,
+                itemCount: comments.length,
+                padding: const EdgeInsets.all(4),
+                itemBuilder: (context, index) {
+                  final data = comments[index].data() as Map<String, dynamic>;
+                  final comment = {
+                    'id': comments[index].id,
+                    'postId': data['postId'],
+                    'userId': data['userId'],
+                    'text': data['text'],
+                    'createdAt': data['createdAt'],
+                    'likeCount': data['likeCount'] ?? 0,
+                  };
+
+                  return CommentItem(
+                    comment: comment,
+                    onLike: () => _handleLike(comment['id']),
+                  );
+                },
+              ),
+            ),
+          ],
         );
       },
     );
@@ -181,94 +179,105 @@ class CommentItem extends StatelessWidget {
           .doc(comment['userId'])
           .get(),
       builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Text('Error');
-        }
+        if (!snapshot.hasData) return const SizedBox.shrink();
 
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Container(
-            padding: const EdgeInsets.all(20),
-            child: Center(
-              child: CircularProgressIndicator(
-                color: Colors.grey[600],
-                strokeWidth: 2,
+        final userData = snapshot.data!.data() as Map<String, dynamic>;
+        final pseudo = userData['pseudo'] ?? 'Utilisateur';
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.grey[900]!,
+                width: 1,
               ),
             ),
-          );
-        }
-
-        final userData =
-            snapshot.data?.data() as Map<String, dynamic>?;
-        final pseudo = userData?['pseudo'] as String?;
-
-        return Container(
-          padding: const EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 0),
-          decoration: BoxDecoration(
-            color: const Color(0xFF2D3748),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              Row(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Avatar(
                     userId: comment['userId'],
-                    radius: 18,
+                    radius: 20,
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          pseudo ?? 'Utilisateur',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontSize: 15,
+                        RichText(
+                          text: TextSpan(
+                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                            children: [
+                              TextSpan(
+                                text: '$pseudo ',
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
                         ),
-                        Text(
-                          DateFormatter.formatDate(comment['createdAt']),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                          ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              DateFormatter.formatDate(comment['createdAt']),
+                              style: const TextStyle(color: Colors.grey, fontSize: 12),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 5),
+                        const SizedBox(height: 8),
                         Text(
                           comment['text'],
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                          ),
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
                         ),
                       ],
                     ),
                   ),
+                  const Spacer(),
+                  StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('comments')
+                        .doc(comment['id'])
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Icon(Icons.favorite_border, size: 20, color: Colors.grey);
+                      }
+
+                      final data = snapshot.data!.data() as Map<String, dynamic>;
+                      final likes = data['likes'] as List<dynamic>;
+                      final user = FirebaseAuth.instance.currentUser;
+                      final isLiked = likes.contains(user?.uid);
+
+                      return GestureDetector(
+                        onTap: onLike,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.favorite,
+                              size: 20,
+                              color: isLiked ? Colors.red : Colors.grey,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${comment['likeCount']}',
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.favorite,
-                      color: Colors.red,
-                      size: 20,
-                    ),
-                    onPressed: onLike,
-                  ),
-                  Text(
-                    '${comment['likeCount']}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         );
       },

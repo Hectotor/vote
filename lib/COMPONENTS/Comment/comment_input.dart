@@ -79,6 +79,17 @@ class _CommentInputState extends State<CommentInput> {
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
                       ),
+                      textCapitalization: TextCapitalization.sentences,
+                      onChanged: (text) {
+                        setState(() {
+                          _isTextEmpty = text.trim().isEmpty;
+                        });
+                      },
+                      onSubmitted: (text) {
+                        if (!_isTextEmpty) {
+                          widget.onSend();
+                        }
+                      },
                     ),
                   ),
                   const SizedBox(width: 12),
