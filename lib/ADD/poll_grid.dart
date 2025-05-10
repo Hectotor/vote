@@ -36,10 +36,10 @@ class _PollGridState extends State<PollGrid> {
   List<bool> _isTextVisible = [];
 
   final List<Color> vibrantGradients = [
-    Color(0xFF2C2730),   // Deep Navy
-    Color(0xFF2C2730),   // Dark Midnight Blue
-    Color(0xFF2C2730),   // Rich Indigo
-    Color(0xFF2C2730)    // Bright Indigo
+    Color(0xFF2D3748),   // Deep Navy
+    Color(0xFF2D3748),   // Dark Midnight Blue
+    Color(0xFF2D3748),   // Rich Indigo
+    Color(0xFF2D3748)    // Bright Indigo
   ];
 
   List<Color> _getColors() {
