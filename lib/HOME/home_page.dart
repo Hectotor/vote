@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'poll_grid_home.dart';
 import 'package:toplyke/COMPONENTS/post_header.dart';
 import 'package:toplyke/COMPONENTS/post_description.dart';
-import 'package:toplyke/COMPONENTS/spiral_loading.dart';
 import 'package:toplyke/COMPONENTS/post_actions.dart';
 
 class HomePage extends StatefulWidget {
@@ -55,9 +54,9 @@ class _HomePageState extends State<HomePage> {
 
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(
-                        child: SpiralLoading(
-                          size: 50.0,
+                        child: CircularProgressIndicator(
                           color: Colors.white,
+                          strokeWidth: 2,
                         ),
                       );
                     }

@@ -34,8 +34,10 @@ class PostActions extends StatelessWidget {
               size: 24,
             ),
             onPressed: () {
-              showDialog(
+              showModalBottomSheet(
                 context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
                 builder: (context) => CommentPopup(
                   postId: postId,
                   userId: userId,
