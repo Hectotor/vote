@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> {
                         userId: data['userId'],
                         pseudo: data['pseudo'],
                         profilePhotoUrl: data['profilePhotoUrl'],
-                        filterColor: data['filterColor'] != null ? Color(int.parse(data['filterColor'])) : null,
+                        filterColor: data['filterColor'] != null ? int.parse(data['filterColor']) : null,
                         description: data['description'] ?? '',
                         hashtags: List<String>.from(data['hashtags'] ?? []),
                         mentions: List<String>.from(data['mentions'] ?? []),
@@ -156,7 +156,7 @@ class PostData {
   final String userId;
   final String pseudo;
   final String? profilePhotoUrl;
-  final Color? filterColor;
+  final int? filterColor;
   final String description;
   final List<String> hashtags;
   final List<String> mentions;

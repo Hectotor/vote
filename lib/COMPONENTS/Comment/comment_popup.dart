@@ -3,9 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../INSCRIPTION/connexion_screen.dart';
 import '../../../SERVICES/like_service.dart';
-import '../../../COMPONENTS/date_formatter.dart';
 import 'comment_input.dart';
-import '../../../COMPONENTS/post_header.dart';
+  
+import '../../../COMPONENTS/avatar.dart';
 
 class CommentPopup extends StatefulWidget {
   final String postId;
@@ -202,10 +202,6 @@ class CommentItem extends StatelessWidget {
         final userData =
             snapshot.data?.data() as Map<String, dynamic>?;
         final pseudo = userData?['pseudo'] as String?;
-        final profilePhotoUrl = userData?['profilePhotoUrl'] as String?;
-        final filterColor = userData?['filterColor'] != null
-            ? Color(int.parse(userData?['filterColor'] as String, radix: 10))
-            : null;
 
         return Container(
           padding: const EdgeInsets.only(top: 10, bottom: 10, left: 0, right: 0),
@@ -215,20 +211,34 @@ class CommentItem extends StatelessWidget {
           ),
           child: Column(
             children: [
-              PostHeader(
-                pseudo: pseudo ?? 'Utilisateur',
-                profilePhotoUrl: profilePhotoUrl,
-                filterColor: filterColor,
-                createdAt: comment.createdAt,
-                postId: comment.id,
-                userId: comment.userId,
-                              ),
-              Text(
-                comment.text,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                ),
+              Row(
+                children: [
+                  Avatar(
+                    userId: comment.userId,
+                    radius: 18,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          pseudo ?? 'Utilisateur',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          comment.text,
+                          style: const TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,

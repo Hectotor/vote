@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toplyke/COMPONENTS/date_formatter.dart';
 import 'package:toplyke/COMPONENTS/post_menu.dart';
+import 'package:toplyke/COMPONENTS/avatar.dart';
 
 class PostHeader extends StatelessWidget {
   final String pseudo;
   final String? profilePhotoUrl;
-  final Color? filterColor;
+  final int? filterColor;
   final Timestamp createdAt;
   final String postId;
   final String userId;
@@ -27,23 +28,9 @@ class PostHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          CircleAvatar(
+          Avatar(
+            userId: userId,
             radius: 18,
-            backgroundImage: profilePhotoUrl != null
-                ? NetworkImage(profilePhotoUrl!)
-                : NetworkImage(
-                    'https://ui-avatars.com/api/?name=$pseudo&background=random'
-                  ),
-            child: filterColor != null
-                ? Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    decoration: BoxDecoration(
-                      color: filterColor!.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                  )
-                : null,
           ),
           const SizedBox(width: 10),
           Expanded(

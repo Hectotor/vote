@@ -3,8 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
-import '../ADD/addoption.dart';
+import '../COMPONENTS/avatar.dart';
 import 'bio_field.dart';
+import '../ADD/addoption.dart';
 
 class ProfileHeader extends StatefulWidget {
   final String userId;
@@ -25,6 +26,27 @@ class _ProfileHeaderState extends State<ProfileHeader> {
   Color? _filterColor;
   bool _isLoading = false;
   final TextEditingController _bioController = TextEditingController();
+
+  Future<void> _showAddOptionDialog() async {
+    if (!mounted) return;
+
+    await showDialog(
+      context: context,
+      builder: (context) => AddOption(
+        onAddPhoto: (image, filterColor) {
+          if (!mounted) return;
+          Navigator.of(context).pop();
+          _uploadProfileImage(image, filterColor);
+        },
+        onTakePhoto: (image, filterColor) {
+          if (!mounted) return;
+          Navigator.of(context).pop();
+          _uploadProfileImage(image, filterColor);
+        },
+        hasImage: _profileImageUrl != null,
+      ),
+    );
+  }
 
   Future<void> _uploadProfileImage(XFile image, Color filterColor) async {
     setState(() {
@@ -47,7 +69,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
       // Mettre à jour l'URL et le filtre dans Firestore
       await _firestore.collection('users').doc(widget.userId).update({
         'profilePhotoUrl': downloadUrl,
-        'filterColor': filterColor.value.toString(),
+        'filterColor': filterColor.value,
       });
       
       setState(() {
@@ -66,27 +88,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
         _isLoading = false;
       });
     }
-  }
-
-  Future<void> _showAddOptionDialog() async {
-    if (!mounted) return; // Vérification que le widget est encore monté
-
-    await showDialog(
-      context: context,
-      builder: (context) => AddOption(
-        onAddPhoto: (image, filterColor) {
-          if (!mounted) return; // Vérification que le widget est encore monté
-          Navigator.of(context).pop();
-          _uploadProfileImage(image, filterColor);
-        },
-        onTakePhoto: (image, filterColor) {
-          if (!mounted) return; // Vérification que le widget est encore monté
-          Navigator.of(context).pop();
-          _uploadProfileImage(image, filterColor);
-        },
-        hasImage: _profileImageUrl != null,
-      ),
-    );
   }
 
   Future<Map<String, dynamic>> _getUserData() async {
@@ -117,7 +118,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
         final userData = snapshot.data!;
         _profileImageUrl = userData['profilePhotoUrl'];
         if (userData['filterColor'] != null) {
-          _filterColor = Color(int.parse(userData['filterColor'].substring(6), radix: 16) + 0xFF000000);
+          _filterColor = Color(userData['filterColor']);
         }
 
         return Container(
@@ -139,84 +140,11 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 child: Row(
                   children: [
                     // Avatar
-                    GestureDetector(
+                    Avatar(
+                      userId: widget.userId,
+                      radius: 35,
                       onTap: _showAddOptionDialog,
-                      child: Container(
-                        width: 70,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.grey[600]!,
-                            width: 2,
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(5),
-                          child: Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.transparent,
-                            ),
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                if (_profileImageUrl != null)
-                                  Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      // Image
-                                      ClipOval(
-                                        child: Image.network(
-                                          _profileImageUrl!,
-                                          fit: BoxFit.cover,
-                                          loadingBuilder: (context, child, loadingProgress) {
-                                            if (loadingProgress == null) return child;
-                                            return Center(
-                                              child: CircularProgressIndicator(
-                                                value: loadingProgress.expectedTotalBytes != null
-                                                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                                    : null,
-                                                color: Colors.white,
-                                                strokeWidth: 2.0,
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      // Filtre
-                                      if (_filterColor != null)
-                                        Positioned.fill(
-                                          child: ClipOval(
-                                            child: Container(
-                                              color: _filterColor!.withOpacity(0.3),
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                if (_isLoading)
-                                  const Center(
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2.0,
-                                    ),
-                                  )
-                                else if (_profileImageUrl == null)
-                                  Icon(
-                                    Icons.person,
-                                    size: 40,
-                                    color: Colors.grey[600],
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
                     ),
-                    // Espacement entre avatar et stats
                     const SizedBox(width: 20),
                     // Stats
                     Expanded(
