@@ -27,7 +27,7 @@ class PollGridHome extends StatefulWidget {
 
 class _PollGridHomeState extends State<PollGridHome> {
   bool _showPercentages = false;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  //final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
@@ -141,14 +141,34 @@ class _PollGridHomeState extends State<PollGridHome> {
     final blockWidth = (screenWidth - 24.0 - 8.0) / 2;
 
     return GestureDetector(
-      onDoubleTap: () {
+      onTap: () async {
+        final user = _auth.currentUser;
+        if (user == null) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const ConnexionPage(),
+            ),
+          );
+          return;
+        }
+
+        // Vérifier si l'utilisateur a déjà voté
+        final hasVoted = await _hasUserVoted(widget.postId, user.uid);
+        if (hasVoted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Vous avez déjà voté sur ce sondage'),
+              backgroundColor: Colors.grey,
+            ),
+          );
+          return;
+        }
+
         // Enregistrer le vote
-        _vote(index);
+        await _vote(index);
         
-        // Afficher les pourcentages
-        setState(() {
-          _showPercentages = true;
-        });
+        // Mettre à jour l'interface
+        setState(() {});
       },
       child: Container(
         width: blockWidth,
@@ -234,7 +254,8 @@ class _PollGridHomeState extends State<PollGridHome> {
               future: _getVotePercentage(widget.postId, index),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  final percentage = snapshot.data as double;
+                  final data = snapshot.data as Map<String, dynamic>;
+                  final percentage = data['percentage'] as double;
                   if (_showPercentages || percentage > 0) {
                     return Positioned(
                       bottom: 10,
@@ -266,115 +287,152 @@ class _PollGridHomeState extends State<PollGridHome> {
     );
   }
 
-  Future<double> _getVotePercentage(String postId, int blocIndex) async {
+  Future<Map<String, dynamic>> _getVotePercentage(String postId, int index) async {
     try {
-      final postDoc = await FirebaseFirestore.instance
-          .collection('posts')
-          .doc(postId)
-          .get();
+      final postRef = FirebaseFirestore.instance.collection('posts').doc(postId);
+      final postDoc = await postRef.get();
       
-      if (!postDoc.exists) return 0.0;
-      
-      final data = postDoc.data();
-      if (data == null) return 0.0;
-      
+      if (!postDoc.exists) {
+        return {'percentage': 0.0};
+      }
+
+      final data = postDoc.data() as Map<String, dynamic>;
       final blocs = data['blocs'] is List
           ? data['blocs'] as List<dynamic>
           : (data['blocs'] as Map<String, dynamic>).values.toList();
-      
-      final totalVotes = blocs.fold(0, (sum, bloc) => sum + (bloc['voteCount'] as int? ?? 0));
-      final blocVotes = blocs[blocIndex]['voteCount'] as int? ?? 0;
-      
-      return totalVotes > 0 ? (blocVotes / totalVotes) * 100 : 0.0;
+
+      // Calculer le nombre total de votes pour tous les blocs
+      int totalVotes = blocs.fold(0, (sum, bloc) => sum + (bloc['voteCount'] as int? ?? 0));
+
+      // Si aucun vote, retourner 0%
+      if (totalVotes == 0) {
+        return {'percentage': 0.0};
+      }
+
+      // Calculer le pourcentage pour ce bloc spécifique
+      final bloc = blocs[index];
+      final blocVotes = bloc['voteCount'] as int? ?? 0;
+      final percentage = (blocVotes / totalVotes) * 100;
+
+      return {
+        'percentage': percentage,
+        'totalVotes': totalVotes,
+        'blocVotes': blocVotes,
+      };
     } catch (e) {
-      print('Erreur lors du chargement des pourcentages: $e');
-      return 0.0;
+      print('Erreur lors du calcul des pourcentages: $e');
+      return {'percentage': 0.0};
     }
   }
 
-  // Enregistrer un vote pour un bloc
   Future<void> _vote(int blockIndex) async {
     try {
       final user = _auth.currentUser;
       if (user == null) {
         print('Vous devez être connecté pour voter');
-        // Rediriger vers l'écran de connexion
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const ConnexionPage(),
-          ),
-        );
         return;
       }
 
-      // Vérifier si l'utilisateur a déjà voté sur ce sondage
-      final hasVoted = await _hasUserVoted(widget.postId, user.uid);
-      if (hasVoted) {
-        print('Vous avez déjà voté sur ce sondage');
+      final postRef = FirebaseFirestore.instance.collection('posts').doc(widget.postId);
+      final postDoc = await postRef.get();
+
+      if (!postDoc.exists) {
+        print('Post non trouvé');
         return;
       }
 
-      // Mettre à jour le vote dans Firestore
-      try {
-        // Vérifier si le champ voteCount existe déjà
-        final postDoc = await _firestore.collection('posts').doc(widget.postId).get();
-        final data = postDoc.data();
-        if (data == null) return;
-        
-        final blocs = data['blocs'] is List
-            ? data['blocs'] as List<dynamic>
-            : (data['blocs'] as Map<String, dynamic>).values.toList();
-        
-        // Si les blocs sont stockés sous forme de liste
-        if (data['blocs'] is List) {
-          // Mettre à jour le vote dans le bloc spécifique
-          final blocData = blocs[blockIndex] as Map<String, dynamic>;
-          final voteCount = blocData['voteCount'] as int? ?? 0;
-          
-          // Créer une copie de la liste des blocs
-          final updatedBlocs = List<dynamic>.from(blocs);
-          
-          // Mettre à jour le bloc spécifique
-          updatedBlocs[blockIndex] = {
-            ...blocData,
-            'voteCount': voteCount + 1,
-          };
-          
-          // Mettre à jour le document avec la nouvelle liste de blocs
-          await _firestore.collection('posts').doc(widget.postId).update({
-            'blocs': updatedBlocs,
-            'voters': FieldValue.arrayUnion([user.uid]),
-          });
-        } 
-        // Si les blocs sont stockés sous forme de map
-        else {
-          await _firestore.collection('posts').doc(widget.postId).update({
-            'blocs.$blockIndex.voteCount': FieldValue.increment(1),
-            'voters': FieldValue.arrayUnion([user.uid]),
-          });
+      final data = postDoc.data() as Map<String, dynamic>;
+      final blocs = data['blocs'] is List
+          ? data['blocs'] as List<dynamic>
+          : (data['blocs'] as Map<String, dynamic>).values.toList();
+
+      // Vérifier si l'utilisateur a déjà voté
+      for (final bloc in blocs) {
+        final votes = bloc['votes'] as List<dynamic>? ?? [];
+        if (votes.contains(user.uid)) {
+          print('Vous avez déjà voté sur ce sondage');
+          return;
         }
-      } catch (e) {
-        print('Erreur lors de la mise à jour du vote: $e');
       }
 
-      // Enregistrer le vote de l'utilisateur
-      await _firestore.collection('votes').add({
+      // Mettre à jour le bloc spécifique
+      final bloc = blocs[blockIndex];
+      final blocVotes = bloc['voteCount'] as int? ?? 0;
+
+      // Créer le nouveau bloc avec le vote mis à jour
+      final updatedBloc = {
+        'index': bloc['index'],
+        'position': bloc['position'],
+        'text': bloc['text'],
+        'postImageUrl': bloc['postImageUrl'],
+        'filterColor': bloc['filterColor'],
+        'voteCount': blocVotes + 1,
+        'votes': bloc['votes'] != null ? [...bloc['votes'], user.uid] : [user.uid],
+      };
+
+      // Créer l'objet vote pour la collection votes
+      final voteData = {
         'postId': widget.postId,
         'userId': user.uid,
         'blockIndex': blockIndex,
         'createdAt': FieldValue.serverTimestamp(),
+        'postImageUrl': bloc['postImageUrl'],
+        'text': bloc['text'],
+      };
+
+      // Mettre à jour le document
+      final batch = FirebaseFirestore.instance.batch();
+      
+      // Enregistrer le vote dans la collection votes
+      final votesRef = FirebaseFirestore.instance.collection('votes').doc();
+      batch.set(votesRef, voteData);
+
+      // Mettre à jour le post
+      batch.update(postRef, {
+        'blocs': FieldValue.arrayRemove([bloc]),
       });
+      batch.update(postRef, {
+        'blocs': FieldValue.arrayUnion([updatedBloc]),
+      });
+
+      await batch.commit();
+
+      print('Vote enregistré avec succès');
     } catch (e) {
-      print('Erreur lors du vote: $e');
+      print('Erreur lors de l\'enregistrement du vote: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur lors du vote: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
-  // Vérifier si l'utilisateur a déjà voté sur un sondage
+  // Vérifier si l'utilisateur a déjà voté sur un bloc
   Future<bool> _hasUserVoted(String postId, String userId) async {
     try {
-      final postDoc = await _firestore.collection('posts').doc(postId).get();
-      final voters = postDoc.data()?['voters'] as List<dynamic>? ?? [];
-      return voters.contains(userId);
+      final postRef = FirebaseFirestore.instance.collection('posts').doc(postId);
+      final postDoc = await postRef.get();
+      
+      if (!postDoc.exists) {
+        return false;
+      }
+
+      final data = postDoc.data() as Map<String, dynamic>;
+      final blocs = data['blocs'] is List
+          ? data['blocs'] as List<dynamic>
+          : (data['blocs'] as Map<String, dynamic>).values.toList();
+
+      // Vérifier si l'utilisateur a voté sur n'importe quel bloc
+      for (final bloc in blocs) {
+        final votes = bloc['votes'] as List<dynamic>? ?? [];
+        if (votes.contains(userId)) {
+          return true;
+        }
+      }
+
+      return false;
     } catch (e) {
       print('Erreur lors de la vérification du vote: $e');
       return false;
