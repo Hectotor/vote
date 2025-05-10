@@ -178,7 +178,13 @@ class CommentItem extends StatelessWidget {
           .doc(comment['userId'])
           .get(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const SizedBox.shrink();
+        if (snapshot.hasError) {
+          return Center(child: Text('Erreur: ${snapshot.error}'));
+        }
+
+        if (!snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
 
         final userData = snapshot.data!.data() as Map<String, dynamic>;
         final pseudo = userData['pseudo'] ?? 'Utilisateur';
@@ -223,56 +229,40 @@ class CommentItem extends StatelessWidget {
                         Row(
                           children: [
                             Text(
-                              DateFormatter.formatDate(comment['createdAt']),
+                              DateFormatter.formatDate(comment['createdAt'] ?? Timestamp.now()),
                               style: const TextStyle(color: Colors.grey, fontSize: 12),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          comment['text'],
+                          comment['text'] ?? '',
                           style: const TextStyle(color: Colors.white, fontSize: 14),
                         ),
                       ],
                     ),
                   ),
-                  const Spacer(),
-                  StreamBuilder<DocumentSnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('comments')
-                        .doc(comment['id'])
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const Icon(Icons.favorite_border, size: 20, color: Colors.grey);
-                      }
-
-                      final data = snapshot.data!.data() as Map<String, dynamic>;
-                      final likes = data['likes'] as List<dynamic>;
-                      final user = FirebaseAuth.instance.currentUser;
-                      final isLiked = likes.contains(user?.uid);
-
-                      return GestureDetector(
-                        onTap: onLike,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.favorite,
-                              size: 20,
-                              color: isLiked ? Colors.red : Colors.grey,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${comment['likeCount']}',
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
+                  const SizedBox(width: 8),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          comment['likes']?.contains(FirebaseAuth.instance.currentUser?.uid) ?? false
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: comment['likes']?.contains(FirebaseAuth.instance.currentUser?.uid) ?? false
+                              ? Colors.red
+                              : Colors.white,
+                          size: 24,
                         ),
-                      );
-                    },
+                        onPressed: onLike,
+                      ),
+                      Text(
+                        '${comment['likeCount'] ?? 0}',
+                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ],
                   ),
                 ],
               ),
