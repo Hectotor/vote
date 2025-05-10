@@ -4,11 +4,13 @@ import 'package:toplyke/PAGES/post_page.dart';
 class PostActions extends StatelessWidget {
   final String postId;
   final String userId;
+  final bool isCommentPage;
 
   const PostActions({
     Key? key,
     required this.postId,
     required this.userId,
+    this.isCommentPage = false,
   }) : super(key: key);
 
   @override
@@ -33,14 +35,18 @@ class PostActions extends StatelessWidget {
               color: Colors.white,
               size: 24,
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PostPage(postId: postId),
-                ),
-              );
-            },
+            onPressed: isCommentPage
+                ? null
+                : () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PostPage(
+                          postId: postId,
+                        ),
+                      ),
+                    );
+                  },
           ),
           IconButton(
             icon: Icon(

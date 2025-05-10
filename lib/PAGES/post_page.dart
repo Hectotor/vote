@@ -5,7 +5,8 @@ import 'package:toplyke/COMPONENTS/post_description.dart';
 import 'package:toplyke/COMPONENTS/post_actions.dart';
 import 'package:toplyke/COMPONENTS/Comment/comment_popup.dart';
 import 'package:toplyke/HOME/poll_grid_home.dart';
-
+import 'package:toplyke/COMPONENTS/Comment/comment_input.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PostPage extends StatefulWidget {
   final String postId;
@@ -21,6 +22,45 @@ class PostPage extends StatefulWidget {
 
 class _PostPageState extends State<PostPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final TextEditingController _commentController = TextEditingController();
+
+  Future<void> _addComment() async {
+    final text = _commentController.text.trim();
+    if (text.isEmpty) return;
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Vous devez être connecté pour commenter')),
+        );
+        return;
+      }
+
+      print('Ajout du commentaire à Firestore...');
+      await _firestore.collection('comments').add({
+        'postId': widget.postId,
+        'userId': user.uid,
+        'text': text,
+        'createdAt': FieldValue.serverTimestamp(),
+        'likeCount': 0,
+      });
+
+      print('Commentaire ajouté avec succès');
+      _commentController.clear();
+    } catch (e) {
+      print('Erreur lors de l\'ajout du commentaire: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur: ${e.toString()}')),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +119,7 @@ class _PostPageState extends State<PostPage> {
                 PostActions(
                   postId: widget.postId,
                   userId: data['userId'],
+                  isCommentPage: true,
                 ),
                 CommentPopup(
                   postId: widget.postId,
@@ -89,6 +130,10 @@ class _PostPageState extends State<PostPage> {
             ),
           );
         },
+      ),
+      bottomNavigationBar: CommentInput(
+        controller: _commentController,
+        onSend: _addComment,
       ),
     );
   }

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../../../SERVICES/like_service.dart';
+import 'like_service.dart';
 import '../../../INSCRIPTION/connexion_screen.dart';
-import 'comment_input.dart';
+
 import '../../../COMPONENTS/avatar.dart';
 import '../../../COMPONENTS/date_formatter.dart';
 
@@ -27,7 +26,6 @@ class _CommentPopupState extends State<CommentPopup> {
   final TextEditingController _commentController = TextEditingController();
   final LikeService _likeService = LikeService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
@@ -35,25 +33,7 @@ class _CommentPopupState extends State<CommentPopup> {
     super.dispose();
   }
 
-  Future<void> _addComment() async {
-    if (_commentController.text.isEmpty) return;
 
-    try {
-      await _firestore.collection('comments').add({
-        'postId': widget.postId,
-        'userId': _auth.currentUser!.uid,
-        'text': _commentController.text,
-        'createdAt': FieldValue.serverTimestamp(),
-        'likes': [],
-      });
-
-      _commentController.clear();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: ${e.toString()}')),
-      );
-    }
-  }
 
   Future<void> _handleLike(String commentId) async {
     try {
@@ -91,10 +71,6 @@ class _CommentPopupState extends State<CommentPopup> {
             Expanded(
               child: _buildCommentsList(),
             ),
-            CommentInput(
-              controller: _commentController,
-              onSend: _addComment,
-            ),
           ],
         ),
       ),
@@ -102,6 +78,7 @@ class _CommentPopupState extends State<CommentPopup> {
   }
 
   Widget _buildCommentsList() {
+    print('Chargement des commentaires pour le post ${widget.postId}');
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore
           .collection('comments')
@@ -126,23 +103,60 @@ class _CommentPopupState extends State<CommentPopup> {
         }
 
         final comments = snapshot.data?.docs.map((doc) {
-          return CommentData.fromMap(
-            doc.id,
-            doc.data() as Map<String, dynamic>,
-          );
+          final data = doc.data() as Map<String, dynamic>;
+          return {
+            'id': doc.id,
+            'postId': data['postId'],
+            'userId': data['userId'],
+            'text': data['text'],
+            'createdAt': data['createdAt'],
+            'likeCount': data['likeCount'] ?? 0,
+          };
         }).toList() ?? [];
 
-        return ListView.builder(
-          controller: widget.scrollController,
-          padding: const EdgeInsets.all(12),
-          itemCount: comments.length,
-          itemBuilder: (context, index) {
-            final comment = comments[index];
-            return CommentItem(
-              comment: comment,
-              onLike: () => _handleLike(comment.id),
-            );
-          },
+        if (comments.isEmpty) {
+          return const Center(
+            child: Text(
+              'Aucun commentaire',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+            ),
+          );
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            children: [
+              if (comments.isEmpty)
+                const Center(
+                  child: Text(
+                    'Aucun commentaire',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              Expanded(
+                child: ListView.builder(
+                  controller: widget.scrollController,
+                  padding: EdgeInsets.zero,
+                  itemCount: comments.length,
+                  itemBuilder: (context, index) {
+                    final comment = comments[index];
+                    return CommentItem(
+                      comment: comment,
+                      onLike: () => _handleLike(comment['id']),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -150,7 +164,7 @@ class _CommentPopupState extends State<CommentPopup> {
 }
 
 class CommentItem extends StatelessWidget {
-  final CommentData comment;
+  final Map<String, dynamic> comment;
   final VoidCallback onLike;
 
   const CommentItem({
@@ -164,7 +178,7 @@ class CommentItem extends StatelessWidget {
     return FutureBuilder<DocumentSnapshot>(
       future: FirebaseFirestore.instance
           .collection('users')
-          .doc(comment.userId)
+          .doc(comment['userId'])
           .get(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
@@ -198,7 +212,7 @@ class CommentItem extends StatelessWidget {
               Row(
                 children: [
                   Avatar(
-                    userId: comment.userId,
+                    userId: comment['userId'],
                     radius: 18,
                   ),
                   const SizedBox(width: 10),
@@ -215,7 +229,7 @@ class CommentItem extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          DateFormatter.formatDate(comment.createdAt),
+                          DateFormatter.formatDate(comment['createdAt']),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,
@@ -223,7 +237,7 @@ class CommentItem extends StatelessWidget {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          comment.text,
+                          comment['text'],
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 15,
@@ -239,15 +253,18 @@ class CommentItem extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: Icon(
-                      comment.hasLiked(FirebaseAuth.instance.currentUser?.uid ?? '')
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      color: comment.hasLiked(FirebaseAuth.instance.currentUser?.uid ?? '')
-                          ? Colors.red
-                          : Colors.white,
+                      Icons.favorite,
+                      color: Colors.red,
                       size: 20,
                     ),
                     onPressed: onLike,
+                  ),
+                  Text(
+                    '${comment['likeCount']}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
@@ -255,36 +272,6 @@ class CommentItem extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class CommentData {
-  final String id;
-  final String userId;
-  final String text;
-  final Timestamp createdAt;
-  final List<String> likes;
-
-  CommentData({
-    required this.id,
-    required this.userId,
-    required this.text,
-    required this.createdAt,
-    this.likes = const [],
-  });
-
-  bool hasLiked(String userId) {
-    return likes.contains(userId);
-  }
-
-  factory CommentData.fromMap(String id, Map<String, dynamic> data) {
-    return CommentData(
-      id: id,
-      userId: data['userId'] as String,
-      text: data['text'] as String,
-      createdAt: data['createdAt'] as Timestamp,
-      likes: (data['likes'] as List<dynamic>?)?.cast<String>() ?? [],
     );
   }
 }
