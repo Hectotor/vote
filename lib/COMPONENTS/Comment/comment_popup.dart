@@ -160,7 +160,7 @@ class CommentItem extends StatelessWidget {
         final pseudo = userData['pseudo'] ?? 'Utilisateur';
 
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          padding: const EdgeInsets.only(top: 16, bottom: 8, left: 8, right: 8),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

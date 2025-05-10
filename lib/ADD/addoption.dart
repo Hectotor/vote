@@ -25,24 +25,18 @@ class AddOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 500,
-      decoration: BoxDecoration(
-        color: Color.fromARGB(255, 0, 0, 0), // Nouvelle couleur de fond
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        border: Border(
-          top: BorderSide(
-            color: const Color(0xFF2D3748),
-            width: 0.5,
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2D3748).withOpacity(0.2),
-            blurRadius: 15,
-            spreadRadius: 1,
-            offset: Offset(0, -2),
-          )
-        ],
-      ),
+            decoration: BoxDecoration(
+              color: const Color(0xFF151019),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 15,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 8),
+                )
+              ],
+            ),
       
       padding: EdgeInsets.only(top: 10, left: 24, right: 24),
       child: Column(
@@ -162,57 +156,35 @@ class AddOption extends StatelessWidget {
     required IconData icon,
     required VoidCallback? onTap,
   }) {
-    final isDelete = title == 'Supprimer l\'image';
+    final isDelete = title == "Supprimer l'image";
     
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.15),
-          width: 1,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+        decoration: BoxDecoration(
+          color: isDelete ? const Color(0xFFE53E3E) : const Color(0xFF2D3748),
+          borderRadius: BorderRadius.circular(8),
         ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(10),
-          onTap: onTap,
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      icon,
-                      color: isDelete ? Colors.red : Colors.white,
-                      size: 24,
-                    ),
-                    SizedBox(width: 12),
-                    Flexible(
-                      child: Text(
-                        title,
-                        style: TextStyle(
-                          color: isDelete ? Colors.red : Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  color: isDelete ? Colors.red.withOpacity(0.7) : Colors.white.withOpacity(0.7),
-                  size: 24,
-                ),
-              ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: Colors.white,
+              size: 24,
             ),
-          ),
+            SizedBox(width: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );

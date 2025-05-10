@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> {
                         userId: data['userId'],
                         pseudo: data['pseudo'],
                         profilePhotoUrl: data['profilePhotoUrl'],
-                        filterColor: data['filterColor'] != null ? int.parse(data['filterColor']) : null,
+                        filterColor: data['filterColor'] != null ? (data['filterColor'] is String ? int.parse(data['filterColor']) : data['filterColor'] as int) : null,
                         description: data['description'] ?? '',
                         hashtags: List<String>.from(data['hashtags'] ?? []),
                         mentions: List<String>.from(data['mentions'] ?? []),
@@ -76,8 +76,8 @@ class _HomePageState extends State<HomePage> {
                           return BlocData(
                             postImageUrl: bloc['postImageUrl'] as String?,
                             text: bloc['text'] as String?,
-                            filterColor: bloc['filterColor'] != null && bloc['filterColor'] != '0'
-                                ? Color(int.parse(bloc['filterColor'].toString()))
+                            filterColor: bloc['filterColor'] != null && bloc['filterColor'].toString() != '0'
+                                ? Color(bloc['filterColor'] is String ? int.parse(bloc['filterColor']) : bloc['filterColor'] as int)
                                 : null,
                           );
                         }).toList(),

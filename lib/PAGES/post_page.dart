@@ -98,7 +98,7 @@ class _PostPageState extends State<PostPage> {
                 PostHeader(
                   pseudo: data['pseudo'],
                   profilePhotoUrl: data['profilePhotoUrl'],
-                  filterColor: data['filterColor'] != null ? int.parse(data['filterColor']) : null,
+                  filterColor: data['filterColor'] != null ? (data['filterColor'] is String ? int.parse(data['filterColor']) : data['filterColor'] as int) : null,
                   createdAt: (data['createdAt'] as Timestamp),
                   postId: widget.postId,
                   userId: data['userId'],
@@ -115,8 +115,8 @@ class _PostPageState extends State<PostPage> {
                 PollGridHome(
                   images: (data['blocs'] as List<dynamic>).map((bloc) => bloc['postImageUrl'] as String?).toList(),
                   imageFilters: (data['blocs'] as List<dynamic>).map((bloc) => 
-                    bloc['filterColor'] != null && bloc['filterColor'] != '0'
-                        ? Color(int.parse(bloc['filterColor'].toString()))
+                    bloc['filterColor'] != null && bloc['filterColor'].toString() != '0'
+                        ? Color(bloc['filterColor'] is String ? int.parse(bloc['filterColor']) : bloc['filterColor'] as int)
                         : Colors.transparent
                   ).toList(),
                   numberOfBlocs: (data['blocs'] as List<dynamic>).length,
