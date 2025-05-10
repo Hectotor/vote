@@ -11,7 +11,6 @@ class PollGridHome extends StatefulWidget {
   final int numberOfBlocs;
   final List<String?> textes;
   final String postId;
-  final bool showPercentages;
 
   const PollGridHome({
     Key? key,
@@ -20,7 +19,6 @@ class PollGridHome extends StatefulWidget {
     required this.numberOfBlocs,
     required this.textes,
     required this.postId,
-    this.showPercentages = false,
   }) : super(key: key);
 
   @override
@@ -28,13 +26,7 @@ class PollGridHome extends StatefulWidget {
 }
 
 class _PollGridHomeState extends State<PollGridHome> {
-  late bool _showPercentages;
-  
-  @override
-  void initState() {
-    super.initState();
-    _showPercentages = widget.showPercentages;
-  }
+  bool _showPercentages = false;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -238,16 +230,16 @@ class _PollGridHomeState extends State<PollGridHome> {
                 ),
               ),
             // Pourcentage de votes
-            if (_showPercentages)
-              Positioned(
-                bottom: 10,
-                right: 10,
-                child: FutureBuilder(
-                  future: _getVotePercentage(widget.postId, index),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      final percentage = snapshot.data as double;
-                      return Container(
+            FutureBuilder(
+              future: _getVotePercentage(widget.postId, index),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final percentage = snapshot.data as double;
+                  if (_showPercentages || percentage > 0) {
+                    return Positioned(
+                      bottom: 10,
+                      right: 10,
+                      child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.8),
@@ -261,12 +253,13 @@ class _PollGridHomeState extends State<PollGridHome> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ),
+                      ),
+                    );
+                  }
+                }
+                return const SizedBox.shrink();
+              },
+            ),
           ],
         ),
       ),
