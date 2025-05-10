@@ -10,11 +10,13 @@ import '../../../COMPONENTS/date_formatter.dart';
 class CommentPopup extends StatefulWidget {
   final String postId;
   final String userId;
+  final ScrollController? scrollController;
 
   const CommentPopup({
     Key? key,
     required this.postId,
     required this.userId,
+    this.scrollController,
   }) : super(key: key);
 
   @override
@@ -99,7 +101,6 @@ class _CommentPopupState extends State<CommentPopup> {
     );
   }
 
-
   Widget _buildCommentsList() {
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore
@@ -132,6 +133,7 @@ class _CommentPopupState extends State<CommentPopup> {
         }).toList() ?? [];
 
         return ListView.builder(
+          controller: widget.scrollController,
           padding: const EdgeInsets.all(12),
           itemCount: comments.length,
           itemBuilder: (context, index) {
