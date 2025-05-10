@@ -11,6 +11,7 @@ class PollGridHome extends StatefulWidget {
   final int numberOfBlocs;
   final List<String?> textes;
   final String postId;
+  final bool showPercentages;
 
   const PollGridHome({
     Key? key,
@@ -19,6 +20,7 @@ class PollGridHome extends StatefulWidget {
     required this.numberOfBlocs,
     required this.textes,
     required this.postId,
+    this.showPercentages = false,
   }) : super(key: key);
 
   @override
@@ -26,7 +28,13 @@ class PollGridHome extends StatefulWidget {
 }
 
 class _PollGridHomeState extends State<PollGridHome> {
-  bool _showPercentages = false;
+  late bool _showPercentages;
+  
+  @override
+  void initState() {
+    super.initState();
+    _showPercentages = widget.showPercentages;
+  }
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 

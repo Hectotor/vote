@@ -23,6 +23,7 @@ class PostPage extends StatefulWidget {
 class _PostPageState extends State<PostPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _commentController = TextEditingController();
+  bool _showVotePercentages = true; // Afficher les pourcentages par défaut
 
   Future<void> _addComment() async {
     final text = _commentController.text.trim();
@@ -135,6 +136,7 @@ class _PostPageState extends State<PostPage> {
                     ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['text'] as String?).toList()
                     : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['text'] as String?).toList(),
                   postId: widget.postId,
+                  showPercentages: _showVotePercentages,
                 ),
                 //const SizedBox(height: 6),
                 PostActions(
