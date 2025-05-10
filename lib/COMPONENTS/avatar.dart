@@ -9,7 +9,7 @@ class Avatar extends StatefulWidget {
   const Avatar({
     Key? key,
     required this.userId,
-    this.radius = 18.0,
+    this.radius = 20.0,
     this.onTap,
   }) : super(key: key);
 
@@ -21,104 +21,82 @@ class _AvatarState extends State<Avatar> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String? _profileImageUrl;
   Color? _filterColor;
-  bool _isLoading = false;
 
-  Future<Map<String, dynamic>> _getUserData() async {
+  Future<void> _loadUserData() async {
     final doc = await _firestore.collection('users').doc(widget.userId).get();
-    final userData = doc.data();
-    
-    if (userData != null) {
-      _profileImageUrl = userData['profilePhotoUrl'];
-      if (userData['filterColor'] != null) {
-        _filterColor = Color(userData['filterColor']);
-      }
+    final data = doc.data();
+    if (data != null) {
+      setState(() {
+        _profileImageUrl = data['profilePhotoUrl'];
+        if (data['filterColor'] != null) {
+          _filterColor = Color(data['filterColor']);
+        }
+      });
     }
-    
-    return userData ?? {};
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _getUserData(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator(
-            color: Colors.white,
-            strokeWidth: 2.0,
-          );
-        }
-
-        return GestureDetector(
-          onTap: widget.onTap,
-          child: Container(
-            width: widget.radius * 2,
-            height: widget.radius * 2,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.grey[600]!,
-                width: 2,
-              ),
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: Container(
+        width: widget.radius * 2,
+        height: widget.radius * 2,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.white.withOpacity(0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(5),
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.transparent,
-                ),
-                child: Stack(
+          ],
+          border: Border.all(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+        child: ClipOval(
+          child: _profileImageUrl != null
+              ? Stack(
                   fit: StackFit.expand,
                   children: [
-                    if (_profileImageUrl != null)
-                      Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          ClipOval(
-                            child: Image.network(
-                              _profileImageUrl!,
-                              fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                        : null,
-                                    color: Colors.white,
-                                    strokeWidth: 2.0,
-                                  ),
-                                );
-                              },
+                    Image.network(
+                      _profileImageUrl!,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: SizedBox(
+                            width: widget.radius / 1.5,
+                            height: widget.radius / 1.5,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
                             ),
                           ),
-                          if (_filterColor != null)
-                            Positioned.fill(
-                              child: ClipOval(
-                                child: Container(
-                                  color: _filterColor!.withOpacity(0.3),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    if (_isLoading)
-                      const Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.0,
-                        ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.person, color: Colors.white54),
+                    ),
+                    if (_filterColor != null)
+                      Container(
+                        color: _filterColor!.withOpacity(0.3),
                       ),
                   ],
+                )
+              : const Center(
+                  child: Icon(Icons.person, color: Colors.white54),
                 ),
-              ),
-            ),
-          ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
