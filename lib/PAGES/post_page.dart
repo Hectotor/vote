@@ -99,7 +99,7 @@ class _PostPageState extends State<PostPage> {
                   pseudo: data['pseudo'],
                   profilePhotoUrl: data['profilePhotoUrl'],
                   filterColor: data['filterColor'] != null ? (data['filterColor'] is String ? int.parse(data['filterColor']) : data['filterColor'] as int) : null,
-                  createdAt: (data['createdAt'] as Timestamp),
+                  createdAt: data['createdAt'] != null ? data['createdAt'] as Timestamp : Timestamp.now(),
                   postId: widget.postId,
                   userId: data['userId'],
                 ),
@@ -113,14 +113,27 @@ class _PostPageState extends State<PostPage> {
                     ],
                   ),
                 PollGridHome(
-                  images: (data['blocs'] as List<dynamic>).map((bloc) => bloc['postImageUrl'] as String?).toList(),
-                  imageFilters: (data['blocs'] as List<dynamic>).map((bloc) => 
-                    bloc['filterColor'] != null && bloc['filterColor'].toString() != '0'
-                        ? Color(bloc['filterColor'] is String ? int.parse(bloc['filterColor']) : bloc['filterColor'] as int)
-                        : Colors.transparent
-                  ).toList(),
-                  numberOfBlocs: (data['blocs'] as List<dynamic>).length,
-                  textes: (data['blocs'] as List<dynamic>).map((bloc) => bloc['text'] as String?).toList(),
+                  images: data['blocs'] is List
+                    ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['postImageUrl'] as String?).toList()
+                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['postImageUrl'] as String?).toList(),
+                  imageFilters: data['blocs'] is List
+                    ? (data['blocs'] as List<dynamic>).map((bloc) => 
+                        bloc['filterColor'] != null && bloc['filterColor'].toString() != '0'
+                            ? Color(bloc['filterColor'] is String ? int.parse(bloc['filterColor']) : bloc['filterColor'] as int)
+                            : Colors.transparent
+                      ).toList()
+                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) {
+                        final filterColor = (bloc as Map<String, dynamic>)['filterColor'];
+                        return filterColor != null && filterColor.toString() != '0'
+                            ? Color(filterColor is String ? int.parse(filterColor) : filterColor as int)
+                            : Colors.transparent;
+                      }).toList(),
+                  numberOfBlocs: data['blocs'] is List
+                    ? (data['blocs'] as List<dynamic>).length
+                    : (data['blocs'] as Map<String, dynamic>).length,
+                  textes: data['blocs'] is List
+                    ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['text'] as String?).toList()
+                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['text'] as String?).toList(),
                   postId: widget.postId,
                 ),
                 //const SizedBox(height: 6),

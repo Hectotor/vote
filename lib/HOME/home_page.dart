@@ -92,7 +92,7 @@ class _HomePageState extends State<HomePage> {
                                 : null,
                           );
                         }).toList(),
-                        createdAt: data['createdAt'] as Timestamp,
+                        createdAt: data['createdAt'] != null ? data['createdAt'] as Timestamp : Timestamp.now(),
                       );
                     }).toList() ?? [];
 
