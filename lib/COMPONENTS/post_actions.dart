@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:toplyke/COMPONENTS/comment_popup.dart';
+import 'package:toplyke/COMPONENTS/Comment/comment_popup.dart';
 
 class PostActions extends StatelessWidget {
   final String postId;

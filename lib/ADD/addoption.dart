@@ -105,16 +105,20 @@ class AddOption extends StatelessWidget {
           final imageFile = XFile(croppedFile.path);
           
           // Utiliser une méthode statique pour gérer la navigation et le filtre
-          await ImageFilterPage.show(
-            context: context, 
-            image: imageFile, 
-            onFilterSelected: (image, filterColor) {
-              if (source == ImageSource.gallery && onAddPhoto != null) {
-                onAddPhoto!(image, filterColor);
-              } else if (source == ImageSource.camera && onTakePhoto != null) {
-                onTakePhoto!(image, filterColor);
-              }
-            },
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ImageFilterPage(
+                image: imageFile,
+                onFilterSelected: (image, filterColor) {
+                  if (source == ImageSource.gallery && onAddPhoto != null) {
+                    onAddPhoto!(image, filterColor);
+                  } else if (source == ImageSource.camera && onTakePhoto != null) {
+                    onTakePhoto!(image, filterColor);
+                  }
+                },
+              ),
+            ),
           );
         }
       }

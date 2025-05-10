@@ -44,7 +44,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
         throw Exception('URL de téléchargement invalide');
       }
       
-      // Mettre à jour l'URL dans Firestore
+      // Mettre à jour l'URL et le filtre dans Firestore
       await _firestore.collection('users').doc(widget.userId).update({
         'profilePhotoUrl': downloadUrl,
         'filterColor': filterColor.value.toString(),
@@ -69,19 +69,19 @@ class _ProfileHeaderState extends State<ProfileHeader> {
   }
 
   Future<void> _showAddOptionDialog() async {
+    if (!mounted) return; // Vérification que le widget est encore monté
+
     await showDialog(
       context: context,
       builder: (context) => AddOption(
         onAddPhoto: (image, filterColor) {
-          // Fermer le popup
+          if (!mounted) return; // Vérification que le widget est encore monté
           Navigator.of(context).pop();
-          // Traiter l'image
           _uploadProfileImage(image, filterColor);
         },
         onTakePhoto: (image, filterColor) {
-          // Fermer le popup
+          if (!mounted) return; // Vérification que le widget est encore monté
           Navigator.of(context).pop();
-          // Traiter l'image
           _uploadProfileImage(image, filterColor);
         },
         hasImage: _profileImageUrl != null,
