@@ -120,6 +120,20 @@ class _PollGridState extends State<PollGrid> {
               widget.onStateUpdate?.call();
             }
           },
+          onRemoveImage: () {
+            if (mounted) {
+              setState(() {
+                widget.images[index] = null;
+                widget.imageFilters[index] = Colors.transparent;
+              });
+              
+              // Appeler le callback de changement d'image
+              widget.onImageChange(index);
+              
+              // Trigger state update if callback is provided
+              widget.onStateUpdate?.call();
+            }
+          },
         );
       },
     );

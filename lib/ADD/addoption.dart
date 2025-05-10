@@ -7,6 +7,7 @@ class AddOption extends StatelessWidget {
   final Function(XFile, Color)? onAddPhoto;
   final Function(XFile, Color)? onTakePhoto;
   final VoidCallback? onAddText;
+  final VoidCallback? onRemoveImage;
   final bool hasImage;
   final bool hasText;
 
@@ -15,6 +16,7 @@ class AddOption extends StatelessWidget {
     this.onAddPhoto,
     this.onTakePhoto,
     this.onAddText,
+    this.onRemoveImage,
     this.hasImage = false,
     this.hasText = false,
   }) : super(key: key);
@@ -68,6 +70,22 @@ class AddOption extends StatelessWidget {
               icon: Icons.camera_alt_outlined,
               onTap: () => _pickAndProcessImage(context, ImageSource.camera),
             ),
+            if (hasImage)
+              Column(
+                children: [
+                  SizedBox(height: 16),
+                  _buildModernTile(
+                    title: 'Supprimer l\'image',
+                    icon: Icons.delete_outline,
+                    onTap: () {
+                      if (onRemoveImage != null) {
+                        onRemoveImage!();
+                      }
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
           ],
         ),
       ),
