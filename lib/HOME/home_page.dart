@@ -15,6 +15,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Stream<QuerySnapshot>? _postsStream;
+  bool _showVotePercentages = true;
 
   @override
   void initState() {
@@ -143,6 +144,7 @@ class _HomePageState extends State<HomePage> {
                                   numberOfBlocs: post.blocs.length,
                                   textes: post.blocs.map((bloc) => bloc.text).toList(),
                                   postId: post.postId,
+                                  showPercentages: _showVotePercentages,
                                 ),
                               //const SizedBox(height: 16),
                               // Actions du post
