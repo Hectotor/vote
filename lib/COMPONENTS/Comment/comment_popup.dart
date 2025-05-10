@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../INSCRIPTION/connexion_screen.dart';
 import '../../../COMPONENTS/avatar.dart';
 import '../../../COMPONENTS/date_formatter.dart';
+import 'like_service.dart';
 
 class CommentPopup extends StatefulWidget {
   final String postId;
@@ -44,22 +45,8 @@ class _CommentPopupState extends State<CommentPopup> {
         return;
       }
 
-      final commentRef = _firestore.collection('comments').doc(commentId);
-      final commentDoc = await commentRef.get();
-      final data = commentDoc.data() as Map<String, dynamic>;
-      final likes = data['likes'] as List<dynamic>;
-      final likeCount = data['likeCount'] as int;
-
-      if (likes.contains(user.uid)) {
-        // L'utilisateur a déjà liké, on ne fait rien
-        return;
-      }
-
-      // Ajouter le like
-      await commentRef.update({
-        'likes': FieldValue.arrayUnion([user.uid]),
-        'likeCount': likeCount + 1,
-      });
+      final likeService = LikeService();
+      await likeService.toggleLike(commentId);
 
       setState(() {});
     } catch (e) {

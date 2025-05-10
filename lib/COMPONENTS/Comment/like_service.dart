@@ -23,11 +23,13 @@ class LikeService {
         // Remove like
         await commentRef.update({
           'likes': FieldValue.arrayRemove([userId]),
+          'likeCount': FieldValue.increment(-1),
         });
       } else {
         // Add like
         await commentRef.update({
           'likes': FieldValue.arrayUnion([userId]),
+          'likeCount': FieldValue.increment(1),
         });
       }
     } catch (e) {
