@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:toplyke/COMPONENTS/vote_percentages.dart';
+import 'package:toplyke/COMPONENTS/heart_animation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
@@ -11,6 +12,8 @@ class PollGridHome extends StatefulWidget {
   final int numberOfBlocs;
   final List<String?> textes;
   final String postId;
+  final List<int?> voteCounts;
+  final List<List<dynamic>?> votes;
 
   const PollGridHome({
     Key? key,
@@ -19,15 +22,16 @@ class PollGridHome extends StatefulWidget {
     required this.numberOfBlocs,
     required this.textes,
     required this.postId,
+    required this.voteCounts,
+    required this.votes,
   }) : super(key: key);
 
   @override
   State<PollGridHome> createState() => _PollGridHomeState();
 }
 
-class _PollGridHomeState extends State<PollGridHome> {
+class _PollGridHomeState extends State<PollGridHome> with SingleTickerProviderStateMixin {
   bool _showPercentages = false;
-  //final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
@@ -138,7 +142,7 @@ class _PollGridHomeState extends State<PollGridHome> {
 
   Widget _buildBloc(BuildContext context, int index) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final blockWidth = (screenWidth - 24.0 - 8.0) / 2;
+    final blockWidth = screenWidth / 2 - 16;
 
     return GestureDetector(
       onTap: () async {
@@ -172,7 +176,7 @@ class _PollGridHomeState extends State<PollGridHome> {
       },
       child: Container(
         width: blockWidth,
-        height: 200.0, 
+        height: 200.0,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15.0),
           boxShadow: [
@@ -195,60 +199,42 @@ class _PollGridHomeState extends State<PollGridHome> {
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                ),
-              )
-            else
-              Center(
-                child: Icon(
-                  Icons.add_photo_alternate_outlined, 
-                  size: 40, 
-                  color: Colors.white.withOpacity(0.7),
                 ),
               ),
-            // Filtre
-            if (widget.imageFilters[index] != Colors.transparent)
-              Container(
-                decoration: BoxDecoration(
-                  color: widget.imageFilters[index],
-                  borderRadius: BorderRadius.circular(15.0),
-                ),
-              ),
-            // Texte
-            if (widget.textes[index] != null && widget.textes[index]!.isNotEmpty)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.7),
-                      ],
+            
+            // Animation du cœur
+            HeartAnimation(
+              onTap: () async {
+                final user = _auth.currentUser;
+                if (user == null) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const ConnexionPage(),
                     ),
-                    borderRadius: const BorderRadius.vertical(
-                      bottom: Radius.circular(15),
+                  );
+                  return;
+                }
+
+                // Vérifier si l'utilisateur a déjà voté
+                final hasVoted = await _hasUserVoted(widget.postId, user.uid);
+                if (hasVoted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Vous avez déjà voté sur ce sondage'),
+                      backgroundColor: Colors.grey,
                     ),
-                  ),
-                  child: Text(
-                    widget.textes[index]!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
+                  );
+                  return;
+                }
+
+                // Enregistrer le vote
+                await _vote(index);
+                
+                // Mettre à jour l'interface
+                setState(() {});
+              },
+            ),
+            
             // Pourcentage de votes
             FutureBuilder(
               future: _getVotePercentage(widget.postId, index),

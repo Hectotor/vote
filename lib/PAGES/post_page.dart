@@ -135,6 +135,12 @@ class _PostPageState extends State<PostPage> {
                     ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['text'] as String?).toList()
                     : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['text'] as String?).toList(),
                   postId: widget.postId,
+                  voteCounts: data['blocs'] is List
+                    ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['voteCount'] as int?).toList()
+                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['voteCount'] as int?).toList(),
+                  votes: data['blocs'] is List
+                    ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['votes'] as List<dynamic>?).toList()
+                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['votes'] as List<dynamic>?).toList(),
                 ),
                 //const SizedBox(height: 6),
                 PostActions(

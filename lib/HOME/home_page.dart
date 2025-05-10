@@ -80,6 +80,8 @@ class _HomePageState extends State<HomePage> {
                             filterColor: bloc['filterColor'] != null && bloc['filterColor'].toString() != '0'
                                 ? Color(bloc['filterColor'] is String ? int.parse(bloc['filterColor']) : bloc['filterColor'] as int)
                                 : null,
+                            voteCount: bloc['voteCount'] as int?,
+                            votes: bloc['votes'] as List<dynamic>?,
                           );
                         }).toList()
                         : (data['blocs'] as Map<String, dynamic>).entries.map((entry) {
@@ -90,6 +92,8 @@ class _HomePageState extends State<HomePage> {
                             filterColor: bloc['filterColor'] != null && bloc['filterColor'].toString() != '0'
                                 ? Color(bloc['filterColor'] is String ? int.parse(bloc['filterColor']) : bloc['filterColor'] as int)
                                 : null,
+                            voteCount: bloc['voteCount'] as int?,
+                            votes: bloc['votes'] as List<dynamic>?,
                           );
                         }).toList(),
                         createdAt: data['createdAt'] != null ? data['createdAt'] as Timestamp : Timestamp.now(),
@@ -143,6 +147,8 @@ class _HomePageState extends State<HomePage> {
                                   numberOfBlocs: post.blocs.length,
                                   textes: post.blocs.map((bloc) => bloc.text).toList(),
                                   postId: post.postId,
+                                  voteCounts: post.blocs.map((bloc) => bloc.voteCount).toList(),
+                                  votes: post.blocs.map((bloc) => bloc.votes).toList(),
                                 ),
                               //const SizedBox(height: 16),
                               // Actions du post
@@ -198,10 +204,14 @@ class BlocData {
   final String? postImageUrl;
   final String? text;
   final Color? filterColor;
+  final int? voteCount;
+  final List<dynamic>? votes;
 
   BlocData({
     required this.postImageUrl,
     required this.text,
     this.filterColor,
+    this.voteCount,
+    this.votes,
   });
 }
