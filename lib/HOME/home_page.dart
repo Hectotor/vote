@@ -72,7 +72,18 @@ class _HomePageState extends State<HomePage> {
                         description: data['description'] ?? '',
                         hashtags: List<String>.from(data['hashtags'] ?? []),
                         mentions: List<String>.from(data['mentions'] ?? []),
-                        blocs: (data['blocs'] as List<dynamic>).map((bloc) {
+                        blocs: data['blocs'] is List
+                        ? (data['blocs'] as List<dynamic>).map((bloc) {
+                          return BlocData(
+                            postImageUrl: bloc['postImageUrl'] as String?,
+                            text: bloc['text'] as String?,
+                            filterColor: bloc['filterColor'] != null && bloc['filterColor'].toString() != '0'
+                                ? Color(bloc['filterColor'] is String ? int.parse(bloc['filterColor']) : bloc['filterColor'] as int)
+                                : null,
+                          );
+                        }).toList()
+                        : (data['blocs'] as Map<String, dynamic>).entries.map((entry) {
+                          final bloc = entry.value as Map<String, dynamic>;
                           return BlocData(
                             postImageUrl: bloc['postImageUrl'] as String?,
                             text: bloc['text'] as String?,
@@ -131,6 +142,7 @@ class _HomePageState extends State<HomePage> {
                                   imageFilters: post.blocs.map((bloc) => bloc.filterColor ?? Colors.transparent).toList(),
                                   numberOfBlocs: post.blocs.length,
                                   textes: post.blocs.map((bloc) => bloc.text).toList(),
+                                  postId: post.postId,
                                 ),
                               //const SizedBox(height: 16),
                               // Actions du post

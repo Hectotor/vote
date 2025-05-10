@@ -121,6 +121,7 @@ class _PostPageState extends State<PostPage> {
                   ).toList(),
                   numberOfBlocs: (data['blocs'] as List<dynamic>).length,
                   textes: (data['blocs'] as List<dynamic>).map((bloc) => bloc['text'] as String?).toList(),
+                  postId: widget.postId,
                 ),
                 //const SizedBox(height: 6),
                 PostActions(
