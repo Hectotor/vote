@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
 
 class MenuDelete {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
 
   Future<void> deletePost(String postId, String userId, BuildContext context) async {
     try {
@@ -95,96 +93,25 @@ class MenuDelete {
 
       // Si l'utilisateur a annulé ou a fermé la boîte de dialogue
       if (shouldDelete != true) {
+        debugPrint('Suppression annulée par l\'utilisateur');
         return;
       }
 
-      // Supprimer les images du post
-      final postRef = _firestore.collection('posts').doc(postId);
-      final postDoc = await postRef.get();
-      if (postDoc.exists) {
-        final data = postDoc.data() as Map<String, dynamic>;
-        final blocs = data['blocs'] as List<dynamic>;
-
-        for (var bloc in blocs) {
-          if (bloc['postImageUrl'] != null) {
-            final imageUrl = bloc['postImageUrl'] as String;
-            try {
-              final ref = _storage.refFromURL(imageUrl);
-              await ref.delete();
-            } catch (e) {
-              print('Erreur lors de la suppression de l\'image: $e');
-            }
-          }
-        }
-
-        // Supprimer le post
-        await postRef.delete();
-
-        // Supprimer les commentaires associés
-        await _firestore
-            .collection('comments')
-            .where('postId', isEqualTo: postId)
-            .get()
-            .then((snapshot) {
-          for (var doc in snapshot.docs) {
-            doc.reference.delete();
-          }
-        });
-
-        // Supprimer les likes associés
-        await _firestore
-            .collection('likes')
-            .where('postId', isEqualTo: postId)
-            .get()
-            .then((snapshot) {
-          for (var doc in snapshot.docs) {
-            doc.reference.delete();
-          }
-        });
-
-        // Supprimer les hashtags associés
-        await _firestore
-            .collection('hashtags')
-            .where('postId', isEqualTo: postId)
-            .get()
-            .then((snapshot) {
-          for (var doc in snapshot.docs) {
-            doc.reference.delete();
-          }
-        });
-
-        // Supprimer les mentions associées
-        await _firestore
-            .collection('mentions')
-            .where('postId', isEqualTo: postId)
-            .get()
-            .then((snapshot) {
-          for (var doc in snapshot.docs) {
-            doc.reference.delete();
-          }
-        });
-
-        // Supprimer les notifications associées
-        await _firestore
-            .collection('notifications')
-            .where('postId', isEqualTo: postId)
-            .get()
-            .then((snapshot) {
-          for (var doc in snapshot.docs) {
-            doc.reference.delete();
-          }
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Post supprimé avec succès'),
-          ),
-        );
-      }
+      debugPrint('Début de la suppression du post $postId');
+      
+      // Supprimer le post
+      await _firestore.collection('posts').doc(postId).delete();
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Post supprimé avec succès'),
+        ),
+      );
     } catch (e) {
+      debugPrint('Erreur lors de la suppression du post: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erreur lors de la suppression: $e'),
+          content: Text('Erreur lors de la suppression: ${e.toString()}'),
         ),
       );
     }
@@ -198,25 +125,18 @@ class MenuDelete {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
-          color: isDelete ? Colors.red : const Color(0xFF151019),
-          borderRadius: BorderRadius.circular(20),
-          border: isDelete
-              ? Border.all(
-                  color: Colors.red,
-                  width: 1,
-                )
-              : null,
+          color: isDelete ? const Color(0xFFE53E3E) : const Color(0xFF2D3748),
+          borderRadius: BorderRadius.circular(8),
         ),
-        child: Center(
-          child: Text(
-            title,
-            style: TextStyle(
-              color: isDelete ? Colors.white : Colors.grey,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: isDelete ? Colors.white : Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),

@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "prod": "vote-26588",
+    "default": "vote-26588"
+  },
+  "targets": {},
+  "etags": {}
+}
