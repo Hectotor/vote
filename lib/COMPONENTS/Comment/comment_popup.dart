@@ -83,19 +83,9 @@ class _CommentPopupState extends State<CommentPopup> {
       color: Colors.transparent,
       child: Container(
         height: 650,
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-          border: Border.all(
-            color: Colors.grey[800]!,
-            width: 1,
-          ),
-        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildHeader(),
-            const Divider(color: Colors.grey),
             Expanded(
               child: _buildCommentsList(),
             ),
@@ -109,28 +99,6 @@ class _CommentPopupState extends State<CommentPopup> {
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.only(top: 16, bottom: 5, left: 20, right: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Commentaires',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildCommentsList() {
     return StreamBuilder<QuerySnapshot>(

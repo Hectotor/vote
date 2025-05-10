@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:toplyke/COMPONENTS/Comment/comment_popup.dart';
+import 'package:toplyke/PAGES/post_page.dart';
 
 class PostActions extends StatelessWidget {
   final String postId;
@@ -34,13 +34,10 @@ class PostActions extends StatelessWidget {
               size: 24,
             ),
             onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => CommentPopup(
-                  postId: postId,
-                  userId: userId,
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PostPage(postId: postId),
                 ),
               );
             },
