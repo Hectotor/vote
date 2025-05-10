@@ -145,8 +145,14 @@ class _CommentPopupState extends State<CommentPopup> {
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(color: Colors.white),
+          return Container(
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: CircularProgressIndicator(
+                color: Colors.grey[600],
+                strokeWidth: 2,
+              ),
+            ),
           );
         }
 
@@ -196,7 +202,15 @@ class CommentItem extends StatelessWidget {
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator(color: Colors.white);
+          return Container(
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: CircularProgressIndicator(
+                color: Colors.grey[600],
+                strokeWidth: 2,
+              ),
+            ),
+          );
         }
 
         final userData =
