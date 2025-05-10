@@ -65,53 +65,50 @@ class _CommentInputState extends State<CommentInput> {
                   ),
                 ),
               ),
-              child: Row(
-                children: [
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextField(
-                      controller: widget.controller,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Ajouter un commentaire...',
-                        hintStyle: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 15,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                      textCapitalization: TextCapitalization.sentences,
-                      onChanged: (text) {
-                        setState(() {
-                          _isTextEmpty = text.trim().isEmpty;
-                        });
-                      },
-                      onSubmitted: (text) {
-                        if (!_isTextEmpty) {
-                          widget.onSend();
-                        }
-                      },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: TextField(
+                  controller: widget.controller,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Ajouter un commentaire...',
+                    hintStyle: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 15,
                     ),
+                    border: InputBorder.none,
                   ),
-                  const SizedBox(width: 12),
-                  IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white),
-                    onPressed: _isTextEmpty
-                        ? null
-                        : () {
-                            print('Bouton envoyer appuyé');
-                            widget.onSend();
-                          },
-                  ),
-                  const SizedBox(width: 12),
-                ],
+                  maxLines: null, 
+                  minLines: 1,    
+                  keyboardType: TextInputType.multiline, 
+                  onChanged: (text) {
+                    setState(() {
+                      _isTextEmpty = text.trim().isEmpty;
+                    });
+                  },
+                  onSubmitted: (text) {
+                    if (!_isTextEmpty) {
+                      widget.onSend();
+                    }
+                  },
+                ),
               ),
             ),
           ),
+          const SizedBox(width: 12),
+          IconButton(
+            icon: const Icon(Icons.send, color: Colors.white),
+            onPressed: _isTextEmpty
+                ? null
+                : () {
+                    print('Bouton envoyer appuyé');
+                    widget.onSend();
+                  },
+          ),
+          const SizedBox(width: 12),
         ],
       ),
     );

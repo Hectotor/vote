@@ -5,6 +5,7 @@ import '../../../INSCRIPTION/connexion_screen.dart';
 import '../../../COMPONENTS/avatar.dart';
 import '../../../COMPONENTS/date_formatter.dart';
 import 'like_service.dart';
+import 'comment_expander.dart';
 
 class CommentPopup extends StatefulWidget {
   final String postId;
@@ -190,29 +191,20 @@ class CommentItem extends StatelessWidget {
         final pseudo = userData['pseudo'] ?? 'Utilisateur';
 
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.grey[850]!,
-                width: 1,
+          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Avatar(
+                userId: comment['userId'],
+                radius: 20,
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Avatar(
-                    userId: comment['userId'],
-                    radius: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
                         RichText(
                           text: TextSpan(
@@ -225,48 +217,55 @@ class CommentItem extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(
-                              DateFormatter.formatDate(comment['createdAt'] ?? Timestamp.now()),
-                              style: const TextStyle(color: Colors.grey, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
+                        const Spacer(),
                         Text(
-                          comment['text'] ?? '',
-                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          DateFormatter.formatDate(comment['createdAt'] ?? Timestamp.now()),
+                          style: const TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          comment['likes']?.contains(FirebaseAuth.instance.currentUser?.uid) ?? false
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: comment['likes']?.contains(FirebaseAuth.instance.currentUser?.uid) ?? false
-                              ? Colors.red
-                              : Colors.white,
-                          size: 24,
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CommentExpander(
+                                text: comment['text'] ?? '',
+                                maxLines: 2,
+                              ),
+                            ],
+                          ),
                         ),
-                        onPressed: onLike,
-                      ),
-                      Text(
-                        '${comment['likeCount'] ?? 0}',
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: 8),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                comment['likes']?.contains(FirebaseAuth.instance.currentUser?.uid) ?? false
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: comment['likes']?.contains(FirebaseAuth.instance.currentUser?.uid) ?? false
+                                    ? Colors.red
+                                    : Colors.white,
+                                size: 15,
+                              ),
+                              onPressed: onLike,
+                            ),
+                            Text(
+                              '${comment['likeCount'] ?? 0}',
+                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
         );
       },
