@@ -63,15 +63,16 @@ class _CommentPopupState extends State<CommentPopup> {
     return Material(
       color: Colors.transparent,
       child: Container(
-        height: 650,
-        padding: const EdgeInsets.only(top: 5),
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Column(
+        child: ListView(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(4),
           children: [
-            Expanded(child: _buildCommentsList()),
+            _buildCommentsList(),
           ],
         ),
       ),
@@ -97,64 +98,32 @@ class _CommentPopupState extends State<CommentPopup> {
         final comments = snapshot.data?.docs ?? [];
 
         if (comments.isEmpty) {
-          return Column(
-            children: [
-              Center(
-                child: Text(
-                  'Aucun commentaire',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 16,
-                  ),
-                ),
+          return Center(
+            child: Text(
+              'Aucun commentaire',
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 16,
               ),
-              Expanded(
-                child: ListView.builder(
-                  controller: widget.scrollController,
-                  itemCount: comments.length,
-                  padding: const EdgeInsets.all(4),
-                  itemBuilder: (context, index) {
-                    final data = comments[index].data() as Map<String, dynamic>;
-                    final comment = {
-                      'id': comments[index].id,
-                      'postId': data['postId'],
-                      'userId': data['userId'],
-                      'text': data['text'],
-                      'createdAt': data['createdAt'],
-                      'likeCount': data['likeCount'] ?? 0,
-                    };
-
-                    return CommentItem(
-                      comment: comment,
-                      onLike: () => _handleLike(comment['id']),
-                    );
-                  },
-                ),
-              ),
-            ],
+            ),
           );
         }
 
-        return ListView.builder(
-          controller: widget.scrollController,
-          itemCount: comments.length,
-          padding: const EdgeInsets.all(4),
-          itemBuilder: (context, index) {
-            final data = comments[index].data() as Map<String, dynamic>;
-            final comment = {
-              'id': comments[index].id,
-              'postId': data['postId'],
-              'userId': data['userId'],
-              'text': data['text'],
-              'createdAt': data['createdAt'],
-              'likeCount': data['likeCount'] ?? 0,
-            };
-
-            return CommentItem(
-              comment: comment,
-              onLike: () => _handleLike(comment['id']),
-            );
-          },
+        return Column(
+          children: [
+            for (var comment in comments)
+              CommentItem(
+                comment: {
+                  'id': comment.id,
+                  'postId': (comment.data() as Map<String, dynamic>)['postId'],
+                  'userId': (comment.data() as Map<String, dynamic>)['userId'],
+                  'text': (comment.data() as Map<String, dynamic>)['text'],
+                  'createdAt': (comment.data() as Map<String, dynamic>)['createdAt'],
+                  'likeCount': (comment.data() as Map<String, dynamic>)['likeCount'] ?? 0,
+                },
+                onLike: () => _handleLike(comment.id),
+              ),
+          ],
         );
       },
     );
@@ -191,7 +160,7 @@ class CommentItem extends StatelessWidget {
         final pseudo = userData['pseudo'] ?? 'Utilisateur';
 
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -199,7 +168,7 @@ class CommentItem extends StatelessWidget {
                 userId: comment['userId'],
                 radius: 20,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,7 +193,7 @@ class CommentItem extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    //const SizedBox(height: 4),
                     Row(
                       children: [
                         Expanded(
@@ -242,21 +211,25 @@ class CommentItem extends StatelessWidget {
                         Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            IconButton(
-                              icon: Icon(
-                                comment['likes']?.contains(FirebaseAuth.instance.currentUser?.uid) ?? false
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                color: comment['likes']?.contains(FirebaseAuth.instance.currentUser?.uid) ?? false
-                                    ? Colors.red
-                                    : Colors.white,
-                                size: 15,
-                              ),
-                              onPressed: onLike,
-                            ),
-                            Text(
-                              '${comment['likeCount'] ?? 0}',
-                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            Row(
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    (comment['likes'] as List<String>?)?.contains(FirebaseAuth.instance.currentUser?.uid) ?? false
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color: (comment['likes'] as List<String>?)?.contains(FirebaseAuth.instance.currentUser?.uid) ?? false
+                                        ? Colors.red
+                                        : Colors.white,
+                                    size: 15,
+                                  ),
+                                  onPressed: onLike,
+                                ),
+                                Text(
+                                  '${comment['likeCount'] ?? 0}',
+                                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                ),
+                              ],
                             ),
                           ],
                         ),

@@ -36,6 +36,23 @@ class _CommentInputState extends State<CommentInput> {
         _isTextEmpty = newIsEmpty;
       });
     }
+
+    // Forcer la première lettre en majuscule
+    final text = widget.controller.text;
+    if (text.isNotEmpty) {
+      // Mettre en majuscule après les points
+      final capitalized = text.split('.').map((sentence) {
+        if (sentence.isEmpty) return sentence;
+        return sentence[0].toUpperCase() + sentence.substring(1);
+      }).join('.');
+      
+      if (capitalized != text) {
+        widget.controller.value = TextEditingValue(
+          text: capitalized,
+          selection: TextSelection.collapsed(offset: capitalized.length),
+        );
+      }
+    }
   }
 
   @override

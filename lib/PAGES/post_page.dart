@@ -64,7 +64,8 @@ class _PostPageState extends State<PostPage> {
 
   @override
   Widget build(BuildContext context) {
-    final _scrollController = ScrollController();
+    final _mainScrollController = ScrollController();
+    final _commentScrollController = ScrollController();
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -90,7 +91,7 @@ class _PostPageState extends State<PostPage> {
           final data = post.data() as Map<String, dynamic>;
 
           return SingleChildScrollView(
-            controller: _scrollController,
+            controller: _mainScrollController,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -141,7 +142,7 @@ class _PostPageState extends State<PostPage> {
                 CommentPopup(
                   postId: widget.postId,
                   userId: data['userId'],
-                  scrollController: _scrollController,
+                  scrollController: _commentScrollController,
                 ),
               ],
             ),
