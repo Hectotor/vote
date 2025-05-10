@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toplyke/PAGES/post_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PostActions extends StatelessWidget {
   final String postId;
@@ -29,24 +30,65 @@ class PostActions extends StatelessWidget {
               // TODO: Implement like functionality
             },
           ),
-          IconButton(
-            icon: Icon(
-              Icons.chat_bubble_outline,
-              color: Colors.white,
-              size: 24,
-            ),
-            onPressed: isCommentPage
-                ? null
-                : () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PostPage(
-                          postId: postId,
-                        ),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('comments')
+                .where('postId', isEqualTo: postId)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final commentCount = snapshot.data!.docs.length;
+                return Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.chat_bubble_outline,
+                        color: Colors.white,
+                        size: 24,
                       ),
-                    );
-                  },
+                      onPressed: isCommentPage
+                          ? null
+                          : () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PostPage(
+                                    postId: postId,
+                                  ),
+                                ),
+                              );
+                            },
+                    ),
+                    Text(
+                      '$commentCount',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                );
+              }
+              return IconButton(
+                icon: Icon(
+                  Icons.chat_bubble_outline,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                onPressed: isCommentPage
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PostPage(
+                              postId: postId,
+                            ),
+                          ),
+                        );
+                      },
+              );
+            },
           ),
           IconButton(
             icon: Icon(

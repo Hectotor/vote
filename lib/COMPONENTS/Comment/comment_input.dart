@@ -43,9 +43,12 @@ class _CommentInputState extends State<CommentInput> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D3748),
-        borderRadius: const BorderRadius.vertical(
-          bottom: Radius.circular(30),
+        color: Colors.black.withOpacity(0.1),
+        border: Border(
+          top: BorderSide(
+            color: Colors.grey[850]!,
+            width: 0.5,
+          ),
         ),
       ),
       child: Row(
@@ -53,11 +56,13 @@ class _CommentInputState extends State<CommentInput> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF374151),
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
-                  width: 1,
+                color: Colors.black.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.grey[850]!,
+                    width: 0.5,
+                  ),
                 ),
               ),
               child: Row(

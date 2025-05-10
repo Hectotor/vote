@@ -20,7 +20,8 @@ class PostDescription extends StatelessWidget {
           Text(
             description,
             style: const TextStyle(
-              color: Colors.grey,
+              color: Colors.white,
+              fontSize: 15,
             ),
           ),
         ],
