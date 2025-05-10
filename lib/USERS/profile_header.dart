@@ -44,6 +44,28 @@ class _ProfileHeaderState extends State<ProfileHeader> {
           _uploadProfileImage(image, filterColor);
         },
         hasImage: _profileImageUrl != null,
+        onRemoveImage: () async {
+          if (!mounted) return;
+          
+          try {
+            // Supprimer l'image de Firebase Storage
+            final Reference ref = _storage.ref().child('users/${widget.userId}/profilePhotoUrl');
+            await ref.delete();
+            
+            // Mettre à jour Firestore
+            await _firestore.collection('users').doc(widget.userId).update({
+              'profilePhotoUrl': null,
+              'filterColor': null,
+            });
+            
+            setState(() {
+              _profileImageUrl = null;
+              _filterColor = null;
+            });
+          } catch (e) {
+            print('Erreur lors de la suppression de l\'image: $e');
+          }
+        },
       ),
     );
   }
