@@ -68,14 +68,16 @@ class _PollGridState extends State<PollGrid> {
   }
 
   void _showAddOptionDialog(int index) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (BuildContext dialogContext) {
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
         return AddOption(
           hasImage: widget.images[index] != null,
           onAddPhoto: (XFile image, Color filterColor) {
             // Utiliser le contexte du dialogue pour la navigation
-            Navigator.of(dialogContext).pop();
+            Navigator.of(context).pop();
             
             // Mettre à jour l'état du widget parent
             if (mounted) {
@@ -93,7 +95,7 @@ class _PollGridState extends State<PollGrid> {
           },
           onTakePhoto: (XFile image, Color filterColor) {
             // Utiliser le contexte du dialogue pour la navigation
-            Navigator.of(dialogContext).pop();
+            Navigator.of(context).pop();
             
             // Mettre à jour l'état du widget parent
             if (mounted) {
@@ -110,7 +112,7 @@ class _PollGridState extends State<PollGrid> {
             }
           },
           onAddText: () {
-            Navigator.of(dialogContext).pop();
+            Navigator.of(context).pop();
             if (mounted) {
               setState(() {
                 _isTextVisible[index] = true;

@@ -23,71 +23,83 @@ class AddOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: EdgeInsets.symmetric(horizontal: 50),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16), // Bords arrondis
+    return Container(
+      height: 500,
+      decoration: BoxDecoration(
+        color: Color.fromARGB(255, 0, 0, 0), // Nouvelle couleur de fond
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        border: Border(
+          top: BorderSide(
+            color: const Color(0xFF2D3748),
+            width: 0.5,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2D3748).withOpacity(0.2),
+            blurRadius: 15,
+            spreadRadius: 1,
+            offset: Offset(0, -2),
+          )
+        ],
       ),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Color(0xFF151019), // Nouvelle couleur de fond
-          borderRadius: BorderRadius.circular(16), // Bords arrondis
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 15,
-              spreadRadius: 1,
-              offset: Offset(0, 8),
-            )
-          ],
-        ),
-        padding: EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Ajouter une option',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
+      
+      padding: EdgeInsets.only(top: 10, left: 24, right: 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 150),
+            child: Container(
+              height: 6,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2D3748),
+                borderRadius: BorderRadius.circular(10),
               ),
+              alignment: Alignment.center,
             ),
-            SizedBox(height: 24),
-            _buildModernTile(
-              title: 'Choisir une image',
-              icon: Icons.image_outlined,
-              onTap: () => _pickAndProcessImage(context, ImageSource.gallery),
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Gérer',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
             ),
-            SizedBox(height: 16),
-            _buildModernTile(
-              title: 'Prendre une photo',
-              icon: Icons.camera_alt_outlined,
-              onTap: () => _pickAndProcessImage(context, ImageSource.camera),
+          ),
+          SizedBox(height: 32),
+          _buildModernTile(
+            title: 'Choisir une image',
+            icon: Icons.image_outlined,
+            onTap: () => _pickAndProcessImage(context, ImageSource.gallery),
+          ),
+          SizedBox(height: 24),
+          _buildModernTile(
+            title: 'Prendre une photo',
+            icon: Icons.camera_alt_outlined,
+            onTap: () => _pickAndProcessImage(context, ImageSource.camera),
+          ),
+          if (hasImage)
+            Column(
+              children: [
+                SizedBox(height: 24),
+                _buildModernTile(
+                  title: 'Supprimer l\'image',
+                  icon: Icons.delete_outline,
+                  onTap: () {
+                    if (onRemoveImage != null) {
+                      onRemoveImage!();
+                    }
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
             ),
-            if (hasImage)
-              Column(
-                children: [
-                  SizedBox(height: 16),
-                  _buildModernTile(
-                    title: 'Supprimer l\'image',
-                    icon: Icons.delete_outline,
-                    onTap: () {
-                      if (onRemoveImage != null) {
-                        onRemoveImage!();
-                      }
-                      Navigator.pop(context);
-                    },
-                  ),
-                ],
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -150,10 +162,12 @@ class AddOption extends StatelessWidget {
     required IconData icon,
     required VoidCallback? onTap,
   }) {
+    final isDelete = title == 'Supprimer l\'image';
+    
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10), // Bords arrondis pour les tuiles
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: Colors.white.withOpacity(0.15),
           width: 1,
@@ -162,34 +176,39 @@ class AddOption extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(10), // Correspondance avec le container
+          borderRadius: BorderRadius.circular(10),
           onTap: onTap,
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       icon,
-                      color: Colors.white,
+                      color: isDelete ? Colors.red : Colors.white,
                       size: 24,
                     ),
                     SizedBox(width: 12),
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                    Flexible(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          color: isDelete ? Colors.red : Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
                 Icon(
                   Icons.chevron_right,
-                  color: Colors.white.withOpacity(0.7),
+                  color: isDelete ? Colors.red.withOpacity(0.7) : Colors.white.withOpacity(0.7),
+                  size: 24,
                 ),
               ],
             ),

@@ -23,15 +23,16 @@ class _ProfileHeaderState extends State<ProfileHeader> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   String? _profileImageUrl;
-  Color? _filterColor;
   bool _isLoading = false;
   final TextEditingController _bioController = TextEditingController();
 
-  Future<void> _showAddOptionDialog() async {
+  Future<void> _showAddOptionBottomSheet() async {
     if (!mounted) return;
 
-    await showDialog(
+    await showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => AddOption(
         onAddPhoto: (image, filterColor) {
           if (!mounted) return;
@@ -60,7 +61,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
             
             setState(() {
               _profileImageUrl = null;
-              _filterColor = null;
             });
           } catch (e) {
             print('Erreur lors de la suppression de l\'image: $e');
@@ -96,14 +96,12 @@ class _ProfileHeaderState extends State<ProfileHeader> {
       
       setState(() {
         _profileImageUrl = downloadUrl;
-        _filterColor = filterColor;
       });
     } catch (e) {
       print('Erreur lors de l\'upload de l\'image: $e');
       // Réinitialiser l'URL si l'upload échoue
       setState(() {
         _profileImageUrl = null;
-        _filterColor = null;
       });
     } finally {
       setState(() {
@@ -139,9 +137,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
         final userData = snapshot.data!;
         _profileImageUrl = userData['profilePhotoUrl'];
-        if (userData['filterColor'] != null) {
-          _filterColor = Color(userData['filterColor']);
-        }
 
         return Container(
           padding: const EdgeInsets.only(top: 0, bottom: 0, left: 16, right: 16),
@@ -162,11 +157,13 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 child: Row(
                   children: [
                     // Avatar
-                    Avatar(
-                      userId: widget.userId,
-                      radius: 35,
-                      onTap: _showAddOptionDialog,
-                    ),
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : Avatar(
+                            userId: widget.userId,
+                            radius: 35,
+                            onTap: _showAddOptionBottomSheet,
+                          ),
                     const SizedBox(width: 20),
                     // Stats
                     Expanded(
