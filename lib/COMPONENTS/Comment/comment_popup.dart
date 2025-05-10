@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../INSCRIPTION/connexion_screen.dart';
 import '../../../SERVICES/like_service.dart';
+import '../../../INSCRIPTION/connexion_screen.dart';
 import 'comment_input.dart';
-  
 import '../../../COMPONENTS/avatar.dart';
+import '../../../COMPONENTS/date_formatter.dart';
 
 class CommentPopup extends StatefulWidget {
   final String postId;
@@ -218,7 +218,7 @@ class CommentItem extends StatelessWidget {
         final pseudo = userData?['pseudo'] as String?;
 
         return Container(
-          padding: const EdgeInsets.only(top: 10, bottom: 10, left: 0, right: 0),
+          padding: const EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 0),
           decoration: BoxDecoration(
             color: const Color(0xFF2D3748),
             borderRadius: BorderRadius.circular(16),
@@ -241,12 +241,22 @@ class CommentItem extends StatelessWidget {
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            fontSize: 15,
                           ),
                         ),
+                        Text(
+                          DateFormatter.formatDate(comment.createdAt),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
                         Text(
                           comment.text,
                           style: const TextStyle(
                             color: Colors.white,
+                            fontSize: 15,
                           ),
                         ),
                       ],
