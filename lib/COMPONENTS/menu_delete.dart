@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
+import 'package:toplyke/navBar.dart';
 
 class MenuDelete {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> deletePost(String postId, String userId, BuildContext context) async {
+    // Capturer le navigateur global pour l'utiliser plus tard
+    final navigator = Navigator.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
     try {
       final currentUser = _auth.currentUser;
       if (currentUser == null) {
-        Navigator.push(
-          context,
+        navigator.push(
           MaterialPageRoute(builder: (context) => const ConnexionPage()),
         );
         return;
@@ -102,16 +106,23 @@ class MenuDelete {
       // Supprimer le post
       await _firestore.collection('posts').doc(postId).delete();
       
-      ScaffoldMessenger.of(context).showSnackBar(
+      // Afficher le message de succès
+      scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('Post supprimé avec succès'),
         ),
       );
+
+      // Rediriger vers la NavBar
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const NavBar()),
+        (route) => false,
+      );
     } catch (e) {
       debugPrint('Erreur lors de la suppression du post: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         SnackBar(
-          content: Text('Erreur lors de la suppression: ${e.toString()}'),
+          content: Text('Erreur: ${e.toString()}'),
         ),
       );
     }
