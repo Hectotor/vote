@@ -114,9 +114,14 @@ class _HomePageState extends State<HomePage> {
 
                               // Description
                               if (post.description.isNotEmpty)
-                                PostDescription(
-                                  pseudo: post.pseudo,
-                                  description: post.description,
+                                Column(
+                                  children: [
+                                    PostDescription(
+                                      pseudo: post.pseudo,
+                                      description: post.description,
+                                    ),
+                                    const SizedBox(height: 16),
+                                  ],
                                 ),
 
                               // Grid de photos

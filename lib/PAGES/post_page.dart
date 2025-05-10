@@ -102,10 +102,16 @@ class _PostPageState extends State<PostPage> {
                   postId: widget.postId,
                   userId: data['userId'],
                 ),
-                PostDescription(
-                  pseudo: data['pseudo'],
-                  description: data['description'],
-                ),
+                if (data['description'] != null && data['description'].isNotEmpty)
+                  Column(
+                    children: [
+                      PostDescription(
+                        pseudo: data['pseudo'],
+                        description: data['description'],
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
                 PollGridHome(
                   images: (data['blocs'] as List<dynamic>).map((bloc) => bloc['postImageUrl'] as String?).toList(),
                   imageFilters: (data['blocs'] as List<dynamic>).map((bloc) => 
