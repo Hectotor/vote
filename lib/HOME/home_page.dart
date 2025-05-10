@@ -86,7 +86,7 @@ class _HomePageState extends State<HomePage> {
                     }).toList() ?? [];
 
                     return ListView.builder(
-                      padding: const EdgeInsets.only(top: 10, bottom: 10),
+                      padding: const EdgeInsets.only(),
                       itemCount: posts.length,
                       itemBuilder: (context, index) {
                         final post = posts[index];
@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> {
                             border: Border(
                               bottom: BorderSide(
                                 color: Colors.grey[800]!,
-                                width: 0.5,
+                                width: 2,
                               ),
                             ),
                           ),
@@ -111,7 +111,7 @@ class _HomePageState extends State<HomePage> {
                                 postId: post.postId,
                                 userId: post.userId,
                               ),
-
+                              
                               // Description
                               if (post.description.isNotEmpty)
                                 Column(
@@ -120,7 +120,7 @@ class _HomePageState extends State<HomePage> {
                                       pseudo: post.pseudo,
                                       description: post.description,
                                     ),
-                                    const SizedBox(height: 16),
+                                  
                                   ],
                                 ),
 
@@ -132,14 +132,14 @@ class _HomePageState extends State<HomePage> {
                                   numberOfBlocs: post.blocs.length,
                                   textes: post.blocs.map((bloc) => bloc.text).toList(),
                                 ),
-
+                              //const SizedBox(height: 16),
                               // Actions du post
                               PostActions(
                                 postId: post.postId,
                                 userId: post.userId,
                               ),
 
-                              const SizedBox(height: 10),
+                          
                             ],
                           ),
                         );

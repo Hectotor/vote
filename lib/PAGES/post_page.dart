@@ -109,7 +109,6 @@ class _PostPageState extends State<PostPage> {
                         pseudo: data['pseudo'],
                         description: data['description'],
                       ),
-                      const SizedBox(height: 16),
                     ],
                   ),
                 PollGridHome(
@@ -122,10 +121,22 @@ class _PostPageState extends State<PostPage> {
                   numberOfBlocs: (data['blocs'] as List<dynamic>).length,
                   textes: (data['blocs'] as List<dynamic>).map((bloc) => bloc['text'] as String?).toList(),
                 ),
+                //const SizedBox(height: 6),
                 PostActions(
                   postId: widget.postId,
                   userId: data['userId'],
                   isCommentPage: true,
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.grey[800]!,
+                        width: 1,
+                      ),
+                    ),
+                  ),
                 ),
                 CommentPopup(
                   postId: widget.postId,

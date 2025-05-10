@@ -109,52 +109,64 @@ class _CommentPopupState extends State<CommentPopup> {
         final comments = snapshot.data?.docs ?? [];
 
         if (comments.isEmpty) {
-          return Center(
-            child: Text(
-              'Aucun commentaire',
-              style: TextStyle(
-                color: Colors.white54,
-                fontSize: 16,
+          return Column(
+            children: [
+              Center(
+                child: Text(
+                  'Aucun commentaire',
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 16,
+                  ),
+                ),
               ),
-            ),
+              Expanded(
+                child: ListView.builder(
+                  controller: widget.scrollController,
+                  itemCount: comments.length,
+                  padding: const EdgeInsets.all(4),
+                  itemBuilder: (context, index) {
+                    final data = comments[index].data() as Map<String, dynamic>;
+                    final comment = {
+                      'id': comments[index].id,
+                      'postId': data['postId'],
+                      'userId': data['userId'],
+                      'text': data['text'],
+                      'createdAt': data['createdAt'],
+                      'likeCount': data['likeCount'] ?? 0,
+                    };
+
+                    return CommentItem(
+                      comment: comment,
+                      onLike: () => _handleLike(comment['id']),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         }
 
-        return Column(
-          children: [
-            Center(
-              child: Text(
-                'Aucun commentaire',
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                controller: widget.scrollController,
-                itemCount: comments.length,
-                padding: const EdgeInsets.all(4),
-                itemBuilder: (context, index) {
-                  final data = comments[index].data() as Map<String, dynamic>;
-                  final comment = {
-                    'id': comments[index].id,
-                    'postId': data['postId'],
-                    'userId': data['userId'],
-                    'text': data['text'],
-                    'createdAt': data['createdAt'],
-                    'likeCount': data['likeCount'] ?? 0,
-                  };
+        return ListView.builder(
+          controller: widget.scrollController,
+          itemCount: comments.length,
+          padding: const EdgeInsets.all(4),
+          itemBuilder: (context, index) {
+            final data = comments[index].data() as Map<String, dynamic>;
+            final comment = {
+              'id': comments[index].id,
+              'postId': data['postId'],
+              'userId': data['userId'],
+              'text': data['text'],
+              'createdAt': data['createdAt'],
+              'likeCount': data['likeCount'] ?? 0,
+            };
 
-                  return CommentItem(
-                    comment: comment,
-                    onLike: () => _handleLike(comment['id']),
-                  );
-                },
-              ),
-            ),
-          ],
+            return CommentItem(
+              comment: comment,
+              onLike: () => _handleLike(comment['id']),
+            );
+          },
         );
       },
     );
@@ -188,10 +200,10 @@ class CommentItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 0),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.9),
+              color: Colors.black.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.grey[900]!,
+                color: Colors.grey[850]!,
                 width: 1,
               ),
             ),
