@@ -41,6 +41,7 @@ class _PollGridHomeState extends State<PollGridHome> with SingleTickerProviderSt
         if (widget.numberOfBlocs <= 2) {
           return Stack(
             children: [
+              // Grille des blocs
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -56,18 +57,18 @@ class _PollGridHomeState extends State<PollGridHome> with SingleTickerProviderSt
                   return _buildBloc(context, index);
                 },
               ),
+              // Pourcentages de vote
               if (_showPercentages)
-                Positioned.fill(
-                  child: VotePercentages(
-                    postId: widget.postId,
-                    numberOfBlocs: widget.numberOfBlocs,
-                  ),
+                VotePercentages(
+                  postId: widget.postId,
+                  numberOfBlocs: widget.numberOfBlocs,
                 ),
             ],
           );
         } else {
           return Stack(
             children: [
+              // Conteneur des blocs
               Column(
                 children: [
                   // Première rangée (blocs 1 et 2)
@@ -126,12 +127,11 @@ class _PollGridHomeState extends State<PollGridHome> with SingleTickerProviderSt
                     )
                 ],
               ),
+              // Pourcentages de vote
               if (_showPercentages)
-                Positioned.fill(
-                  child: VotePercentages(
-                    postId: widget.postId,
-                    numberOfBlocs: widget.numberOfBlocs,
-                  ),
+                VotePercentages(
+                  postId: widget.postId,
+                  numberOfBlocs: widget.numberOfBlocs,
                 ),
             ],
           );
