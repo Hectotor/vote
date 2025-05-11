@@ -153,12 +153,23 @@ class _PollGridHomeState extends State<PollGridHome> with SingleTickerProviderSt
               if (widget.images[index] != null)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(15.0),
-                  child: CachedNetworkImage(
-                    key: blocKey,
-                    imageUrl: widget.images[index]!,
-                    width: double.infinity,
-                    height: double.infinity,
-                    fit: BoxFit.cover,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Image de base
+                      CachedNetworkImage(
+                        key: blocKey,
+                        imageUrl: widget.images[index]!,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                      
+                      // Filtre de couleur
+                      Container(
+                        color: widget.imageFilters[index],
+                      ),
+                    ],
                   ),
                 ),
               
