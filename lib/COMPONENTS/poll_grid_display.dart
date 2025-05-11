@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toplyke/COMPONENTS/image_vote_card.dart';
 
-class PollGridDisplay extends StatelessWidget {
+class PollGridDisplay extends StatefulWidget {
   final List<dynamic> blocs;
   final String type;
 
@@ -12,30 +12,69 @@ class PollGridDisplay extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<PollGridDisplay> createState() => _PollGridDisplayState();
+}
+
+class _PollGridDisplayState extends State<PollGridDisplay> {
+  int? _tappedIndex;
+  
+  void _handleTap(int index) {
+    setState(() {
+      _tappedIndex = index;
+    });
+    // Réinitialiser après l'animation
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        setState(() {
+          _tappedIndex = null;
+        });
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (type == 'triple' && blocs.length >= 3) {
+    if (widget.type == 'triple' && widget.blocs.length >= 3) {
       return Column(
         children: [
           // Ligne du haut avec 2 blocs
           Row(
             children: [
               Expanded(
-                child: ImageVoteCard(bloc: blocs[0]),
+                child: GestureDetector(
+                  onTap: () => _handleTap(0),
+                  child: ImageVoteCard(
+                    bloc: widget.blocs[0],
+                    showHeart: _tappedIndex == 0,
+                  ),
+                ),
               ),
-              const SizedBox(width: 8), // Espacement entre les images
+              const SizedBox(width: 8),
               Expanded(
-                child: ImageVoteCard(bloc: blocs[1]),
+                child: GestureDetector(
+                  onTap: () => _handleTap(1),
+                  child: ImageVoteCard(
+                    bloc: widget.blocs[1],
+                    showHeart: _tappedIndex == 1,
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 8), // Espacement entre les lignes
+          const SizedBox(height: 8),
           // Bloc du bas centré
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(
                 width: MediaQuery.of(context).size.width / 2,
-                child: ImageVoteCard(bloc: blocs[2]),
+                child: GestureDetector(
+                  onTap: () => _handleTap(2),
+                  child: ImageVoteCard(
+                    bloc: widget.blocs[2],
+                    showHeart: _tappedIndex == 2,
+                  ),
+                ),
               ),
             ],
           ),
@@ -53,9 +92,15 @@ class PollGridDisplay extends StatelessWidget {
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
       ),
-      itemCount: blocs.length,
+      itemCount: widget.blocs.length,
       itemBuilder: (context, index) {
-        return ImageVoteCard(bloc: blocs[index]);
+        return GestureDetector(
+          onTap: () => _handleTap(index),
+          child: ImageVoteCard(
+            bloc: widget.blocs[index],
+            showHeart: _tappedIndex == index,
+          ),
+        );
       },
     );
   }
