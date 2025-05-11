@@ -8,6 +8,7 @@ class ImageVoteCard extends StatelessWidget {
   final bool showPercentage;
   final double? percentage;
   final bool showHeart;
+  final bool showHeartOnPercentage;
   final int heartCount;
   final double borderRadius;
 
@@ -17,6 +18,7 @@ class ImageVoteCard extends StatelessWidget {
     this.showPercentage = false,
     this.percentage,
     this.showHeart = false,
+    this.showHeartOnPercentage = false,
     this.heartCount = 5,
     this.borderRadius = 12.0,
   }) : super(key: key);
@@ -102,7 +104,10 @@ class ImageVoteCard extends StatelessWidget {
             
             // Pourcentage de votes
             if (showPercentage && percentage != null)
-              VotePercentageBadge(percentage: percentage!),
+              VotePercentageBadge(
+                percentage: percentage!,
+                showHeart: showHeartOnPercentage,
+              ),
           ],
         ),
       ),

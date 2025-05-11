@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toplyke/COMPONENTS/image_vote_card.dart';
-import 'package:toplyke/SERVICES/vote_service.dart';
+import 'package:toplyke/COMPONENTS/VOTE/vote_service.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -23,6 +23,7 @@ class PollGridDisplay extends StatefulWidget {
 class _PollGridDisplayState extends State<PollGridDisplay> {
   int _tappedIndex = -1;
   bool _hasVoted = false;
+  String? _votedBlocId;
   late final VoteService _voteService;
   final _auth = FirebaseAuth.instance;
 
@@ -33,13 +34,22 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
     _checkVoteStatus();
   }
 
-  // Vérifier si l'utilisateur a déjà voté
+  // Vérifier si l'utilisateur a déjà voté et récupérer le bloc voté
   Future<void> _checkVoteStatus() async {
     try {
       final hasVoted = await _voteService.hasUserVoted(widget.postId);
-      if (mounted) {
+      if (hasVoted) {
+        final blocId = await _voteService.getUserVoteBlocId(widget.postId);
+        if (mounted) {
+          setState(() {
+            _hasVoted = hasVoted;
+            _votedBlocId = blocId;
+          });
+        }
+      } else if (mounted) {
         setState(() {
           _hasVoted = hasVoted;
+          _votedBlocId = null;
         });
       }
     } catch (e) {
@@ -123,6 +133,7 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
             try {
               final bloc = widget.blocs[index];
               final blocId = index.toString();
+              final isVotedBloc = _votedBlocId == blocId;
               
               return GestureDetector(
                 onTap: _hasVoted ? null : () => _handleVote(index),
@@ -131,6 +142,7 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
                   showHeart: _tappedIndex == index,
                   showPercentage: _hasVoted,
                   percentage: _hasVoted ? calculatePercentage(blocId) : null,
+                  showHeartOnPercentage: isVotedBloc,
                 ),
               );
             } catch (e) {

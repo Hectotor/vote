@@ -177,4 +177,20 @@ class VoteService {
       return voteCounts;
     });
   }
+
+  // Obtenir l'ID du bloc pour lequel l'utilisateur a voté
+  Future<String?> getUserVoteBlocId(String postId) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return null;
+      
+      final doc = await _firestore.collection('userVotes').doc('${user.uid}-$postId').get();
+      if (!doc.exists) return null;
+      
+      return doc.data()?['blocId']?.toString();
+    } catch (e) {
+      print('Erreur lors de la récupération du vote utilisateur: $e');
+      return null;
+    }
+  }
 }

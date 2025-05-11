@@ -6,6 +6,7 @@ class VotePercentageBadge extends StatelessWidget {
   final Color? backgroundColor;
   final Color? textColor;
   final double? fontSize;
+  final bool showHeart;
 
   const VotePercentageBadge({
     Key? key,
@@ -14,6 +15,7 @@ class VotePercentageBadge extends StatelessWidget {
     this.backgroundColor,
     this.textColor,
     this.fontSize,
+    this.showHeart = false,
   }) : super(key: key);
 
   @override
@@ -27,13 +29,26 @@ class VotePercentageBadge extends StatelessWidget {
           color: backgroundColor ?? Colors.black54,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Text(
-          '${percentage.toStringAsFixed(1)}%',
-          style: TextStyle(
-            color: textColor ?? Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: fontSize ?? 20,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${percentage.toStringAsFixed(1)}%',
+              style: TextStyle(
+                color: textColor ?? Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: fontSize ?? 20,
+              ),
+            ),
+            if (showHeart) ...[
+              const SizedBox(width: 4),
+              const Icon(
+                Icons.favorite,
+                color: Colors.white,
+                size: 16,
+              ),
+            ],
+          ],
         ),
       ),
     );
