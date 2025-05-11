@@ -6,78 +6,85 @@ class VoteService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Vérifie si l'utilisateur a déjà voté pour un post
-  Future<bool> hasUserVoted(String postId) async {
+  Stream<bool> hasUserVoted(String postId) {
     final user = _auth.currentUser;
-    if (user == null) return false;
+    if (user == null) return Stream.value(false);
 
-    final doc = await _firestore
-        .collection('votes')
-        .doc('${postId}_${user.uid}')
-        .get();
-
-    return doc.exists;
-  }
-
-  // Enregistre le vote d'un utilisateur
-  Future<void> vote(String postId, String blocId) async {
-    final user = _auth.currentUser;
-    if (user == null) throw Exception('Utilisateur non connecté');
-
-    final voteId = '${postId}_${user.uid}';
-    
-    // Vérifie si l'utilisateur a déjà voté
-    final hasVoted = await hasUserVoted(postId);
-    if (hasVoted) throw Exception('Vous avez déjà voté');
-
-    // Utilisation d'un batch pour les opérations atomiques
-    final batch = _firestore.batch();
-    
-    // 1. Enregistre le vote
-    final voteRef = _firestore.collection('votes').doc(voteId);
-    batch.set(voteRef, {
-      'userId': user.uid,
-      'postId': postId,
-      'blocId': blocId,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-
-    // 2. Met à jour le compteur de votes pour le bloc
-    final blocRef = _firestore
+    return _firestore
         .collection('posts')
         .doc(postId)
-        .collection('blocs')
-        .doc(blocId);
-        
-    batch.update(blocRef, {
-      'votes': FieldValue.increment(1),
-    });
-
-    // Exécute le batch
-    await batch.commit();
+        .snapshots()
+        .map((doc) {
+          if (!doc.exists) return false;
+          final votes = List<Map<String, dynamic>>.from(doc.data()?['votes'] ?? []);
+          return votes.any((vote) => vote['userId'] == user.uid);
+        });
   }
 
+  // Enregistre un vote pour un bloc spécifique
+  Future<void> vote(String postId, String blocId, String userId) async {
+    final postRef = _firestore.collection('posts').doc(postId);
+    
+    // Utilisation d'une transaction pour assurer la cohérence des données
+    await _firestore.runTransaction((transaction) async {
+      // 1. Récupère le document ou crée-le s'il n'existe pas
+      final postDoc = await transaction.get(postRef);
+      
+      // Initialise les champs s'ils n'existent pas
+      if (!postDoc.exists) {
+        throw Exception('Le post n\'existe pas');
+      }
+      
+      // Récupère les votes existants ou initialise un tableau vide
+      final votes = List<Map<String, dynamic>>.from(postDoc.data()?['votes'] ?? []);
+      
+      // Vérifie si l'utilisateur a déjà voté pour ce post
+      if (votes.any((vote) => vote['userId'] == userId)) {
+        throw Exception('Vous avez déjà voté pour ce post');
+      }
+      
+      // 2. Ajoute le nouveau vote
+      votes.add({
+        'userId': userId,
+        'postId': postId,
+        'blocId': blocId,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      
+      // 3. Met à jour le compteur de votes pour le bloc
+      final blocs = List<Map<String, dynamic>>.from(postDoc.data()?['blocs'] ?? []);
+      final blocIndex = blocs.indexWhere((bloc) => bloc['id'] == blocId);
+      
+      if (blocIndex != -1) {
+        final currentVotes = (blocs[blocIndex]['votes'] as int?) ?? 0;
+        blocs[blocIndex] = {
+          ...blocs[blocIndex],
+          'votes': currentVotes + 1,
+        };
+      }
+      
+      // 4. Met à jour le document avec les nouvelles données
+      transaction.update(postRef, {
+        'votes': votes,
+        'blocs': blocs,
+      });
+    });
+  }
 
   // Récupère le nombre de votes pour un bloc
   Stream<int> getVoteCount(String postId, String blocId) {
     return _firestore
         .collection('posts')
         .doc(postId)
-        .collection('blocs')
-        .doc(blocId)
         .snapshots()
-        .map((doc) => (doc.data()?['votes'] as int?) ?? 0);
-  }
-
-  // Vérifie si l'utilisateur a voté pour un post
-  Stream<bool> getUserVoteStatus(String postId) {
-    final user = _auth.currentUser;
-    if (user == null) return Stream.value(false);
-
-    return _firestore
-        .collection('votes')
-        .where('userId', isEqualTo: user.uid)
-        .where('postId', isEqualTo: postId)
-        .snapshots()
-        .map((snapshot) => snapshot.docs.isNotEmpty);
+        .map((doc) {
+          if (!doc.exists) return 0;
+          final blocs = List<Map<String, dynamic>>.from(doc.data()?['blocs'] ?? []);
+          final bloc = blocs.firstWhere(
+            (bloc) => bloc['id'] == blocId,
+            orElse: () => {'votes': 0},
+          );
+          return (bloc['votes'] as int?) ?? 0;
+        });
   }
 }

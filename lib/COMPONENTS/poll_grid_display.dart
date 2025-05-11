@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:toplyke/COMPONENTS/image_vote_card.dart';
 import 'package:toplyke/SERVICES/vote_service.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PollGridDisplay extends StatefulWidget {
   final List<dynamic> blocs;
@@ -20,26 +23,33 @@ class PollGridDisplay extends StatefulWidget {
 }
 
 class _PollGridDisplayState extends State<PollGridDisplay> {
-  int? _tappedIndex;
+  int _tappedIndex = -1;
   bool _hasVoted = false;
   Map<String, int> _votes = {};
   late final VoteService _voteService;
+  final _auth = FirebaseAuth.instance;
+  late StreamSubscription<bool> _voteSubscription;
 
   @override
   void initState() {
     super.initState();
-    _voteService = context.read<VoteService>();
-    _checkVoteStatus();
+    _voteService = Provider.of<VoteService>(context, listen: false);
     _loadVotes();
+    
+    // Écouter les changements d'état de vote
+    _voteSubscription = _voteService.hasUserVoted(widget.postId).listen((hasVoted) {
+      if (mounted) {
+        setState(() {
+          _hasVoted = hasVoted;
+        });
+      }
+    });
   }
 
-  Future<void> _checkVoteStatus() async {
-    final hasVoted = await _voteService.hasUserVoted(widget.postId);
-    if (mounted) {
-      setState(() {
-        _hasVoted = hasVoted;
-      });
-    }
+  @override
+  void dispose() {
+    _voteSubscription.cancel();
+    super.dispose();
   }
 
   Future<void> _loadVotes() async {
@@ -75,8 +85,18 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
     try {
       final bloc = widget.blocs[index];
       final blocId = bloc['id'] ?? index.toString();
+      final userId = _auth.currentUser?.uid ?? ''; // Récupère l'ID de l'utilisateur connecté
       
-      await _voteService.vote(widget.postId, blocId);
+      if (userId.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Veuillez vous connecter pour voter')),
+          );
+        }
+        return;
+      }
+      
+      await _voteService.vote(widget.postId, blocId, userId);
       
       if (mounted) {
         setState(() {
@@ -89,7 +109,7 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
         Future.delayed(const Duration(milliseconds: 1000), () {
           if (mounted) {
             setState(() {
-              _tappedIndex = null;
+              _tappedIndex = -1;
             });
           }
         });
