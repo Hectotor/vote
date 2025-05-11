@@ -122,6 +122,9 @@ class _PostMenuState extends State<PostMenu> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final isOwner = currentUser?.uid == widget.userId;
+    
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert, color: Colors.white),
       onSelected: (String value) {
@@ -131,46 +134,59 @@ class _PostMenuState extends State<PostMenu> {
           _deleteService.deletePost(widget.postId, widget.userId, context);
         }
       },
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        PopupMenuItem<String>(
-          value: 'report',
-          child: Row(
-            children: [
-              Icon(
-                Icons.flag,
-                color: _isReported ? Colors.red : Colors.white,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                _isReported ? 'Annuler le signalement' : 'Signaler',
-                style: TextStyle(
+      itemBuilder: (BuildContext context) {
+        final items = <PopupMenuEntry<String>>[];
+        
+        // Toujours afficher l'option de signalement
+        items.add(
+          PopupMenuItem<String>(
+            value: 'report',
+            child: Row(
+              children: [
+                Icon(
+                  Icons.flag,
                   color: _isReported ? Colors.red : Colors.white,
-                  fontWeight: FontWeight.w500,
                 ),
-              ),
-            ],
-          ),
-        ),
-        PopupMenuItem<String>(
-          value: 'delete',
-          child: Row(
-            children: [
-              const Icon(
-                Icons.delete,
-                color: Colors.red,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Supprimer',
-                style: const TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.w500,
+                const SizedBox(width: 8),
+                Text(
+                  _isReported ? 'Annuler le signalement' : 'Signaler',
+                  style: TextStyle(
+                    color: _isReported ? Colors.red : Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        );
+        
+        // Afficher l'option de suppression uniquement si l'utilisateur est le propriétaire
+        if (isOwner) {
+          items.add(
+            PopupMenuItem<String>(
+              value: 'delete',
+              child: Row(
+                children: const [
+                  Icon(
+                    Icons.delete,
+                    color: Colors.red,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Supprimer',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        
+        return items;
+      },
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
