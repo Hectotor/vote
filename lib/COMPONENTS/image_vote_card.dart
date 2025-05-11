@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toplyke/COMPONENTS/heart_animation.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ImageVoteCard extends StatelessWidget {
   final dynamic bloc;
@@ -25,93 +26,101 @@ class ImageVoteCard extends StatelessWidget {
       aspectRatio: 1,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                // Image de fond
-                if (bloc['postImageUrl'] != null)
-                  Image.network(
-                    bloc['postImageUrl'],
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: double.infinity,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Image de fond avec cache
+            if (bloc['postImageUrl'] != null)
+              CachedNetworkImage(
+                imageUrl: bloc['postImageUrl'],
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                memCacheWidth: 500,
+                memCacheHeight: 500,
+                placeholder: (context, url) => Container(
+                  color: Colors.grey[200],
+                  child: const Center(
+                    child: CircularProgressIndicator(),
                   ),
-                
-                // Filtre de couleur
-                if (bloc['filterColor'] != null && bloc['filterColor'].toString().isNotEmpty)
-                  Container(
-                    color: Color(int.parse(bloc['filterColor'])).withOpacity(0.5),
-                  ),
-                
-                // Animation des cœurs
-                HeartAnimation(
-                  showHeart: showHeart,
-                  heartCount: heartCount,
-                  color: Colors.red,
                 ),
-                
-                // Texte
-                if (bloc['text'] != null && bloc['text'].isNotEmpty)
-                  Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(borderRadius),
-                          bottomRight: Radius.circular(borderRadius),
-                        ),
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withOpacity(0.0),
-                            Colors.black.withOpacity(0.8), 
-                          ],
-                        ),
-                      ),
-                      child: Text(
-                        bloc['text'],
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                          fontStyle: FontStyle.italic,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.error),
+                ),
+              ),
+            
+            // Filtre de couleur
+            if (bloc['filterColor'] != null && bloc['filterColor'].toString().isNotEmpty)
+              Container(
+                color: Color(int.parse(bloc['filterColor'])).withOpacity(0.5),
+              ),
+            
+            // Animation des cœurs
+            HeartAnimation(
+              showHeart: showHeart,
+              heartCount: heartCount,
+              color: Colors.red,
+            ),
+            
+            // Texte
+            if (bloc['text'] != null && bloc['text'].isNotEmpty)
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(borderRadius),
+                      bottomRight: Radius.circular(borderRadius),
+                    ),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.0),
+                        Colors.black.withOpacity(0.8), 
+                      ],
                     ),
                   ),
-                
-                // Pourcentage de votes
-                if (showPercentage && percentage != null)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${percentage!.toStringAsFixed(1)}%',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
+                  child: Text(
+                    bloc['text'],
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            
+            // Pourcentage de votes
+            if (showPercentage && percentage != null)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${percentage!.toStringAsFixed(1)}%',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
                     ),
                   ),
-              ],
-            );
-          },
+                ),
+              ),
+          ],
         ),
       ),
     );

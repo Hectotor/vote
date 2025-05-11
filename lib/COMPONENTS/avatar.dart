@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class Avatar extends StatefulWidget {
   final String userId;
@@ -22,23 +23,32 @@ class _AvatarState extends State<Avatar> {
   String? _profileImageUrl;
   Color? _filterColor;
 
-  Future<void> _loadUserData() async {
-    final doc = await _firestore.collection('users').doc(widget.userId).get();
-    final data = doc.data();
-    if (data != null) {
-      setState(() {
-        _profileImageUrl = data['profilePhotoUrl'];
-        if (data['filterColor'] != null) {
-          _filterColor = Color(data['filterColor']);
-        }
-      });
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final doc = await _firestore.collection('users').doc(widget.userId).get();
+      final data = doc.data();
+      
+      if (mounted) {
+        setState(() {
+          _profileImageUrl = data?['profilePhotoUrl'];
+          if (data?['filterColor'] != null) {
+            _filterColor = data?['filterColor'] is String 
+                ? Color(int.parse(data!['filterColor']))
+                : Color(data!['filterColor']);
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        debugPrint('Erreur lors du chargement de l\'avatar: $e');
+      }
+    }
   }
 
   @override
@@ -67,24 +77,25 @@ class _AvatarState extends State<Avatar> {
               ? Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.network(
-                      _profileImageUrl!,
+                    CachedNetworkImage(
+                      imageUrl: _profileImageUrl!,
                       fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Center(
-                          child: SizedBox(
-                            width: widget.radius / 1.5,
-                            height: widget.radius / 1.5,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
+                      memCacheWidth: (widget.radius * 2).toInt(),
+                      memCacheHeight: (widget.radius * 2).toInt(),
+                      placeholder: (context, url) => Center(
+                        child: SizedBox(
+                          width: widget.radius / 1.5,
+                          height: widget.radius / 1.5,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
                           ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.person, color: Colors.white54),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => const Icon(
+                        Icons.person,
+                        color: Colors.white54,
+                      ),
                     ),
                     if (_filterColor != null)
                       Container(

@@ -20,7 +20,7 @@ dependencies:
   firebase_storage: ^12.4.1
   firebase_auth: ^5.3.4
   image_cropper: ^8.1.0
-  cached_network_image: ^3.4.1
+  cached_network_image: ^3.3.0
   sensors_plus: ^6.1.1
   flutter_email_sender: ^7.0.0
   cloud_functions: ^5.5.0

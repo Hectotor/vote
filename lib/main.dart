@@ -2,13 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:toplyke/splash_screen.dart';
-//import 'package:toplyke/INSCRIPTION/inscription.dart';
-
-//import 'navBar.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/painting.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Configuration du cache d'images
+  final imageCache = PaintingBinding.instance.imageCache;
+  imageCache.maximumSizeBytes = 1024 * 1024 * 200; // 200MB de cache
+  
   await Firebase.initializeApp();
+  
+  // Désactive la rotation de l'écran
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  
   runApp(const MyApp());
 }
 
