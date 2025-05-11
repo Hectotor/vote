@@ -43,14 +43,28 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
   }
 
   Future<void> _loadVotes() async {
-    for (var bloc in widget.blocs) {
-      final votes = await _voteService
-          .getVoteCount(widget.postId, bloc['id'])
-          .first;
-      if (mounted) {
-        setState(() {
-          _votes[bloc['id']] = votes;
-        });
+    for (var i = 0; i < widget.blocs.length; i++) {
+      final bloc = widget.blocs[i];
+      final blocId = bloc['id'] ?? i.toString(); // Utiliser l'index comme ID si non défini
+      
+      try {
+        final votes = await _voteService
+            .getVoteCount(widget.postId, blocId)
+            .first;
+            
+        if (mounted) {
+          setState(() {
+            _votes[blocId] = votes;
+          });
+        }
+      } catch (e) {
+        debugPrint('Erreur lors du chargement des votes pour le bloc $i: $e');
+        // Initialiser à 0 en cas d'erreur
+        if (mounted) {
+          setState(() {
+            _votes[blocId] = 0;
+          });
+        }
       }
     }
   }
@@ -59,7 +73,9 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
     if (_hasVoted) return;
 
     try {
-      final blocId = widget.blocs[index]['id'];
+      final bloc = widget.blocs[index];
+      final blocId = bloc['id'] ?? index.toString();
+      
       await _voteService.vote(widget.postId, blocId);
       
       if (mounted) {
@@ -102,8 +118,8 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
                     bloc: widget.blocs[0],
                     showHeart: _tappedIndex == 0,
                     showPercentage: _hasVoted,
-                    percentage: _hasVoted && _votes[widget.blocs[0]['id']] != null
-                        ? (_votes[widget.blocs[0]['id']]! / _votes.values.fold(0, (a, b) => a + b)) * 100
+                    percentage: _hasVoted && _votes[widget.blocs[0]['id'] ?? '0'] != null
+                        ? (_votes[widget.blocs[0]['id'] ?? '0']! / _votes.values.fold(0, (a, b) => a + b)) * 100
                         : null,
                   ),
                 ),
@@ -116,8 +132,8 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
                     bloc: widget.blocs[1],
                     showHeart: _tappedIndex == 1,
                     showPercentage: _hasVoted,
-                    percentage: _hasVoted && _votes[widget.blocs[1]['id']] != null
-                        ? (_votes[widget.blocs[1]['id']]! / _votes.values.fold(0, (a, b) => a + b)) * 100
+                    percentage: _hasVoted && _votes[widget.blocs[1]['id'] ?? '1'] != null
+                        ? (_votes[widget.blocs[1]['id'] ?? '1']! / _votes.values.fold(0, (a, b) => a + b)) * 100
                         : null,
                   ),
                 ),
@@ -132,8 +148,8 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
               bloc: widget.blocs[2],
               showHeart: _tappedIndex == 2,
               showPercentage: _hasVoted,
-              percentage: _hasVoted && _votes[widget.blocs[2]['id']] != null
-                  ? (_votes[widget.blocs[2]['id']]! / _votes.values.fold(0, (a, b) => a + b)) * 100
+              percentage: _hasVoted && _votes[widget.blocs[2]['id'] ?? '2'] != null
+                  ? (_votes[widget.blocs[2]['id'] ?? '2']! / _votes.values.fold(0, (a, b) => a + b)) * 100
                   : null,
             ),
           ),
@@ -145,22 +161,27 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: widget.blocs.length <= 2 ? 2 : 
+                       widget.blocs.length == 3 ? 2 : 
+                       widget.blocs.length == 4 ? 2 : 3,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
+        childAspectRatio: 1.0,
       ),
       itemCount: widget.blocs.length,
       itemBuilder: (context, index) {
+        final bloc = widget.blocs[index];
+        final blocId = bloc['id'] ?? index.toString();
+        
         return GestureDetector(
           onTap: _hasVoted ? null : () => _handleVote(index),
           child: ImageVoteCard(
-            bloc: widget.blocs[index],
+            bloc: bloc,
             showHeart: _tappedIndex == index,
             showPercentage: _hasVoted,
-            percentage: _hasVoted && _votes[widget.blocs[index]['id']] != null
-                ? (_votes[widget.blocs[index]['id']]! / _votes.values.fold(0, (a, b) => a + b)) * 100
+            percentage: _hasVoted && _votes[blocId] != null
+                ? (_votes[blocId]! / _votes.values.fold(0, (a, b) => a + b)) * 100
                 : null,
           ),
         );

@@ -1,11 +1,21 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Collection posts
+    
     match /posts/{postId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
       allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      
+      // Sous-collection blocs
+      match /blocs/{blocId} {
+        // Lire : autorisé pour tous
+        allow read: if true;
+        // Mettre à jour le compteur de votes
+        allow update: if request.auth != null 
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes']);
+      }
     }
     
     // Collection comments
@@ -33,17 +43,21 @@ service cloud.firestore {
       allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
     
-    // Collection likes
     match /likes/{likeId} {
-      // Tout le monde peut lire
+      // Tous les utilisateurs (connectés ou non) peuvent lire les likes
       allow read: if true;
       
-      // Créer un like : uniquement si authentifié
-      allow create: if request.auth != null;
+      // Seul l'utilisateur connecté peut créer un like
+      allow create: if request.auth != null
+        && exists(/databases/$(database)/documents/posts/$(request.resource.data.postId));
       
-      // Supprimer un like : uniquement si propriétaire
+      // Seul l'utilisateur connecté peut mettre à jour son propre like
+      allow update: if request.auth != null
+        && exists(/databases/$(database)/documents/posts/$(request.resource.data.postId));
+      
+      // Seul l'utilisateur connecté peut supprimer son propre like
       allow delete: if request.auth != null
-        && request.auth.uid == resource.data.userId;
+        && exists(/databases/$(database)/documents/posts/$(resource.data.postId));
     }
     
     // Collection hashtags
@@ -69,9 +83,33 @@ service cloud.firestore {
     
     // Collection reports
     match /reports/{reportId} {
+      // Tous les utilisateurs (connectés ou non) peuvent lire les reports
       allow read: if true;
-      allow write: if request.auth != null;
-      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Seul l'utilisateur connecté peut créer un report
+      allow create: if request.auth != null && exists(/databases/$(database)/documents/posts/$(request.resource.data.postId));
+      // Seul l'utilisateur connecté peut mettre à jour son propre report
+      allow update: if request.auth != null && exists(/databases/$(database)/documents/posts/$(request.resource.data.postId));
+      // Seul l'utilisateur connecté peut supprimer son propre report ou admin
+      allow delete: if request.auth != null && 
+                    (resource.data.userId == request.auth.uid || request.auth.token.admin == true) && 
+                    exists(/databases/$(database)/documents/posts/$(resource.data.postId));
+    }
+    
+    match /votes/{voteId} {
+      // Tout le monde peut lire
+      allow read: if true;
+
+      // Créer un vote : uniquement si authentifié et si le post existe
+      allow create: if request.auth != null
+        && exists(/databases/$(database)/documents/posts/$(request.resource.data.postId));
+
+      // Mettre à jour un vote : uniquement si propriétaire
+      allow update: if request.auth != null
+        && request.auth.uid == resource.data.userId;
+
+      // Supprimer un vote : uniquement si propriétaire ou admin
+      allow delete: if request.auth != null
+        && (request.auth.uid == resource.data.userId || request.auth.token.admin == true);
     }
   }
 }
