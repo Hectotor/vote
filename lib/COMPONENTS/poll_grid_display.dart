@@ -66,20 +66,21 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
   }
 
   // Méthode ultra-simplifiée pour voter
-  void _handleVote(int index) {
-    // Ne rien faire si l'utilisateur a déjà voté
-    if (_hasVoted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vous avez déjà voté')),
-      );
-      return;
-    }
-    
+  Future<void> _handleVote(int index) async {
     // Vérifier que l'utilisateur est connecté
     final userId = _auth.currentUser?.uid;
     if (userId == null || userId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez vous connecter pour voter')),
+      );
+      return;
+    }
+    
+    // Vérifier si l'utilisateur a déjà voté
+    final hasVoted = await _voteService.hasUserVoted(widget.postId);
+    if (hasVoted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vous avez déjà voté pour ce post')),
       );
       return;
     }
@@ -93,7 +94,7 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
     });
     
     // Enregistrer le vote en arrière-plan
-    _voteService.vote(widget.postId, index.toString(), userId);
+    await _voteService.vote(widget.postId, index.toString(), userId);
     
     // Réinitialiser l'animation après un délai
     Future.delayed(const Duration(milliseconds: 1000), () {
@@ -101,6 +102,13 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
         setState(() {
           _tappedIndex = -1;
         });
+      }
+    });
+    
+    // Recharger les votes après un court délai pour s'assurer qu'ils sont à jour
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        _loadVotes();
       }
     });
   }

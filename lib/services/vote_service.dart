@@ -8,6 +8,13 @@ class VoteService {
   // Solution ultra-simplifiée: incrémenter directement le compteur de votes
   Future<void> vote(String postId, String blocId, String userId) async {
     try {
+      // Vérifier d'abord si l'utilisateur a déjà voté
+      final userVoteDoc = await _firestore.collection('userVotes').doc('$userId-$postId').get();
+      if (userVoteDoc.exists) {
+        print('L\'utilisateur a déjà voté pour ce post');
+        return;
+      }
+      
       // Convertir blocId en index numérique
       final index = int.tryParse(blocId) ?? 0;
       
@@ -45,6 +52,7 @@ class VoteService {
       await _firestore.collection('userVotes').doc('$userId-$postId').set({
         'userId': userId,
         'postId': postId,
+        'blocId': blocId, // Stocker aussi l'ID du bloc voté
         'timestamp': FieldValue.serverTimestamp()
       });
       
