@@ -5,7 +5,7 @@ import 'package:toplyke/splash_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/painting.dart';
 import 'package:provider/provider.dart';
-import 'package:toplyke/SERVICES/vote_service.dart';
+import 'package:toplyke/COMPONENTS/VOTE/vote_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +25,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        Provider<VoteService>(
+        ChangeNotifierProvider(
           create: (_) => VoteService(),
         ),
       ],
