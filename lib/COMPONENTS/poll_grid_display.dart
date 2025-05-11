@@ -23,7 +23,6 @@ class PollGridDisplay extends StatefulWidget {
 class _PollGridDisplayState extends State<PollGridDisplay> {
   int _tappedIndex = -1;
   bool _hasVoted = false;
-  Map<String, int> _votes = {};
   late final VoteService _voteService;
   final _auth = FirebaseAuth.instance;
 
@@ -32,7 +31,6 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
     super.initState();
     _voteService = Provider.of<VoteService>(context, listen: false);
     _checkVoteStatus();
-    _loadVotes();
   }
 
   // Vérifier si l'utilisateur a déjà voté
@@ -49,23 +47,7 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
     }
   }
 
-  // Charger les votes pour tous les blocs
-  Future<void> _loadVotes() async {
-    try {
-      // Récupérer tous les votes en une seule requête
-      final allVotes = await _voteService.getAllVoteCounts(widget.postId);
-      
-      if (mounted) {
-        setState(() {
-          _votes = allVotes;
-        });
-      }
-    } catch (e) {
-      print('Erreur lors du chargement des votes: $e');
-    }
-  }
-
-  // Méthode ultra-simplifiée pour voter
+  // Méthode pour voter
   Future<void> _handleVote(int index) async {
     // Vérifier que l'utilisateur est connecté
     final userId = _auth.currentUser?.uid;
@@ -89,8 +71,6 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
     setState(() {
       _tappedIndex = index;
       _hasVoted = true;
-      final blocId = index.toString();
-      _votes[blocId] = (_votes[blocId] ?? 0) + 1;
     });
     
     // Enregistrer le vote en arrière-plan
@@ -102,13 +82,6 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
         setState(() {
           _tappedIndex = -1;
         });
-      }
-    });
-    
-    // Recharger les votes après un court délai pour s'assurer qu'ils sont à jour
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        _loadVotes();
       }
     });
   }
@@ -126,85 +99,94 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
         );
       }
       
-      // Calcul sécurisé du pourcentage
-      double calculatePercentage(String blocId) {
-        try {
-          final totalVotes = _votes.values.fold(0, (a, b) => a + b);
-          if (totalVotes == 0) return 0;
-          return (_votes[blocId] ?? 0) / totalVotes * 100;
-        } catch (e) {
-          print('Erreur de calcul de pourcentage: $e');
-          return 0;
-        }
-      }
-      
-      // Créer une ImageVoteCard de manière sécurisée
-      Widget createVoteCard(int index) {
-        try {
-          final bloc = widget.blocs[index];
-          final blocId = index.toString();
+      // Utiliser StreamBuilder pour les mises à jour en temps réel
+      return StreamBuilder<Map<String, int>>(
+        stream: _voteService.watchVotes(widget.postId),
+        builder: (context, snapshot) {
+          // Utiliser les données du stream ou une Map vide par défaut
+          final votes = snapshot.data ?? {};
           
-          return GestureDetector(
-            onTap: _hasVoted ? null : () => _handleVote(index),
-            child: ImageVoteCard(
-              bloc: bloc,
-              showHeart: _tappedIndex == index,
-              showPercentage: _hasVoted,
-              percentage: _hasVoted ? calculatePercentage(blocId) : null,
-            ),
-          );
-        } catch (e) {
-          print('Erreur lors de la création de la carte de vote: $e');
-          return Container(
-            color: Colors.grey[800],
-            child: const Center(child: Icon(Icons.error, color: Colors.white)),
-          );
-        }
-      }
-      
-      // Affichage spécifique pour le type 'triple'
-      if (widget.type == 'triple' && widget.blocs.length >= 3) {
-        return Column(
-          children: [
-            // Ligne du haut avec 2 blocs
-            Row(
+          // Calcul sécurisé du pourcentage
+          double calculatePercentage(String blocId) {
+            try {
+              final totalVotes = votes.values.fold<int>(0, (a, b) => a + b);
+              if (totalVotes == 0) return 0;
+              return (votes[blocId] ?? 0) / totalVotes * 100;
+            } catch (e) {
+              print('Erreur de calcul de pourcentage: $e');
+              return 0;
+            }
+          }
+          
+          // Créer une ImageVoteCard de manière sécurisée
+          Widget createVoteCard(int index) {
+            try {
+              final bloc = widget.blocs[index];
+              final blocId = index.toString();
+              
+              return GestureDetector(
+                onTap: _hasVoted ? null : () => _handleVote(index),
+                child: ImageVoteCard(
+                  bloc: bloc,
+                  showHeart: _tappedIndex == index,
+                  showPercentage: _hasVoted,
+                  percentage: _hasVoted ? calculatePercentage(blocId) : null,
+                ),
+              );
+            } catch (e) {
+              print('Erreur lors de la création de la carte de vote: $e');
+              return Container(
+                color: Colors.grey[800],
+                child: const Center(child: Icon(Icons.error, color: Colors.white)),
+              );
+            }
+          }
+          
+          // Affichage spécifique pour le type 'triple'
+          if (widget.type == 'triple' && widget.blocs.length >= 3) {
+            return Column(
               children: [
-                Expanded(child: createVoteCard(0)),
-                const SizedBox(width: 8),
-                Expanded(child: createVoteCard(1)),
-              ],
-            ),
-            // Bloc du bas centré
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 2,
-                    child: createVoteCard(2),
+                // Ligne du haut avec 2 blocs
+                Row(
+                  children: [
+                    Expanded(child: createVoteCard(0)),
+                    const SizedBox(width: 8),
+                    Expanded(child: createVoteCard(1)),
+                  ],
+                ),
+                // Bloc du bas centré
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width / 2,
+                        child: createVoteCard(2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
+            );
+          }
+          
+          // Layout par défaut pour les autres types
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: widget.blocs.length <= 2 ? 2 : 
+                             widget.blocs.length == 3 ? 2 : 
+                             widget.blocs.length == 4 ? 2 : 3,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              childAspectRatio: 1.0,
             ),
-          ],
-        );
-      }
-      
-      // Layout par défaut pour les autres types
-      return GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: widget.blocs.length <= 2 ? 2 : 
-                         widget.blocs.length == 3 ? 2 : 
-                         widget.blocs.length == 4 ? 2 : 3,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-          childAspectRatio: 1.0,
-        ),
-        itemCount: widget.blocs.length,
-        itemBuilder: (context, index) => createVoteCard(index),
+            itemCount: widget.blocs.length,
+            itemBuilder: (context, index) => createVoteCard(index),
+          );
+        },
       );
     } catch (e) {
       print('Erreur globale dans PollGridDisplay: $e');

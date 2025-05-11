@@ -130,4 +130,35 @@ class VoteService {
       return {};
     }
   }
+
+  // Obtenir un Stream des votes en temps réel
+  Stream<Map<String, int>> watchVotes(String postId) {
+    return _firestore
+        .collection('posts')
+        .doc(postId)
+        .snapshots()
+        .map((doc) {
+      if (!doc.exists) return {};
+      
+      final data = doc.data();
+      if (data == null) return {};
+      
+      final blocs = data['blocs'];
+      if (blocs == null || !(blocs is List)) return {};
+      
+      final Map<String, int> voteCounts = {};
+      
+      for (var i = 0; i < blocs.length; i++) {
+        final bloc = blocs[i];
+        if (bloc == null || !(bloc is Map)) {
+          voteCounts[i.toString()] = 0;
+          continue;
+        }
+        
+        voteCounts[i.toString()] = (bloc['voteCount'] as num?)?.toInt() ?? 0;
+      }
+      
+      return voteCounts;
+    });
+  }
 }
