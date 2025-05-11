@@ -140,17 +140,27 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          // Ligne du bas avec 1 bloc
-          GestureDetector(
-            onTap: _hasVoted ? null : () => _handleVote(2),
-            child: ImageVoteCard(
-              bloc: widget.blocs[2],
-              showHeart: _tappedIndex == 2,
-              showPercentage: _hasVoted,
-              percentage: _hasVoted && _votes[widget.blocs[2]['id'] ?? '2'] != null
-                  ? (_votes[widget.blocs[2]['id'] ?? '2']! / _votes.values.fold(0, (a, b) => a + b)) * 100
-                  : null,
+          // Bloc du bas centré
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width / 2,
+                  child: GestureDetector(
+                    onTap: _hasVoted ? null : () => _handleVote(2),
+                    child: ImageVoteCard(
+                      bloc: widget.blocs[2],
+                      showHeart: _tappedIndex == 2,
+                      showPercentage: _hasVoted,
+                      percentage: _hasVoted && _votes[widget.blocs[2]['id'] ?? '2'] != null
+                          ? (_votes[widget.blocs[2]['id'] ?? '2']! / _votes.values.fold(0, (a, b) => a + b)) * 100
+                          : null,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
