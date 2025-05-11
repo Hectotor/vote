@@ -5,86 +5,121 @@ class VoteService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Vérifie si l'utilisateur a déjà voté pour un post
-  Stream<bool> hasUserVoted(String postId) {
-    final user = _auth.currentUser;
-    if (user == null) return Stream.value(false);
-
-    return _firestore
-        .collection('posts')
-        .doc(postId)
-        .snapshots()
-        .map((doc) {
-          if (!doc.exists) return false;
-          final votes = List<Map<String, dynamic>>.from(doc.data()?['votes'] ?? []);
-          return votes.any((vote) => vote['userId'] == user.uid);
-        });
-  }
-
-  // Enregistre un vote pour un bloc spécifique
+  // Solution ultra-simplifiée: incrémenter directement le compteur de votes
   Future<void> vote(String postId, String blocId, String userId) async {
-    final postRef = _firestore.collection('posts').doc(postId);
-    
-    // Utilisation d'une transaction pour assurer la cohérence des données
-    await _firestore.runTransaction((transaction) async {
-      // 1. Récupère le document ou crée-le s'il n'existe pas
-      final postDoc = await transaction.get(postRef);
+    try {
+      // Convertir blocId en index numérique
+      final index = int.tryParse(blocId) ?? 0;
       
-      // Initialise les champs s'ils n'existent pas
-      if (!postDoc.exists) {
-        throw Exception('Le post n\'existe pas');
+      // Récupérer le document pour préserver sa structure
+      final doc = await _firestore.collection('posts').doc(postId).get();
+      if (!doc.exists) {
+        print('Post non trouvé');
+        return;
       }
       
-      // Récupère les votes existants ou initialise un tableau vide
-      final votes = List<Map<String, dynamic>>.from(postDoc.data()?['votes'] ?? []);
-      
-      // Vérifie si l'utilisateur a déjà voté pour ce post
-      if (votes.any((vote) => vote['userId'] == userId)) {
-        throw Exception('Vous avez déjà voté pour ce post');
+      final data = doc.data();
+      if (data == null) {
+        print('Données du post vides');
+        return;
       }
       
-      // 2. Ajoute le nouveau vote
-      votes.add({
+      // Récupérer les blocs
+      final List<dynamic> blocs = List.from(data['blocs'] ?? []);
+      if (index >= blocs.length) {
+        print('Index de bloc invalide');
+        return;
+      }
+      
+      // Mettre à jour le compteur de votes du bloc
+      final Map<String, dynamic> bloc = Map<String, dynamic>.from(blocs[index]);
+      bloc['voteCount'] = (bloc['voteCount'] as num? ?? 0) + 1;
+      blocs[index] = bloc;
+      
+      // Mettre à jour le document avec la structure préservée
+      await _firestore.collection('posts').doc(postId).update({
+        'blocs': blocs
+      });
+      
+      // Marquer l'utilisateur comme ayant voté
+      await _firestore.collection('userVotes').doc('$userId-$postId').set({
         'userId': userId,
         'postId': postId,
-        'blocId': blocId,
-        'createdAt': FieldValue.serverTimestamp(),
+        'timestamp': FieldValue.serverTimestamp()
       });
       
-      // 3. Met à jour le compteur de votes pour le bloc
-      final blocs = List<Map<String, dynamic>>.from(postDoc.data()?['blocs'] ?? []);
-      final blocIndex = blocs.indexWhere((bloc) => bloc['id'] == blocId);
-      
-      if (blocIndex != -1) {
-        final currentVotes = (blocs[blocIndex]['votes'] as int?) ?? 0;
-        blocs[blocIndex] = {
-          ...blocs[blocIndex],
-          'votes': currentVotes + 1,
-        };
-      }
-      
-      // 4. Met à jour le document avec les nouvelles données
-      transaction.update(postRef, {
-        'votes': votes,
-        'blocs': blocs,
-      });
-    });
+      print('Vote enregistré avec succès');
+    } catch (e) {
+      print('Erreur lors du vote: $e');
+    }
   }
 
-  // Récupère le nombre de votes pour un bloc
-  Stream<int> getVoteCount(String postId, String blocId) {
-    return _firestore
-        .collection('posts')
-        .doc(postId)
-        .snapshots()
-        .map((doc) {
-          if (!doc.exists) return 0;
-          final blocs = List<Map<String, dynamic>>.from(doc.data()?['blocs'] ?? []);
-          final bloc = blocs.firstWhere(
-            (bloc) => bloc['id'] == blocId,
-            orElse: () => {'votes': 0},
-          );
-          return (bloc['votes'] as int?) ?? 0;
-        });
+  // Vérifier si l'utilisateur a déjà voté en utilisant une collection séparée
+  Future<bool> hasUserVoted(String postId) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+      
+      final doc = await _firestore.collection('userVotes').doc('${user.uid}-$postId').get();
+      return doc.exists;
+    } catch (e) {
+      print('Erreur lors de la vérification du vote: $e');
+      return false;
+    }
+  }
+
+  // Obtenir le nombre de votes pour un bloc spécifique
+  Future<int> getVoteCount(String postId, String blocId) async {
+    try {
+      final index = int.tryParse(blocId) ?? 0;
+      
+      final doc = await _firestore.collection('posts').doc(postId).get();
+      if (!doc.exists) return 0;
+      
+      final data = doc.data();
+      if (data == null) return 0;
+      
+      final blocs = data['blocs'];
+      if (blocs == null || !(blocs is List) || index >= blocs.length) return 0;
+      
+      final bloc = blocs[index];
+      if (bloc == null || !(bloc is Map)) return 0;
+      
+      return (bloc['voteCount'] as num?)?.toInt() ?? 0;
+    } catch (e) {
+      print('Erreur lors du comptage des votes: $e');
+      return 0;
+    }
+  }
+
+  // Obtenir tous les compteurs de votes pour un post
+  Future<Map<String, int>> getAllVoteCounts(String postId) async {
+    try {
+      final doc = await _firestore.collection('posts').doc(postId).get();
+      if (!doc.exists) return {};
+      
+      final data = doc.data();
+      if (data == null) return {};
+      
+      final blocs = data['blocs'];
+      if (blocs == null || !(blocs is List)) return {};
+      
+      final Map<String, int> voteCounts = {};
+      
+      for (var i = 0; i < blocs.length; i++) {
+        final bloc = blocs[i];
+        if (bloc == null || !(bloc is Map)) {
+          voteCounts[i.toString()] = 0;
+          continue;
+        }
+        
+        voteCounts[i.toString()] = (bloc['voteCount'] as num?)?.toInt() ?? 0;
+      }
+      
+      return voteCounts;
+    } catch (e) {
+      print('Erreur lors de la récupération des votes: $e');
+      return {};
+    }
   }
 }

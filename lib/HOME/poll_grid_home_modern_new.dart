@@ -13,12 +13,33 @@ class PollGridHomeModern extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PollGridDisplay(
-      blocs: blocs ?? [],
-      type: blocs?.length == 2 ? 'duel' : 
-            blocs?.length == 3 ? 'triple' :
-            blocs?.length == 4 ? 'quad' : 'custom',
-      postId: postId, 
-    );
+    // S'assurer que les blocs sont correctement formatés
+    final safeBlocs = blocs ?? [];
+    
+    // Déterminer le type en fonction du nombre de blocs
+    final type = safeBlocs.length == 2 ? 'duel' : 
+               safeBlocs.length == 3 ? 'triple' :
+               safeBlocs.length == 4 ? 'quad' : 'custom';
+    
+    // Envelopper dans un try-catch pour éviter les plantages
+    try {
+      return PollGridDisplay(
+        blocs: safeBlocs,
+        type: type,
+        postId: postId, 
+      );
+    } catch (e) {
+      print('Erreur dans PollGridHomeModern: $e');
+      // Retourner un widget de secours en cas d'erreur
+      return Container(
+        padding: const EdgeInsets.all(16),
+        child: const Center(
+          child: Text(
+            'Impossible d\'afficher ce sondage',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
   }
 }

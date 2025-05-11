@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:toplyke/COMPONENTS/image_vote_card.dart';
 import 'package:toplyke/SERVICES/vote_service.dart';
@@ -28,194 +26,189 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
   Map<String, int> _votes = {};
   late final VoteService _voteService;
   final _auth = FirebaseAuth.instance;
-  late StreamSubscription<bool> _voteSubscription;
 
   @override
   void initState() {
     super.initState();
     _voteService = Provider.of<VoteService>(context, listen: false);
+    _checkVoteStatus();
     _loadVotes();
-    
-    // Écouter les changements d'état de vote
-    _voteSubscription = _voteService.hasUserVoted(widget.postId).listen((hasVoted) {
+  }
+
+  // Vérifier si l'utilisateur a déjà voté
+  Future<void> _checkVoteStatus() async {
+    try {
+      final hasVoted = await _voteService.hasUserVoted(widget.postId);
       if (mounted) {
         setState(() {
           _hasVoted = hasVoted;
+        });
+      }
+    } catch (e) {
+      print('Erreur lors de la vérification du statut de vote: $e');
+    }
+  }
+
+  // Charger les votes pour tous les blocs
+  Future<void> _loadVotes() async {
+    try {
+      // Récupérer tous les votes en une seule requête
+      final allVotes = await _voteService.getAllVoteCounts(widget.postId);
+      
+      if (mounted) {
+        setState(() {
+          _votes = allVotes;
+        });
+      }
+    } catch (e) {
+      print('Erreur lors du chargement des votes: $e');
+    }
+  }
+
+  // Méthode ultra-simplifiée pour voter
+  void _handleVote(int index) {
+    // Ne rien faire si l'utilisateur a déjà voté
+    if (_hasVoted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vous avez déjà voté')),
+      );
+      return;
+    }
+    
+    // Vérifier que l'utilisateur est connecté
+    final userId = _auth.currentUser?.uid;
+    if (userId == null || userId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez vous connecter pour voter')),
+      );
+      return;
+    }
+    
+    // Mettre à jour l'interface immédiatement
+    setState(() {
+      _tappedIndex = index;
+      _hasVoted = true;
+      final blocId = index.toString();
+      _votes[blocId] = (_votes[blocId] ?? 0) + 1;
+    });
+    
+    // Enregistrer le vote en arrière-plan
+    _voteService.vote(widget.postId, index.toString(), userId);
+    
+    // Réinitialiser l'animation après un délai
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        setState(() {
+          _tappedIndex = -1;
         });
       }
     });
   }
 
   @override
-  void dispose() {
-    _voteSubscription.cancel();
-    super.dispose();
-  }
-
-  Future<void> _loadVotes() async {
-    for (var i = 0; i < widget.blocs.length; i++) {
-      final bloc = widget.blocs[i];
-      final blocId = bloc['id'] ?? i.toString(); // Utiliser l'index comme ID si non défini
+  Widget build(BuildContext context) {
+    try {
+      // Vérifier que les blocs sont valides
+      if (widget.blocs.isEmpty) {
+        return const Center(
+          child: Text(
+            'Aucun bloc à afficher',
+            style: TextStyle(color: Colors.white),
+          ),
+        );
+      }
       
-      try {
-        final votes = await _voteService
-            .getVoteCount(widget.postId, blocId)
-            .first;
-            
-        if (mounted) {
-          setState(() {
-            _votes[blocId] = votes;
-          });
-        }
-      } catch (e) {
-        debugPrint('Erreur lors du chargement des votes pour le bloc $i: $e');
-        // Initialiser à 0 en cas d'erreur
-        if (mounted) {
-          setState(() {
-            _votes[blocId] = 0;
-          });
+      // Calcul sécurisé du pourcentage
+      double calculatePercentage(String blocId) {
+        try {
+          final totalVotes = _votes.values.fold(0, (a, b) => a + b);
+          if (totalVotes == 0) return 0;
+          return (_votes[blocId] ?? 0) / totalVotes * 100;
+        } catch (e) {
+          print('Erreur de calcul de pourcentage: $e');
+          return 0;
         }
       }
-    }
-  }
-
-  Future<void> _handleVote(int index) async {
-    if (_hasVoted) return;
-
-    try {
-      final bloc = widget.blocs[index];
-      final blocId = bloc['id'] ?? index.toString();
-      final userId = _auth.currentUser?.uid ?? ''; // Récupère l'ID de l'utilisateur connecté
       
-      if (userId.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Veuillez vous connecter pour voter')),
+      // Créer une ImageVoteCard de manière sécurisée
+      Widget createVoteCard(int index) {
+        try {
+          final bloc = widget.blocs[index];
+          final blocId = index.toString();
+          
+          return GestureDetector(
+            onTap: _hasVoted ? null : () => _handleVote(index),
+            child: ImageVoteCard(
+              bloc: bloc,
+              showHeart: _tappedIndex == index,
+              showPercentage: _hasVoted,
+              percentage: _hasVoted ? calculatePercentage(blocId) : null,
+            ),
+          );
+        } catch (e) {
+          print('Erreur lors de la création de la carte de vote: $e');
+          return Container(
+            color: Colors.grey[800],
+            child: const Center(child: Icon(Icons.error, color: Colors.white)),
           );
         }
-        return;
       }
       
-      await _voteService.vote(widget.postId, blocId, userId);
-      
-      if (mounted) {
-        setState(() {
-          _tappedIndex = index;
-          _hasVoted = true;
-          _votes[blocId] = (_votes[blocId] ?? 0) + 1;
-        });
-
-        // Réinitialiser l'animation après un délai
-        Future.delayed(const Duration(milliseconds: 1000), () {
-          if (mounted) {
-            setState(() {
-              _tappedIndex = -1;
-            });
-          }
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (widget.type == 'triple' && widget.blocs.length >= 3) {
-      return Column(
-        children: [
-          // Ligne du haut avec 2 blocs
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: _hasVoted ? null : () => _handleVote(0),
-                  child: ImageVoteCard(
-                    bloc: widget.blocs[0],
-                    showHeart: _tappedIndex == 0,
-                    showPercentage: _hasVoted,
-                    percentage: _hasVoted && _votes[widget.blocs[0]['id'] ?? '0'] != null
-                        ? (_votes[widget.blocs[0]['id'] ?? '0']! / _votes.values.fold(0, (a, b) => a + b)) * 100
-                        : null,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: GestureDetector(
-                  onTap: _hasVoted ? null : () => _handleVote(1),
-                  child: ImageVoteCard(
-                    bloc: widget.blocs[1],
-                    showHeart: _tappedIndex == 1,
-                    showPercentage: _hasVoted,
-                    percentage: _hasVoted && _votes[widget.blocs[1]['id'] ?? '1'] != null
-                        ? (_votes[widget.blocs[1]['id'] ?? '1']! / _votes.values.fold(0, (a, b) => a + b)) * 100
-                        : null,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          // Bloc du bas centré
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+      // Affichage spécifique pour le type 'triple'
+      if (widget.type == 'triple' && widget.blocs.length >= 3) {
+        return Column(
+          children: [
+            // Ligne du haut avec 2 blocs
+            Row(
               children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width / 2,
-                  child: GestureDetector(
-                    onTap: _hasVoted ? null : () => _handleVote(2),
-                    child: ImageVoteCard(
-                      bloc: widget.blocs[2],
-                      showHeart: _tappedIndex == 2,
-                      showPercentage: _hasVoted,
-                      percentage: _hasVoted && _votes[widget.blocs[2]['id'] ?? '2'] != null
-                          ? (_votes[widget.blocs[2]['id'] ?? '2']! / _votes.values.fold(0, (a, b) => a + b)) * 100
-                          : null,
-                    ),
-                  ),
-                ),
+                Expanded(child: createVoteCard(0)),
+                const SizedBox(width: 8),
+                Expanded(child: createVoteCard(1)),
               ],
             ),
+            // Bloc du bas centré
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 2,
+                    child: createVoteCard(2),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      }
+      
+      // Layout par défaut pour les autres types
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: widget.blocs.length <= 2 ? 2 : 
+                         widget.blocs.length == 3 ? 2 : 
+                         widget.blocs.length == 4 ? 2 : 3,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          childAspectRatio: 1.0,
+        ),
+        itemCount: widget.blocs.length,
+        itemBuilder: (context, index) => createVoteCard(index),
+      );
+    } catch (e) {
+      print('Erreur globale dans PollGridDisplay: $e');
+      return Container(
+        padding: const EdgeInsets.all(16),
+        child: const Center(
+          child: Text(
+            'Impossible d\'afficher ce sondage',
+            style: TextStyle(color: Colors.white),
           ),
-        ],
+        ),
       );
     }
-    
-    // Layout par défaut pour les autres types
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: widget.blocs.length <= 2 ? 2 : 
-                       widget.blocs.length == 3 ? 2 : 
-                       widget.blocs.length == 4 ? 2 : 3,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 1.0,
-      ),
-      itemCount: widget.blocs.length,
-      itemBuilder: (context, index) {
-        final bloc = widget.blocs[index];
-        final blocId = bloc['id'] ?? index.toString();
-        
-        return GestureDetector(
-          onTap: _hasVoted ? null : () => _handleVote(index),
-          child: ImageVoteCard(
-            bloc: bloc,
-            showHeart: _tappedIndex == index,
-            showPercentage: _hasVoted,
-            percentage: _hasVoted && _votes[blocId] != null
-                ? (_votes[blocId]! / _votes.values.fold(0, (a, b) => a + b)) * 100
-                : null,
-          ),
-        );
-      },
-    );
   }
 }
