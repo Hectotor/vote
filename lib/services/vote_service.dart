@@ -38,9 +38,25 @@ class VoteService {
         return;
       }
       
-      // Mettre à jour le compteur de votes du bloc
+      // Mettre à jour le compteur de votes du bloc et le tableau votes
       final Map<String, dynamic> bloc = Map<String, dynamic>.from(blocs[index]);
-      bloc['voteCount'] = (bloc['voteCount'] as num? ?? 0) + 1;
+      
+      // Initialiser le tableau votes s'il n'existe pas
+      if (bloc['votes'] == null) {
+        bloc['votes'] = [];
+      } else if (bloc['votes'] is! List) {
+        bloc['votes'] = [];
+      }
+      
+      // S'assurer que l'utilisateur n'est pas déjà dans le tableau
+      if (!bloc['votes'].contains(userId)) {
+        bloc['votes'].add(userId);
+      }
+      
+      // Mettre à jour le voteCount pour qu'il corresponde à la longueur du tableau votes
+      bloc['voteCount'] = (bloc['votes'] as List).length;
+      
+      // Mettre à jour le bloc dans la liste
       blocs[index] = bloc;
       
       // Mettre à jour le document avec la structure préservée
