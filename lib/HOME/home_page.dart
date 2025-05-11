@@ -111,8 +111,8 @@ class _HomePageState extends State<HomePage> {
                             color: Colors.black,
                             border: Border(
                               bottom: BorderSide(
-                                color: const Color(0xFF2D3748),
-                                width: 4,
+                                color: Colors.grey[800]!,
+                                width: 0.5,
                               ),
                             ),
                           ),

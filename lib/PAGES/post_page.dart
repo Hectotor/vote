@@ -137,7 +137,7 @@ class _PostPageState extends State<PostPage> {
                           border: Border(
                             bottom: BorderSide(
                               color: Colors.grey[800]!,
-                              width: 1,
+                              width: 0.5,
                             ),
                           ),
                         ),
