@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'poll_grid_home.dart';
+import 'package:toplyke/HOME/poll_grid_home_modern_new.dart';
 import 'package:toplyke/COMPONENTS/post_header.dart';
 import 'package:toplyke/COMPONENTS/post_description.dart';
 import 'package:toplyke/COMPONENTS/post_actions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -141,15 +142,80 @@ class _HomePageState extends State<HomePage> {
 
                               // Grid de photos
                               if (post.blocs.isNotEmpty)
-                                PollGridHome(
-                                  images: post.blocs.map((bloc) => bloc.postImageUrl).toList(),
-                                  imageFilters: post.blocs.map((bloc) => bloc.filterColor ?? Colors.transparent).toList(),
-                                  numberOfBlocs: post.blocs.length,
-                                  textes: post.blocs.map((bloc) => bloc.text).toList(),
-                                  postId: post.postId,
-                                  voteCounts: post.blocs.map((bloc) => bloc.voteCount).toList(),
-                                  votes: post.blocs.map((bloc) => bloc.votes).toList(),
-                                  blocs: post.blocs.map((bloc) => bloc.toJson()).toList(),
+                                GestureDetector(
+                                  onTap: () async {
+                                    final user = FirebaseAuth.instance.currentUser;
+                                    if (user == null) {
+                                      print('Utilisateur non authentifié');
+                                      return;
+                                    }
+
+                                    // Trouver l'animation du cœur et la déclencher
+                                    final heartAnimationState = context.findRenderObject()?.paintBounds;
+                                    if (heartAnimationState != null) {
+                                      print('Animation du cœur trouvée');
+                                    }
+
+                                    try {
+                                      final postRef = _firestore.collection('posts').doc(post.postId);
+                                      final postDoc = await postRef.get();
+
+                                      if (!postDoc.exists) {
+                                        print('Post non trouvé');
+                                        return;
+                                      }
+
+                                      final postData = postDoc.data()!;
+                                      final blocs = postData['blocs'] as List<dynamic>;
+                                       
+                                      // Vérifier si l'utilisateur a déjà voté
+                                      bool hasVoted = false;
+                                      for (final bloc in blocs) {
+                                        final votes = bloc['votes'] as List<dynamic>? ?? [];
+                                        if (votes.contains(user.uid)) {
+                                          hasVoted = true;
+                                          break;
+                                        }
+                                      }
+
+                                      if (hasVoted) {
+                                        print('L\'utilisateur a déjà voté');
+                                        return;
+                                      }
+
+                                      // Mettre à jour le bloc
+                                      final updatedBloc = {
+                                        ...blocs[0],
+                                        'voteCount': (blocs[0]['voteCount'] as int? ?? 0) + 1,
+                                        'votes': [...(blocs[0]['votes'] as List<dynamic>? ?? []), user.uid],
+                                      };
+
+                                      // Mettre à jour le post
+                                      final updatedBlocs = [...blocs];
+                                      updatedBlocs[0] = updatedBloc;
+
+                                      await postRef.update({
+                                        'blocs': updatedBlocs,
+                                      });
+
+                                      print('Vote enregistré avec succès');
+                                    } catch (e) {
+                                      print('Erreur lors du vote: $e');
+                                    }
+                                  },
+                                  child: PollGridHomeModern(
+                                    images: post.blocs.map((b) => b.postImageUrl).toList(),
+                                    imageFilters: post.blocs.map((b) {
+                                      final color = b.filterColor;
+                                      return color != null ? color : Colors.transparent;
+                                    }).toList(),
+                                    textes: post.blocs.map((b) => b.text).toList(),
+                                    postId: post.postId,
+                                    numberOfBlocs: post.blocs.length,
+                                    voteCounts: post.blocs.map((b) => b.voteCount).toList(),
+                                    votes: post.blocs.map((b) => b.votes).toList(),
+                                    blocs: post.blocs.map((b) => b.toJson()).toList(),
+                                  ),
                                 ),
                               //const SizedBox(height: 16),
                               // Actions du post

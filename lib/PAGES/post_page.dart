@@ -4,7 +4,7 @@ import 'package:toplyke/COMPONENTS/post_header.dart';
 import 'package:toplyke/COMPONENTS/post_description.dart';
 import 'package:toplyke/COMPONENTS/post_actions.dart';
 import 'package:toplyke/COMPONENTS/Comment/comment_popup.dart';
-import 'package:toplyke/HOME/poll_grid_home.dart';
+import 'package:toplyke/HOME/poll_grid_home_modern_new.dart';
 import 'package:toplyke/COMPONENTS/Comment/comment_input.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -112,7 +112,7 @@ class _PostPageState extends State<PostPage> {
                       ),
                     ],
                   ),
-                PollGridHome(
+                PollGridHomeModern(
                   images: data['blocs'] is List
                     ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['postImageUrl'] as String?).toList()
                     : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['postImageUrl'] as String?).toList(),
