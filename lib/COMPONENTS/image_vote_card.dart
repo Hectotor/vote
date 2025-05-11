@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:toplyke/COMPONENTS/heart_animation.dart';
+import 'package:toplyke/COMPONENTS/VOTE/heart_animation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:toplyke/COMPONENTS/VOTE/vote_percentage_badge.dart';
 
 class ImageVoteCard extends StatelessWidget {
   final dynamic bloc;
@@ -101,25 +102,7 @@ class ImageVoteCard extends StatelessWidget {
             
             // Pourcentage de votes
             if (showPercentage && percentage != null)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${percentage!.toStringAsFixed(1)}%',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ),
+              VotePercentageBadge(percentage: percentage!),
           ],
         ),
       ),

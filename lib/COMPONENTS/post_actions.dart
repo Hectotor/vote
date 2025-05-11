@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:toplyke/PAGES/post_page.dart';
+import 'package:toplyke/HOME/post_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'Post/post_like_service.dart';
