@@ -166,7 +166,9 @@ class _HomePageState extends State<HomePage> {
                                       }
 
                                       final postData = postDoc.data()!;
-                                      final blocs = postData['blocs'] as List<dynamic>;
+                                      final blocs = postData['blocs'] is Map
+                                      ? (postData['blocs'] as Map<String, dynamic>).values.map<Map<String, dynamic>>((b) => Map<String, dynamic>.from(b)).toList()
+                                      : (postData['blocs'] as List<dynamic>).map<Map<String, dynamic>>((b) => Map<String, dynamic>.from(b)).toList();
                                        
                                       // Vérifier si l'utilisateur a déjà voté
                                       bool hasVoted = false;
@@ -204,17 +206,14 @@ class _HomePageState extends State<HomePage> {
                                     }
                                   },
                                   child: PollGridHomeModern(
-                                    images: post.blocs.map((b) => b.postImageUrl).toList(),
-                                    imageFilters: post.blocs.map((b) {
-                                      final color = b.filterColor;
-                                      return color != null ? color : Colors.transparent;
+                                    blocs: post.blocs.map((bloc) => {
+                                      'postImageUrl': bloc.postImageUrl,
+                                      'text': bloc.text,
+                                      'filterColor': bloc.filterColor?.value.toString(),
+                                      'voteCount': bloc.voteCount ?? 0,
+                                      'votes': bloc.votes ?? [],
                                     }).toList(),
-                                    textes: post.blocs.map((b) => b.text).toList(),
                                     postId: post.postId,
-                                    numberOfBlocs: post.blocs.length,
-                                    voteCounts: post.blocs.map((b) => b.voteCount).toList(),
-                                    votes: post.blocs.map((b) => b.votes).toList(),
-                                    blocs: post.blocs.map((b) => b.toJson()).toList(),
                                   ),
                                 ),
                               //const SizedBox(height: 16),

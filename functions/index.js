@@ -3,7 +3,7 @@ const { getFirestore } = require('firebase-admin/firestore');
 const { onDocumentDeleted } = require('firebase-functions/v2/firestore');
 const { https } = require('firebase-functions/v2');
 const deletePost = require('./delete_post');
-const { vote } = require('./vote_new');
+const voteModule = require('./vote_new');
 
 if (!getApps().length) {
   initializeApp();
@@ -25,5 +25,7 @@ exports.cleanupPostResources = onDocumentDeleted('posts/{postId}', async (event)
   return null;
 });
 
-// Exporter la nouvelle fonction de vote
-exports.vote = vote;
+// Exporter la nouvelle fonction de vote comme une fonction HTTP
+exports.vote = https.onCall((data, context) => {
+  return voteModule.vote(data, context);
+});

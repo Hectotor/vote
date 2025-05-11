@@ -66,6 +66,7 @@ class _PostPageState extends State<PostPage> {
   Widget build(BuildContext context) {
     final _mainScrollController = ScrollController();
     final _commentScrollController = ScrollController();
+    
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -90,80 +91,68 @@ class _PostPageState extends State<PostPage> {
           final post = snapshot.data!;
           final data = post.data() as Map<String, dynamic>;
 
-          return SingleChildScrollView(
-            controller: _mainScrollController,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                PostHeader(
-                  pseudo: data['pseudo'],
-                  profilePhotoUrl: data['profilePhotoUrl'],
-                  filterColor: data['filterColor'] != null ? (data['filterColor'] is String ? int.parse(data['filterColor']) : data['filterColor'] as int) : null,
-                  createdAt: data['createdAt'] != null ? data['createdAt'] as Timestamp : Timestamp.now(),
-                  postId: widget.postId,
-                  userId: data['userId'],
-                ),
-                if (data['description'] != null && data['description'].isNotEmpty)
-                  Column(
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                controller: _mainScrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      PostDescription(
+                      PostHeader(
                         pseudo: data['pseudo'],
-                        description: data['description'],
+                        profilePhotoUrl: data['profilePhotoUrl'],
+                        filterColor: data['filterColor'] != null ? (data['filterColor'] is String ? int.parse(data['filterColor']) : data['filterColor'] as int) : null,
+                        createdAt: data['createdAt'] != null ? data['createdAt'] as Timestamp : Timestamp.now(),
+                        postId: widget.postId,
+                        userId: data['userId'],
                       ),
+                      if (data['description'] != null && data['description'].isNotEmpty)
+                        Column(
+                          children: [
+                            PostDescription(
+                              pseudo: data['pseudo'],
+                              description: data['description'],
+                            ),
+                          ],
+                        ),
+                      PollGridHomeModern(
+                        blocs: data['blocs'] is Map
+                          ? (data['blocs'] as Map<String, dynamic>).values.map<Map<String, dynamic>>((bloc) => Map<String, dynamic>.from(bloc)).toList()
+                          : (data['blocs'] as List<dynamic>).map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e)).toList(),
+                        postId: data['postId'],
+                      ),
+                      PostActions(
+                        postId: widget.postId,
+                        userId: data['userId'],
+                        isCommentPage: true,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.grey[800]!,
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                      ),
+                      CommentPopup(
+                        postId: widget.postId,
+                        userId: data['userId'],
+                        scrollController: _commentScrollController,
+                      ),
+                      SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 300 : 0),
                     ],
                   ),
-                PollGridHomeModern(
-                  images: data['blocs'] is List
-                    ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['postImageUrl'] as String?).toList()
-                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['postImageUrl'] as String?).toList(),
-                  imageFilters: data['blocs'] is List
-                    ? (data['blocs'] as List<dynamic>).map((bloc) => 
-                        bloc['filterColor'] != null && bloc['filterColor'].toString() != '0'
-                            ? Color(int.parse(bloc['filterColor'].toString()))
-                            : Colors.transparent).toList()
-                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => 
-                        bloc['filterColor'] != null && bloc['filterColor'].toString() != '0'
-                            ? Color(int.parse(bloc['filterColor'].toString()))
-                            : Colors.transparent).toList(),
-                  numberOfBlocs: data['blocs'] is List ? (data['blocs'] as List).length : (data['blocs'] as Map).length,
-                  textes: data['blocs'] is List
-                    ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['text'] as String?).toList()
-                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['text'] as String?).toList(),
-                  postId: data['postId'],
-                  voteCounts: data['blocs'] is List
-                    ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['voteCount'] as int?).toList()
-                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['voteCount'] as int?).toList(),
-                  votes: data['blocs'] is List
-                    ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['votes'] as List<dynamic>? ?? []).toList()
-                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['votes'] as List<dynamic>? ?? []).toList(),
-                  blocs: data['blocs'] is List
-                    ? (data['blocs'] as List<dynamic>).map((bloc) => bloc as Map<String, dynamic>).toList()
-                    : (data['blocs'] as Map<String, dynamic>).entries.map((entry) => entry.value as Map<String, dynamic>).toList(),
                 ),
-                //const SizedBox(height: 6),
-                PostActions(
-                  postId: widget.postId,
-                  userId: data['userId'],
-                  isCommentPage: true,
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Colors.grey[800]!,
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                ),
-                CommentPopup(
-                  postId: widget.postId,
-                  userId: data['userId'],
-                  scrollController: _commentScrollController,
-                ),
-              ],
-            ),
+              );
+            },
           );
         },
       ),

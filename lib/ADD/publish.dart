@@ -64,18 +64,65 @@ class PublishService {
         'profilePhotoUrl': userData['profilePhotoUrl'],
         'filterColor': userData['filterColor'],
         'blocs': [],
+        'voteCount': 0,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
       // Mettre à jour le document avec son propre ID (pour faciliter les références)
       await postRef.update({'postId': postRef.id});
 
-      // Préparer les données des blocs avec l'ID du post
-      final blocData = await _prepareBlocData(images, imageFilters, textControllers, postRef.id);
+      final postId = postRef.id;
+      final List<Map<String, dynamic>> blocData = [];
 
-      // Mettre à jour le document avec les blocs qui ont des images
+      // Ne traiter que les images non null
+      for (int i = 0; i < images.length; i++) {
+        if (images[i] != null) {
+          final bloc = <String, dynamic>{};
+
+          // Enregistrer le texte, même s'il est vide
+          bloc['text'] = textControllers[i].text;
+
+          try {
+            print('Starting upload for image $i');
+            final imageUrl = await _uploadImage(images[i]!, postId);
+            bloc['postImageUrl'] = imageUrl;
+            bloc['filterColor'] = imageFilters[i].value == 0 ? null : imageFilters[i].value.toString();
+            bloc['voteCount'] = 0;  // Initialiser le compteur de votes
+            bloc['votes'] = [];  // Initialiser la liste des votes
+            print('Successfully uploaded image $i: $imageUrl');
+            
+            // Ajouter le bloc seulement s'il a une image
+            blocData.add(bloc);
+          } catch (e) {
+            print('Error uploading image $i: $e');
+            // Si une image échoue, on annule tout
+            await postRef.delete();
+            rethrow;
+          }
+        }
+      }
+
+      // Déterminer le type en fonction du nombre de blocs avec images
+      String type;
+      switch (blocData.length) {
+        case 2:
+          type = 'duel';
+          break;
+        case 3:
+          type = 'triple';
+          break;
+        case 4:
+          type = 'quad';
+          break;
+        default:
+          type = 'custom';
+      }
+
+      // Mettre à jour le post avec les données des blocs et le type
       await postRef.update({
         'blocs': blocData,
+        'type': type,
+        'voteCount': 0,
       });
 
       // Gérer les hashtags et mentions dans une transaction
@@ -104,46 +151,6 @@ class PublishService {
       _handlePublishError(context, e);
       return false;
     }
-  }
-
-  // Préparer les données des blocs
-  Future<List<Map<String, dynamic>>> _prepareBlocData(
-    List<XFile?> images, 
-    List<Color> imageFilters, 
-    List<TextEditingController> textControllers,
-    String? postId
-  ) async {
-    final List<Map<String, dynamic>> blocData = [];
-
-    // Ne traiter que les images non null
-    for (int i = 0; i < images.length; i++) {
-      if (images[i] != null) {
-        final bloc = <String, dynamic>{};
-
-        // Enregistrer le texte, même s'il est vide
-        bloc['text'] = textControllers[i].text;
-        bloc['order'] = i;  // Ajouter l'ordre d'enregistrement
-
-        try {
-          print('Starting upload for image $i');
-          final imageUrl = await _uploadImage(images[i]!, postId ?? '');
-          bloc['postImageUrl'] = imageUrl;
-          bloc['filterColor'] = imageFilters[i].value == 0 ? null : imageFilters[i].value.toString();
-          print('Successfully uploaded image $i: $imageUrl');
-          
-          // Ajouter le bloc seulement s'il a une image
-          blocData.add(bloc);
-        } catch (e) {
-          print('Error uploading image $i: $e');
-          // Si une image échoue, on annule tout
-          blocData.clear();
-          throw Exception('Échec de l\'upload d\'une image: $e');
-        }
-      }
-    }
-
-    print('Successfully prepared bloc data with ${blocData.length} blocs');
-    return blocData;
   }
 
   // Méthode pour compresser une image
