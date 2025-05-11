@@ -122,6 +122,7 @@ class PublishService {
 
         // Enregistrer le texte, même s'il est vide
         bloc['text'] = textControllers[i].text;
+        bloc['order'] = i;  // Ajouter l'ordre d'enregistrement
 
         try {
           print('Starting upload for image $i');

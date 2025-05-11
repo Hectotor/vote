@@ -119,28 +119,26 @@ class _PostPageState extends State<PostPage> {
                   imageFilters: data['blocs'] is List
                     ? (data['blocs'] as List<dynamic>).map((bloc) => 
                         bloc['filterColor'] != null && bloc['filterColor'].toString() != '0'
-                            ? Color(bloc['filterColor'] is String ? int.parse(bloc['filterColor']) : bloc['filterColor'] as int)
-                            : Colors.transparent
-                      ).toList()
-                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) {
-                        final filterColor = (bloc as Map<String, dynamic>)['filterColor'];
-                        return filterColor != null && filterColor.toString() != '0'
-                            ? Color(filterColor is String ? int.parse(filterColor) : filterColor as int)
-                            : Colors.transparent;
-                      }).toList(),
-                  numberOfBlocs: data['blocs'] is List
-                    ? (data['blocs'] as List<dynamic>).length
-                    : (data['blocs'] as Map<String, dynamic>).length,
+                            ? Color(int.parse(bloc['filterColor'].toString()))
+                            : Colors.transparent).toList()
+                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => 
+                        bloc['filterColor'] != null && bloc['filterColor'].toString() != '0'
+                            ? Color(int.parse(bloc['filterColor'].toString()))
+                            : Colors.transparent).toList(),
+                  numberOfBlocs: data['blocs'] is List ? (data['blocs'] as List).length : (data['blocs'] as Map).length,
                   textes: data['blocs'] is List
                     ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['text'] as String?).toList()
                     : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['text'] as String?).toList(),
-                  postId: widget.postId,
+                  postId: data['postId'],
                   voteCounts: data['blocs'] is List
                     ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['voteCount'] as int?).toList()
                     : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['voteCount'] as int?).toList(),
                   votes: data['blocs'] is List
-                    ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['votes'] as List<dynamic>?).toList()
-                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['votes'] as List<dynamic>?).toList(),
+                    ? (data['blocs'] as List<dynamic>).map((bloc) => bloc['votes'] as List<dynamic>? ?? []).toList()
+                    : (data['blocs'] as Map<String, dynamic>).values.map((bloc) => (bloc as Map<String, dynamic>)['votes'] as List<dynamic>? ?? []).toList(),
+                  blocs: data['blocs'] is List
+                    ? (data['blocs'] as List<dynamic>).map((bloc) => bloc as Map<String, dynamic>).toList()
+                    : (data['blocs'] as Map<String, dynamic>).entries.map((entry) => entry.value as Map<String, dynamic>).toList(),
                 ),
                 //const SizedBox(height: 6),
                 PostActions(

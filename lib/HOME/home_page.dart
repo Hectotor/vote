@@ -149,6 +149,7 @@ class _HomePageState extends State<HomePage> {
                                   postId: post.postId,
                                   voteCounts: post.blocs.map((bloc) => bloc.voteCount).toList(),
                                   votes: post.blocs.map((bloc) => bloc.votes).toList(),
+                                  blocs: post.blocs.map((bloc) => bloc.toJson()).toList(),
                                 ),
                               //const SizedBox(height: 16),
                               // Actions du post
@@ -214,4 +215,14 @@ class BlocData {
     this.voteCount,
     this.votes,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'postImageUrl': postImageUrl,
+      'text': text,
+      'filterColor': filterColor?.value,
+      'voteCount': voteCount,
+      'votes': votes,
+    };
+  }
 }
