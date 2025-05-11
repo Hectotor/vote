@@ -18,6 +18,7 @@ class PollGridHomeModern extends StatelessWidget {
       type: blocs?.length == 2 ? 'duel' : 
             blocs?.length == 3 ? 'triple' :
             blocs?.length == 4 ? 'quad' : 'custom',
+      postId: postId, 
     );
   }
 }

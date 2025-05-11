@@ -4,6 +4,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:toplyke/splash_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/painting.dart';
+import 'package:provider/provider.dart';
+import 'package:toplyke/SERVICES/vote_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +22,16 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<VoteService>(
+          create: (_) => VoteService(),
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

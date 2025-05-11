@@ -122,7 +122,6 @@ class PublishService {
       await postRef.update({
         'blocs': blocData,
         'type': type,
-        'voteCount': 0,
       });
 
       // Gérer les hashtags et mentions dans une transaction
