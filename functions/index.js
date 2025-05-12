@@ -1,9 +1,7 @@
 const { initializeApp, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const { onDocumentDeleted } = require('firebase-functions/v2/firestore');
-const { https } = require('firebase-functions/v2');
 const deletePost = require('./delete_post');
-const voteModule = require('./vote_new');
 
 if (!getApps().length) {
   initializeApp();
@@ -23,9 +21,4 @@ exports.cleanupPostResources = onDocumentDeleted('posts/{postId}', async (event)
   // Appel de la fonction de nettoyage définie dans delete_post.js
   await deletePost.cleanupPostResources(postId, postData);
   return null;
-});
-
-// Exporter la nouvelle fonction de vote comme une fonction HTTP
-exports.vote = https.onCall((data, context) => {
-  return voteModule.vote(data, context);
 });

@@ -60,6 +60,8 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
     // Mettre à jour l'interface immédiatement (optimiste)
     setState(() {
       _tappedIndex = index;
+      _hasVoted = true; // Marquer comme ayant voté immédiatement
+      _votedBlocId = index.toString(); // Enregistrer le bloc voté immédiatement
     });
     
     // Utiliser la méthode statique qui gère la redirection vers la page de connexion
@@ -69,10 +71,11 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
       index.toString()
     );
     
-    // Si le vote a réussi, mettre à jour l'état local
-    if (success) {
+    // Si le vote a échoué, annuler les changements d'état
+    if (!success && mounted) {
       setState(() {
-        _hasVoted = true;
+        _hasVoted = false;
+        _votedBlocId = null;
       });
     }
     

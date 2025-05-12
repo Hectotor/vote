@@ -1,15 +1,15 @@
 const admin = require('firebase-admin');
 
 /**
- * Fonction qui supprime toutes les ressources liu00e9es u00e0 un post
- * @param {string} postId - L'ID du post supprimu00e9
- * @param {object} postData - Les donnu00e9es du post supprimu00e9
+ * Fonction qui supprime toutes les ressources liées à un post
+ * @param {string} postId - L'ID du post supprimé
+ * @param {object} postData - Les données du post supprimé
  */
 async function cleanupPostResources(postId, postData) {
-  console.log(`Post ${postId} supprimu00e9, nettoyage des ressources associu00e9es...`);
+  console.log(`Post ${postId} supprimé, nettoyage des ressources associées...`);
   
   try {
-    // Supprimer les images du post dans Storage
+    // 1. Supprimer les images du post dans Storage
     if (postData.blocs && Array.isArray(postData.blocs)) {
       const deleteImagePromises = [];
       
@@ -17,7 +17,6 @@ async function cleanupPostResources(postId, postData) {
         if (bloc.postImageUrl) {
           try {
             console.log(`Suppression de l'image: ${bloc.postImageUrl}`);
-            // Obtenir la ru00e9fu00e9rence de l'image u00e0 partir de l'URL
             const imageRef = admin.storage().refFromURL(bloc.postImageUrl);
             deleteImagePromises.push(imageRef.delete());
           } catch (error) {
@@ -26,67 +25,78 @@ async function cleanupPostResources(postId, postData) {
         }
       }
       
-      // Attendre que toutes les suppressions d'images soient terminu00e9es
       await Promise.all(deleteImagePromises);
-      console.log('Toutes les images ont u00e9tu00e9 supprimu00e9es avec succu00e8s');
+      console.log('Toutes les images ont été supprimées avec succès');
     }
     
-    // Supprimer les commentaires associu00e9s
-    await deleteCollection('comments', 'postId', postId);
+    // 2. Supprimer les références dans les sous-collections des utilisateurs
+    const usersRef = admin.firestore().collection('users');
+    const usersSnapshot = await usersRef.get();
     
-    // Supprimer les likes associu00e9s
-    await deleteCollection('likes', 'postId', postId);
+    // Pour chaque utilisateur, supprimer les références au post
+    const userUpdatePromises = [];
     
-    // Supprimer les hashtags associu00e9s
-    await deleteCollection('hashtags', 'postId', postId);
+    usersSnapshot.forEach(userDoc => {
+      const userId = userDoc.id;
+      const userUpdateBatch = [];
+      
+      // Collections à nettoyer pour chaque utilisateur
+      const userCollections = [
+        'commentsPosts',    // Commentaires de l'utilisateur
+        'likedComments',    // Commentaires aimés
+        'likedPosts',       // Posts aimés
+        'reportedPosts',    // Posts signalés
+        'savedPosts',       // Posts enregistrés
+        'votes'            // Votes de l'utilisateur
+      ];
+      
+      // Ajouter les suppressions à la liste des promesses
+      userCollections.forEach(collection => {
+        const deletePromise = deleteUserSubcollection(userId, collection, 'postId', postId);
+        userUpdateBatch.push(deletePromise);
+      });
+      
+      userUpdatePromises.push(Promise.all(userUpdateBatch));
+    });
     
-    // Supprimer les mentions associu00e9es
-    await deleteCollection('mentions', 'postId', postId);
+    // Attendre que toutes les mises à jour utilisateur soient terminées
+    await Promise.all(userUpdatePromises);
+    console.log('Toutes les références utilisateur ont été supprimées');
     
-    // Supprimer les notifications associu00e9es
-    await deleteCollection('notifications', 'postId', postId);
-    
-    // Supprimer les rapports associu00e9s
-    await deleteCollection('reports', 'postId', postId);
-    
-    console.log(`Nettoyage complet pour le post ${postId} terminu00e9 avec succu00e8s`);
+    console.log(`Nettoyage complet pour le post ${postId} terminé avec succès`);
     return true;
   } catch (error) {
-    console.error(`Erreur lors du nettoyage des ressources pour le post ${postId}: ${error}`);
+    console.error(`Erreur lors du nettoyage des ressources pour le post ${postId}:`, error);
     return false;
   }
 }
 
 /**
- * Fonction utilitaire pour supprimer tous les documents d'une collection
- * qui correspondent u00e0 une requu00eate spu00e9cifique
- * @param {string} collectionName - Nom de la collection
- * @param {string} field - Champ u00e0 filtrer
- * @param {string} value - Valeur du champ u00e0 rechercher
+ * Supprime les documents d'une sous-collection utilisateur
  */
-async function deleteCollection(collectionName, field, value) {
+async function deleteUserSubcollection(userId, collectionName, field, value) {
   try {
     const snapshot = await admin.firestore()
+      .collection('users')
+      .doc(userId)
       .collection(collectionName)
       .where(field, '==', value)
       .get();
     
-    console.log(`Suppression de ${snapshot.size} documents dans ${collectionName}`);
+    if (snapshot.empty) return 0;
+    
+    console.log(`Suppression de ${snapshot.size} documents dans users/${userId}/${collectionName}`);
     
     const batch = admin.firestore().batch();
-    snapshot.docs.forEach((doc) => {
+    snapshot.docs.forEach(doc => {
       batch.delete(doc.ref);
     });
     
-    if (snapshot.size > 0) {
-      await batch.commit();
-      console.log(`${snapshot.size} documents supprimu00e9s de ${collectionName}`);
-    }
-    
-    return true;
+    await batch.commit();
+    return snapshot.size;
   } catch (error) {
-    console.error(`Erreur lors de la suppression des documents dans ${collectionName}: ${error}`);
-    return false;
+    console.error(`Erreur lors de la suppression dans users/*/${collectionName}:`, error);
+    return 0;
   }
 }
 
