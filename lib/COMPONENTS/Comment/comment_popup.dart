@@ -299,21 +299,24 @@ class _CommentItemState extends State<CommentItem> {
     
     setState(() {
       _isLiked = !_isLiked;
-      _likeCount = _isLiked ? _likeCount + 1 : _likeCount - 1;
+      _likeCount += _isLiked ? 1 : -1;
     });
 
     try {
+      // Passer l'ID de l'auteur du commentaire
       await _likeService.toggleLike(
         widget.comment['id'],
-        widget.comment['userId'],
+        widget.comment['userId'], // ID de l'auteur du commentaire
       );
     } catch (e) {
-      // En cas d'erreur, on annule le changement
-      setState(() {
-        _isLiked = !_isLiked;
-        _likeCount = _isLiked ? _likeCount - 1 : _likeCount + 1;
-      });
-      print('Erreur lors du like: $e');
+      print('Erreur lors du like du commentaire: $e');
+      // Revenir en arrière en cas d'erreur
+      if (mounted) {
+        setState(() {
+          _isLiked = !_isLiked;
+          _likeCount += _isLiked ? 1 : -1;
+        });
+      }
     }
   }
 

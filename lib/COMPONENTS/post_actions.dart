@@ -134,61 +134,39 @@ class _PostActionsState extends State<PostActions> {
           StreamBuilder<DocumentSnapshot>(
             stream: _firestore.collection('posts').doc(widget.postId).snapshots(),
             builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                final commentCount = (snapshot.data!.data() as Map<String, dynamic>?)?['commentCount'] ?? 0;
-                return Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.chat_bubble_outline,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                      onPressed: widget.isCommentPage
-                          ? null
-                          : () {
-                              Navigator.push(
-                                context,
-                                PageRouteBuilder(
-                                  pageBuilder: (context, animation1, animation2) => PostPage(
-                                    postId: widget.postId,
-                                  ),
-                                  transitionDuration: Duration.zero,
-                                  reverseTransitionDuration: Duration.zero,
+              final commentCount = (snapshot.data?.data() as Map<String, dynamic>?)?['commentCount'] ?? 0;
+              
+              return Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.chat_bubble_outline,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                    onPressed: widget.isCommentPage
+                        ? null
+                        : () {
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (context, animation1, animation2) => PostPage(
+                                  postId: widget.postId,
                                 ),
-                              );
-                            },
+                                transitionDuration: Duration.zero,
+                                reverseTransitionDuration: Duration.zero,
+                              ),
+                            );
+                          },
+                  ),
+                  if (snapshot.hasData) Text(
+                    '$commentCount',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
                     ),
-                    Text(
-                      '$commentCount',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                );
-              }
-              return IconButton(
-                icon: Icon(
-                  Icons.chat_bubble_outline,
-                  color: Colors.white,
-                  size: 24,
-                ),
-                onPressed: widget.isCommentPage
-                    ? null
-                    : () {
-                        Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation1, animation2) => PostPage(
-                              postId: widget.postId,
-                            ),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ),
-                        );
-                      },
+                  ),
+                ],
               );
             },
           ),
