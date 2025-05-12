@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'texte.dart';
 import 'addoption.dart';
+import 'image.dart';  // Import pour ImageFilterPage
 
 class PollGrid extends StatefulWidget {
   final List<XFile?> images;
@@ -68,74 +69,95 @@ class _PollGridState extends State<PollGrid> {
   }
 
   void _showAddOptionDialog(int index) {
+    // Créer un BuildContext local pour la navigation
+    final BuildContext currentContext = context;
+    
     showModalBottomSheet(
-      context: context,
+      context: currentContext,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AddOption(
           hasImage: widget.images[index] != null,
-          onAddPhoto: (XFile image, Color filterColor) {
-            // Utiliser le contexte du dialogue pour la navigation
-            Navigator.of(context).pop();
+          onAddPhoto: (XFile image, Color filterColor) async {
+            // Fermer le dialogue d'abord
+            Navigator.of(dialogContext).pop();
             
-            // Mettre à jour l'état du widget parent
-            if (mounted) {
-              setState(() {
-                widget.images[index] = image;
-                widget.imageFilters[index] = filterColor;
-              });
-              
-              // Appeler le callback de changement d'image
-              widget.onImageChange(index);
-              
-              // Trigger state update if callback is provided
-              widget.onStateUpdate?.call();
-            }
-          },
-          onTakePhoto: (XFile image, Color filterColor) {
-            // Utiliser le contexte du dialogue pour la navigation
-            Navigator.of(context).pop();
+            // Utiliser le contexte du widget parent pour la navigation vers ImageFilterPage
+            if (!mounted) return;
             
-            // Mettre à jour l'état du widget parent
-            if (mounted) {
-              setState(() {
-                widget.images[index] = image;
-                widget.imageFilters[index] = filterColor;
-              });
-              
-              // Appeler le callback de changement d'image
-              widget.onImageChange(index);
-              
-              // Trigger state update if callback is provided
-              widget.onStateUpdate?.call();
-            }
+            await Navigator.push(
+              currentContext,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => ImageFilterPage(
+                  image: image,
+                  onFilterSelected: (filteredImage, color) {
+                    // Mettre à jour l'état du widget parent
+                    if (mounted) {
+                      setState(() {
+                        widget.images[index] = filteredImage;
+                        widget.imageFilters[index] = color;
+                      });
+                      
+                      // Appeler le callback de changement d'image
+                      widget.onImageChange(index);
+                      
+                      // Trigger state update if callback is provided
+                      widget.onStateUpdate?.call();
+                    }
+                  },
+                ),
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero,
+              ),
+            );
           },
-          onAddText: () {
-            Navigator.of(context).pop();
-            if (mounted) {
-              setState(() {
-                _isTextVisible[index] = true;
-              });
-              
-              // Trigger state update if callback is provided
-              widget.onStateUpdate?.call();
-            }
+          onTakePhoto: (XFile image, Color filterColor) async {
+            // Fermer le dialogue d'abord
+            Navigator.of(dialogContext).pop();
+            
+            // Utiliser le contexte du widget parent pour la navigation vers ImageFilterPage
+            if (!mounted) return;
+            
+            await Navigator.push(
+              currentContext,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => ImageFilterPage(
+                  image: image,
+                  onFilterSelected: (filteredImage, color) {
+                    // Mettre à jour l'état du widget parent
+                    if (mounted) {
+                      setState(() {
+                        widget.images[index] = filteredImage;
+                        widget.imageFilters[index] = color;
+                      });
+                      
+                      // Appeler le callback de changement d'image
+                      widget.onImageChange(index);
+                      
+                      // Trigger state update if callback is provided
+                      widget.onStateUpdate?.call();
+                    }
+                  },
+                ),
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero,
+              ),
+            );
           },
-          onRemoveImage: () {
-            if (mounted) {
-              setState(() {
-                widget.images[index] = null;
-                widget.imageFilters[index] = Colors.transparent;
-              });
-              
-              // Appeler le callback de changement d'image
-              widget.onImageChange(index);
-              
-              // Trigger state update if callback is provided
-              widget.onStateUpdate?.call();
-            }
-          },
+          onRemoveImage: widget.images[index] != null
+              ? () {
+                  Navigator.of(dialogContext).pop();
+                  if (mounted) {
+                    setState(() {
+                      widget.images[index] = null;
+                      widget.imageFilters[index] = Colors.transparent;
+                      widget.onImageChange(index);
+                      widget.onStateUpdate?.call();
+                    });
+                  }
+                }
+              : null,
         );
       },
     );

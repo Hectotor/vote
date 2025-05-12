@@ -103,7 +103,7 @@ class MenuDelete {
 
       debugPrint('Début de la suppression du post $postId');
       
-      // Supprimer le post
+      // Supprimer le post - la Cloud Function s'occupera du nettoyage
       await _firestore.collection('posts').doc(postId).delete();
       
       // Afficher le message de succès

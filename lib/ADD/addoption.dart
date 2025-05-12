@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 
@@ -101,20 +100,23 @@ class AddOption extends StatelessWidget {
   Future<void> _pickAndProcessImage(BuildContext context, ImageSource source) async {
     try {
       final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: source);
+      final XFile? image = await picker.pickImage(
+        source: source,
+        imageQuality: 85,
+      );
 
-      if (pickedFile != null) {
+      if (image != null) {
+        // D'abord recadrer l'image
         final croppedFile = await ImageCropper().cropImage(
-          sourcePath: pickedFile.path,
-          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+          sourcePath: image.path,
+          aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
           uiSettings: [
             AndroidUiSettings(
               toolbarTitle: 'Recadrer l\'image',
-              toolbarColor: const Color(0xFF151019),
+              toolbarColor: const Color(0xFF3498DB),
               toolbarWidgetColor: Colors.white,
               initAspectRatio: CropAspectRatioPreset.square,
               lockAspectRatio: true,
-              activeControlsWidgetColor: Colors.white,  
             ),
             IOSUiSettings(
               title: 'Recadrer l\'image',
@@ -128,26 +130,23 @@ class AddOption extends StatelessWidget {
         if (croppedFile != null) {
           final imageFile = XFile(croppedFile.path);
           
-          // Utiliser une méthode statique pour gérer la navigation et le filtre
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ImageFilterPage(
-                image: imageFile,
-                onFilterSelected: (image, filterColor) {
-                  if (source == ImageSource.gallery && onAddPhoto != null) {
-                    onAddPhoto!(image, filterColor);
-                  } else if (source == ImageSource.camera && onTakePhoto != null) {
-                    onTakePhoto!(image, filterColor);
-                  }
-                },
-              ),
-            ),
-          );
+          // Appeler directement le callback approprié avec l'image recadrée
+          // Le filtre sera appliqué dans le widget parent
+          if (source == ImageSource.gallery && onAddPhoto != null) {
+            onAddPhoto!(imageFile, Colors.transparent);
+          } else if (source == ImageSource.camera && onTakePhoto != null) {
+            onTakePhoto!(imageFile, Colors.transparent);
+          }
         }
       }
     } catch (e) {
       print('Erreur lors de la sélection ou du traitement de l\'image: $e');
+      // Afficher un message d'erreur à l'utilisateur
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erreur lors du traitement de l\'image')),
+        );
+      }
     }
   }
 

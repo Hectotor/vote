@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 import 'description.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; // Import localization package
@@ -84,12 +85,14 @@ class _AddPageState extends State<AddPage> {
   }
 
   Future<void> _publishContent() async {
-    _isLoading.value = true; // Utiliser ValueNotifier
+    if (_isLoading.value) return; // Empêcher les clics multiples
+    
+    _isLoading.value = true; // Activer le chargement
 
     final description = _descriptionController.text;
     
     try {
-      // Use PublishService to publish content
+      // Utiliser PublishService pour publier le contenu
       final success = await _publishService.publishContent(
         description: description,
         images: _images,
@@ -98,13 +101,15 @@ class _AddPageState extends State<AddPage> {
         context: context,
       );
 
+      if (!mounted) return; // Vérifier si le widget est toujours monté
+
       if (success) {
-        // Show success message
+        // Afficher le message de succès
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Publication réussie')),
+          const SnackBar(content: Text('Publication réussie')),
         );
 
-        // Reset fields
+        // Réinitialiser les champs
         _descriptionController.clear();
         setState(() {
           _textWidgets.fillRange(0, _textWidgets.length, null);
@@ -114,23 +119,27 @@ class _AddPageState extends State<AddPage> {
           _mentions.clear();
         });
 
-        // Navigate to previous tab after a short delay
-        Future.delayed(const Duration(milliseconds: 500), () {
+        // Naviguer vers l'onglet précédent après un court délai
+        if (mounted) {
           Navigator.pop(context);
-        });
+        }
       } else {
         // Gérer l'erreur
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Échec de la publication')),
+          const SnackBar(content: Text('Échec de la publication')),
         );
-        _isLoading.value = false; // Utiliser ValueNotifier
       }
     } catch (e) {
       // Gérer l'erreur
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Échec de la publication')),
-      );
-      _isLoading.value = false; // Utiliser ValueNotifier
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Échec de la publication')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        _isLoading.value = false; // Désactiver le chargement dans tous les cas
+      }
     }
   }
 
@@ -164,136 +173,156 @@ class _AddPageState extends State<AddPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        toolbarHeight: 50,
+    return WillPopScope(
+      onWillPop: () async {
+        // Empêcher de quitter pendant le chargement
+        return !_isLoading.value;
+      },
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        centerTitle: true,
-        title: const Text(
-          'Crée ton vote',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: _cancel,
-        ),
-        actions: [
-          TextButton(
-            onPressed: _canPublish() ? _publishContent : null,
-            style: TextButton.styleFrom(
-              foregroundColor: _canPublish() ? const Color(0xFF3498DB) : Colors.white70,
-              padding: EdgeInsets.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text(
-              'Publier',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+        appBar: AppBar(
+          toolbarHeight: 50,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          surfaceTintColor: Colors.transparent,
+          centerTitle: true,
+          title: const Text(
+            'Crée ton vote',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
             ),
           ),
-        ],
-      ),
-      body: ValueListenableBuilder<bool>(
-        valueListenable: _isLoading,
-        builder: (context, isLoading, child) {
-          return Stack(
-            children: [
-              AbsorbPointer(
-                absorbing: isLoading,
-                child: child,
-              ),
-              if (isLoading)
-                Positioned.fill(
-                  child: Container(
-                    color: Colors.black.withOpacity(0.5),
-                    child: Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      ),
-                    ),
-                  ),
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+            ),
+            onPressed: _isLoading.value ? null : _cancel,
+          ),
+          actions: [
+            TextButton(
+              onPressed: _isLoading.value || !_canPublish() ? null : _publishContent,
+              style: TextButton.styleFrom(
+                foregroundColor: _canPublish() ? const Color(0xFF3498DB) : Colors.white70,
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
-            ],
-          );
-        },
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                child: Container(
-                  alignment: Alignment.center,
-                  color: Colors.transparent,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      DescriptionField(
-                        controller: _descriptionController,
-                        onTagsChanged: (hashtags, mentions) {
-                          setState(() {
-                            _hashtags = hashtags;
-                            _mentions = mentions;
-                          });
-                        },
-                      ),
-                      SizedBox(height: 10),
-                      PollGrid(
-                        images: _images,
-                        imageFilters: _imageFilters,
-                        numberOfBlocs: textControllers.length,
-                        textControllers: textControllers,
-                        onImageChange: (index) {
-                          _updateImageState(index);
-                        },
-                        onBlocRemoved: (index) {
-                          setState(() {
-                            // Supprimer uniquement le bloc à l'index spécifié
-                            if (index >= 2 && index < textControllers.length) {
-                              // Supprimer les éléments associés
-                              textControllers.removeAt(index);
-                              _images.removeAt(index);
-                              _imageFilters.removeAt(index);
-                            }
-                          });
-                        },
-                        onStateUpdate: () {
-                          setState(() {});
-                        },
-                      ),
-                      SizedBox(height: 26),
-                      BottomAddBloc(
-                        showPoll: true,
-                        numberOfPollBlocs: textControllers.length,
-                        onPressed: _addBloc,
-                      ),
-                    ],
-                  ),
+              ),
+              child: Text(
+                'Publier',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: _isLoading.value ? Colors.grey : null,
                 ),
               ),
             ),
           ],
+        ),
+        body: ValueListenableBuilder<bool>(
+          valueListenable: _isLoading,
+          builder: (context, isLoading, child) {
+            return Stack(
+              children: [
+                // Contenu principal avec désactivation pendant le chargement
+                AbsorbPointer(
+                  absorbing: isLoading,
+                  child: child!,
+                ),
+                
+                // Overlay de chargement avec flou
+                if (isLoading)
+                  Positioned.fill(
+                    child: BackdropFilter(
+                      filter: ui.ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                      child: Container(
+                        color: Colors.black.withOpacity(0.4),
+                        child: const Center(
+                          child: SizedBox(
+                            width: 30,
+                            height: 30,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+          child: Stack(
+            children: [
+              // Arrière-plan flou
+              BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                child: Container(
+                  color: Colors.black.withOpacity(0.1),
+                ),
+              ),
+              // Contenu principal
+              SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  child: Container(
+                    alignment: Alignment.center,
+                    color: Colors.transparent,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DescriptionField(
+                          controller: _descriptionController,
+                          onTagsChanged: (hashtags, mentions) {
+                            setState(() {
+                              _hashtags = hashtags;
+                              _mentions = mentions;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        PollGrid(
+                          images: _images,
+                          imageFilters: _imageFilters,
+                          numberOfBlocs: textControllers.length,
+                          textControllers: textControllers,
+                          onImageChange: (index) {
+                            _updateImageState(index);
+                          },
+                          onBlocRemoved: (index) {
+                            setState(() {
+                              // Supprimer uniquement le bloc à l'index spécifié
+                              if (index >= 2 && index < textControllers.length) {
+                                // Supprimer les éléments associés
+                                textControllers.removeAt(index);
+                                _images.removeAt(index);
+                                _imageFilters.removeAt(index);
+                              }
+                            });
+                          },
+                          onStateUpdate: () {
+                            setState(() {});
+                          },
+                        ),
+                        const SizedBox(height: 26),
+                        BottomAddBloc(
+                          showPoll: true,
+                          numberOfPollBlocs: textControllers.length,
+                          onPressed: _isLoading.value ? () {} : _addBloc,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
