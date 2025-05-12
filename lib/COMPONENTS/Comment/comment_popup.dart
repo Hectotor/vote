@@ -18,19 +18,19 @@ class CommentPopup extends StatefulWidget {
     this.scrollController,
   }) : super(key: key);
   
-  // Mu00e9thode publique statique pour ajouter un commentaire
+  // Méthode publique statique pour ajouter un commentaire
   static void addComment(String text) {
     // Utilise une fonction du State pour ajouter le commentaire
     _commentPopupGlobalKey.currentState?.addComment(text);
   }
   
-  // Clu00e9 globale pour accu00e9der au state depuis l'extu00e9rieur
+  // Clé globale pour accéder au state depuis l'extérieur
   static final GlobalKey<_CommentPopupState> _commentPopupGlobalKey = GlobalKey<_CommentPopupState>();
 
   @override
   State<CommentPopup> createState() => _CommentPopupState();
   
-  // Mu00e9thode factory pour cru00e9er une instance avec la clu00e9 globale
+  // Méthode factory pour créer une instance avec la clé globale
   factory CommentPopup.withGlobalKey({
     required String postId,
     required String userId,
@@ -355,12 +355,6 @@ class _CommentItemState extends State<CommentItem> {
                       ),
                     ),
                     const Spacer(),
-                    if (isCurrentUser)
-                      GestureDetector(
-                        onTap: () => widget.onDelete(widget.comment['id']),
-                        child: const Icon(Icons.delete, color: Colors.grey, size: 16),
-                      ),
-                    const SizedBox(width: 8),
                     Text(
                       _formatCommentDate(widget.comment['createdAt']),
                       style: const TextStyle(color: Colors.grey, fontSize: 12),
@@ -368,9 +362,20 @@ class _CommentItemState extends State<CommentItem> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  widget.comment['text'] ?? '',
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.comment['text'] ?? '',
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                    ),
+                    if (isCurrentUser)
+                      GestureDetector(
+                        onTap: () => widget.onDelete(widget.comment['id']),
+                        child: const Icon(Icons.delete, color: Colors.grey, size: 14),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Row(
