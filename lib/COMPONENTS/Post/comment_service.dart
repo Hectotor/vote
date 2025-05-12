@@ -74,7 +74,17 @@ class CommentService {
     }
   }
 
-  // Obtenir les commentaires d'un post
+  // Obtenir les commentaires d'un post (une seule fois)
+  Future<QuerySnapshot> getCommentsForPostOnce(String postId) {
+    return _firestore
+        .collectionGroup('commentsPosts')
+        .where('postId', isEqualTo: postId)
+        .orderBy('createdAt', descending: true)
+        .limit(50)
+        .get();
+  }
+
+  // Obtenir les commentaires d'un post (en temps réel)
   Stream<QuerySnapshot> getCommentsForPost(String postId) {
     return _firestore
         .collectionGroup('commentsPosts')

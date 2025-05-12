@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../INSCRIPTION/connexion_screen.dart';
 import '../../../COMPONENTS/avatar.dart';
-import '../../../COMPONENTS/date_formatter.dart';
-import '../../../COMPONENTS/Post/comment_service.dart';
 import 'like_service.dart';
+import '../Post/comment_service.dart';
+import '../../../COMPONENTS/date_formatter.dart' as formatter;
 
 class CommentPopup extends StatefulWidget {
   final String postId;
@@ -34,33 +33,6 @@ class _CommentPopupState extends State<CommentPopup> {
     super.dispose();
   }
 
-  void _handleLike(String commentId, String commentAuthorId) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const ConnexionPage(),
-          ),
-        );
-        return;
-      }
-
-      final likeService = LikeService();
-      await likeService.toggleLike(commentId, commentAuthorId);
-
-      setState(() {});
-    } catch (e) {
-      print('Erreur lors du like: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: ${e.toString()}')),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -83,8 +55,8 @@ class _CommentPopupState extends State<CommentPopup> {
   }
 
   Widget _buildCommentsList() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: _commentService.getCommentsForPost(widget.postId),
+    return FutureBuilder<QuerySnapshot>(
+      future: _commentService.getCommentsForPostOnce(widget.postId),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(child: Text('Erreur: ${snapshot.error}'));
@@ -120,7 +92,6 @@ class _CommentPopupState extends State<CommentPopup> {
                   'createdAt': (comment.data() as Map<String, dynamic>)['createdAt'],
                   'likeCount': (comment.data() as Map<String, dynamic>)['likeCount'] ?? 0,
                 },
-                onLike: () => _handleLike(comment.id, (comment.data() as Map<String, dynamic>)['userId']),
                 onDelete: (commentId) => _deleteComment(commentId, comment['postId']),
                 currentUserId: _auth.currentUser?.uid,
               ),
@@ -153,111 +124,183 @@ class _CommentPopupState extends State<CommentPopup> {
   }
 }
 
-class CommentItem extends StatelessWidget {
+class CommentItem extends StatefulWidget {
   final Map<String, dynamic> comment;
-  final VoidCallback onLike;
   final Function(String) onDelete;
   final String? currentUserId;
 
   const CommentItem({
     Key? key,
     required this.comment,
-    required this.onLike,
     required this.onDelete,
     this.currentUserId,
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final isCurrentUser = comment['userId'] == currentUserId;
+  _CommentItemState createState() => _CommentItemState();
+}
+
+class _CommentItemState extends State<CommentItem> {
+  bool _isLiked = false;
+  int _likeCount = 0;
+  bool _isLoading = true;
+  DocumentSnapshot? _userDoc;
+  final LikeService _likeService = LikeService();
+
+  @override
+  void initState() {
+    super.initState();
+    _likeCount = widget.comment['likeCount'] ?? 0;
+    _checkIfLiked();
+    _loadUserData();
+  }
+
+  Future<void> _checkIfLiked() async {
+    if (widget.currentUserId == null) return;
     
-    return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance
+    try {
+      final hasLiked = await _likeService.hasUserLiked(widget.comment['id']);
+      if (mounted) {
+        setState(() {
+          _isLiked = hasLiked;
+        });
+      }
+    } catch (e) {
+      print('Erreur lors de la vérification du like: $e');
+    }
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final userDoc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(comment['userId'])
-          .get(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(child: Text('Erreur: ${snapshot.error}'));
-        }
+          .doc(widget.comment['userId'])
+          .get();
+      
+      if (mounted) {
+        setState(() {
+          _userDoc = userDoc;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Erreur lors du chargement des données utilisateur: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
-        if (!snapshot.hasData) {
-          return const SizedBox.shrink();
-        }
+  Future<void> _toggleLike() async {
+    if (widget.currentUserId == null) return;
+    
+    setState(() {
+      _isLiked = !_isLiked;
+      _likeCount = _isLiked ? _likeCount + 1 : _likeCount - 1;
+    });
 
-        final userData = snapshot.data!.data() as Map<String, dynamic>? ?? {};
-        final pseudo = userData['pseudo'] ?? 'Utilisateur';
+    try {
+      await _likeService.toggleLike(
+        widget.comment['id'],
+        widget.comment['userId'],
+      );
+    } catch (e) {
+      // En cas d'erreur, on annule le changement
+      setState(() {
+        _isLiked = !_isLiked;
+        _likeCount = _isLiked ? _likeCount - 1 : _likeCount + 1;
+      });
+      print('Erreur lors du like: $e');
+    }
+  }
 
-        return Padding(
-          padding: const EdgeInsets.only(top: 16, bottom: 8, left: 8, right: 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Avatar(
-                userId: comment['userId'],
-                radius: 20,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const SizedBox.shrink();
+    }
+
+    final userData = _userDoc?.data() as Map<String, dynamic>? ?? {};
+    final pseudo = userData['pseudo'] ?? 'Utilisateur';
+    final isCurrentUser = widget.comment['userId'] == widget.currentUserId;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 8, left: 8, right: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Avatar(
+            userId: widget.comment['userId'],
+            radius: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            style: const TextStyle(color: Colors.white, fontSize: 14),
-                            children: [
-                              TextSpan(
-                                text: '$pseudo ',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ],
+                    RichText(
+                      text: TextSpan(
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        children: [
+                          TextSpan(
+                            text: '$pseudo ',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                        ),
-                        const Spacer(),
-                        if (isCurrentUser)
-                          GestureDetector(
-                            onTap: () => onDelete(comment['id']),
-                            child: const Icon(Icons.delete, color: Colors.grey, size: 16),
-                          ),
-                        const SizedBox(width: 8),
-                        Text(
-                          _formatCommentDate(comment['createdAt']),
-                          style: const TextStyle(color: Colors.grey, fontSize: 12),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    const Spacer(),
+                    if (isCurrentUser)
+                      GestureDetector(
+                        onTap: () => widget.onDelete(widget.comment['id']),
+                        child: const Icon(Icons.delete, color: Colors.grey, size: 16),
+                      ),
+                    const SizedBox(width: 8),
                     Text(
-                      comment['text'] ?? '',
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: onLike,
-                          child: Row(
-                            children: [
-                              const Icon(Icons.favorite_border, size: 16, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${comment['likeCount'] ?? 0}',
-                                style: const TextStyle(color: Colors.grey, fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                      _formatCommentDate(widget.comment['createdAt']),
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  widget.comment['text'] ?? '',
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: _toggleLike,
+                      child: Row(
+                        children: [
+                          Icon(
+                            _isLiked ? Icons.favorite : Icons.favorite_border,
+                            size: 16,
+                            color: _isLiked ? Colors.red : Colors.grey,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$_likeCount',
+                            style: TextStyle(
+                              color: _isLiked ? Colors.red : Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -267,12 +310,12 @@ class CommentItem extends StatelessWidget {
     
     try {
       if (date is Timestamp) {
-        return DateFormatter.formatDate(date.toDate());
+        return formatter.DateFormatter.formatDate(date.toDate());
       } else if (date is DateTime) {
-        return DateFormatter.formatDate(date);
+        return formatter.DateFormatter.formatDate(date);
       } else if (date is Map && date['_seconds'] != null) {
         // Cas où la date est un Timestamp sérialisé
-        return DateFormatter.formatDate(DateTime.fromMillisecondsSinceEpoch(
+        return formatter.DateFormatter.formatDate(DateTime.fromMillisecondsSinceEpoch(
           date['_seconds'] * 1000,
           isUtc: true,
         ));
