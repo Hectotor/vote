@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:toplyke/COMPONENTS/VOTE/heart_animation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:toplyke/COMPONENTS/VOTE/vote_percentage_badge.dart';
+import 'editable_text_card.dart';
 
 class ImageVoteCard extends StatelessWidget {
   final dynamic bloc;
@@ -87,17 +88,15 @@ class ImageVoteCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  child: Text(
-                    bloc['text'],
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      fontStyle: FontStyle.italic,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    child: EditableTextCard(
+                      initialText: bloc['text'],
+                      onTextChanged: (value) {
+                        // Mettre à jour le texte du bloc
+                        bloc['text'] = value;
+                      },
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),

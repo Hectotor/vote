@@ -37,7 +37,7 @@ class _TexteWidgetState extends State<TexteWidget> {
               ),
             )
           : null,
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: TextField(
           controller: widget.controller,
           autofocus: false,
@@ -45,7 +45,7 @@ class _TexteWidgetState extends State<TexteWidget> {
           textCapitalization: TextCapitalization.sentences,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 12,
+            fontSize: 20,
             fontWeight: FontWeight.w900,
             fontStyle: FontStyle.italic,
           ),
@@ -73,13 +73,13 @@ class _TexteWidgetState extends State<TexteWidget> {
         textCapitalization: TextCapitalization.sentences,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 12,
+          fontSize: 20,
           fontWeight: FontWeight.w900,
           fontStyle: FontStyle.italic,
         ),
         decoration: const InputDecoration(
           border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         ),
         cursorColor: Colors.white,
         keyboardType: TextInputType.multiline,
