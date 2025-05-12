@@ -144,17 +144,11 @@ class _PostActionsState extends State<PostActions> {
             ),
           ),
           const SizedBox(width: 16),
-          StreamBuilder<QuerySnapshot>(
-            stream: _firestore
-                .collection('comments')
-                .where('postId', isEqualTo: widget.postId)
-                .snapshots().handleError((error) {
-                  print('Erreur du stream de commentaires: $error');
-                  return const Stream.empty();
-                }),
+          StreamBuilder<DocumentSnapshot>(
+            stream: _firestore.collection('posts').doc(widget.postId).snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                final commentCount = snapshot.data!.docs.length;
+                final commentCount = (snapshot.data!.data() as Map<String, dynamic>?)?['commentCount'] ?? 0;
                 return Row(
                   children: [
                     IconButton(
