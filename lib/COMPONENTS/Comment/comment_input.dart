@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
+import '../../SERVICES/auth_redirect_service.dart';
 
 class CommentInput extends StatefulWidget {
   final TextEditingController controller;
   final VoidCallback onSend;
+  
+  /// Méthode statique pour envoyer un commentaire avec vérification d'authentification
+  static Future<bool> sendWithAuthCheck(BuildContext context, VoidCallback onSend) async {
+    return await AuthRedirectService.executeIfAuthenticated(
+      context,
+      () async {
+        onSend();
+        return true;
+      }
+    ) ?? false;
+  }
 
   const CommentInput({
     Key? key,
@@ -111,9 +123,10 @@ class _CommentInputState extends State<CommentInput> {
                       }
                     });
                   },
-                  onSubmitted: (text) {
+                  onSubmitted: (text) async {
                     if (!_isTextEmpty) {
-                      widget.onSend();
+                      // Vu00e9rifier l'authentification avant d'envoyer le commentaire
+                      await CommentInput.sendWithAuthCheck(context, widget.onSend);
                     }
                   },
                 ),
@@ -125,9 +138,10 @@ class _CommentInputState extends State<CommentInput> {
               ),
               onPressed: _isTextEmpty
                   ? null
-                  : () {
+                  : () async {
                       print('Bouton envoyer appuyé');
-                      widget.onSend();
+                      // Vérifier l'authentification avant d'envoyer le commentaire
+                      await CommentInput.sendWithAuthCheck(context, widget.onSend);
                     },
             ),
             const SizedBox(width: 4),

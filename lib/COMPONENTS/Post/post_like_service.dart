@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import '../../SERVICES/auth_redirect_service.dart';
 
 class PostLikeException implements Exception {
   final String message;
@@ -11,6 +13,20 @@ class PostUnauthenticatedException implements Exception {}
 class PostLikeService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  
+  /// Mu00e9thode statique pour gu00e9rer le like avec redirection vers la page de connexion si l'utilisateur n'est pas connectu00e9
+  /// Retourne true si l'action a u00e9tu00e9 effectuu00e9e, false si l'utilisateur a u00e9tu00e9 redirigé vers la page de connexion
+  static Future<bool> likeWithAuthCheck(BuildContext context, String postId) async {
+    // Utiliser le service d'authentification pour vu00e9rifier si l'utilisateur est connectu00e9
+    return await AuthRedirectService.executeIfAuthenticated(
+      context, 
+      () async {
+        final service = PostLikeService();
+        await service.togglePostLike(postId);
+        return true;
+      }
+    ) ?? false;
+  }
 
   Future<void> togglePostLike(String postId) async {
     final user = _auth.currentUser;

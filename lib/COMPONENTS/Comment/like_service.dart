@@ -1,9 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import '../../SERVICES/auth_redirect_service.dart';
 
 class LikeService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  
+  /// Méthode statique pour gérer le like avec redirection vers la page de connexion si l'utilisateur n'est pas connecté
+  /// Retourne true si l'action a été effectuée, false si l'utilisateur a été redirigé vers la page de connexion
+  static Future<bool> likeWithAuthCheck(BuildContext context, String commentId, String commentAuthorId) async {
+    // Utiliser le service d'authentification pour vérifier si l'utilisateur est connecté
+    return await AuthRedirectService.executeIfAuthenticated(
+      context, 
+      () async {
+        final service = LikeService();
+        await service.toggleLike(commentId, commentAuthorId);
+        return true;
+      }
+    ) ?? false;
+  }
 
   /// Ajoute ou supprime un like sur un commentaire
   /// 

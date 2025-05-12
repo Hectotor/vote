@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:toplyke/COMPONENTS/image_vote_card.dart';
 import 'package:toplyke/COMPONENTS/VOTE/vote_service.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class PollGridDisplay extends StatefulWidget {
   final List<dynamic> blocs;
@@ -25,7 +24,6 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
   bool _hasVoted = false;
   String? _votedBlocId;
   late final VoteService _voteService;
-  final _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
@@ -59,32 +57,24 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
 
   // Méthode pour voter
   Future<void> _handleVote(int index) async {
-    // Vérifier que l'utilisateur est connecté
-    final userId = _auth.currentUser?.uid;
-    if (userId == null || userId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez vous connecter pour voter')),
-      );
-      return;
-    }
-    
-    // Vérifier si l'utilisateur a déjà voté
-    final hasVoted = await _voteService.hasUserVoted(widget.postId);
-    if (hasVoted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vous avez déjà voté pour ce post')),
-      );
-      return;
-    }
-    
-    // Mettre à jour l'interface immédiatement
+    // Mettre à jour l'interface immédiatement (optimiste)
     setState(() {
       _tappedIndex = index;
-      _hasVoted = true;
     });
     
-    // Enregistrer le vote en arrière-plan
-    await _voteService.vote(widget.postId, index.toString(), userId);
+    // Utiliser la méthode statique qui gère la redirection vers la page de connexion
+    final success = await VoteService.voteWithAuthCheck(
+      context, 
+      widget.postId, 
+      index.toString()
+    );
+    
+    // Si le vote a réussi, mettre à jour l'état local
+    if (success) {
+      setState(() {
+        _hasVoted = true;
+      });
+    }
     
     // Réinitialiser l'animation après un délai
     Future.delayed(const Duration(milliseconds: 1000), () {

@@ -1,10 +1,40 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import '../../SERVICES/auth_redirect_service.dart';
 
 class VoteService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  
+  /// Méthode statique pour gérer le vote avec redirection vers la page de connexion si l'utilisateur n'est pas connecté
+  /// Retourne true si l'action a été effectuée, false si l'utilisateur a été redirigé vers la page de connexion
+  static Future<bool> voteWithAuthCheck(BuildContext context, String postId, String blocId) async {
+    // Utiliser le service d'authentification pour vérifier si l'utilisateur est connecté
+    return await AuthRedirectService.executeIfAuthenticated(
+      context, 
+      () async {
+        final userId = FirebaseAuth.instance.currentUser?.uid;
+        if (userId == null) return false;
+        
+        // Vérifier si l'utilisateur a déjà voté
+        final voteService = VoteService();
+        final hasVoted = await voteService.hasUserVoted(postId);
+        
+        if (hasVoted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Vous avez déjà voté pour ce post'))
+          );
+          return false;
+        }
+        
+        // Enregistrer le vote
+        await voteService.vote(postId, blocId, userId);
+        return true;
+      }
+    ) ?? false;
+  }
 
   // Solution ultra-simplifiée: incrémenter directement le compteur de votes
   Future<void> vote(String postId, String blocId, String userId) async {

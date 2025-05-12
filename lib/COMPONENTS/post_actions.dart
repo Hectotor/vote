@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toplyke/HOME/post_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'Post/post_like_service.dart';
-import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
 import 'package:toplyke/SERVICES/post_save_service.dart';
 import 'dart:async';
 
@@ -88,14 +86,15 @@ class _PostActionsState extends State<PostActions> {
 
   Future<void> _toggleSave() async {
     if (!mounted) return;
-    try {
-      await _postSaveService.toggleSavePost(widget.postId);
-      if (!mounted) return;
+    
+    // Utiliser la mu00e9thode statique qui gu00e8re la redirection vers la page de connexion
+    final success = await PostSaveService.saveWithAuthCheck(context, widget.postId);
+    
+    // Si l'action a ru00e9ussi, mettre u00e0 jour l'interface
+    if (success && mounted) {
       setState(() {
         _isPostSaved = !_isPostSaved;
       });
-    } catch (e) {
-      debugPrint('Error toggling save: $e');
     }
   }
 
@@ -111,29 +110,17 @@ class _PostActionsState extends State<PostActions> {
               color: _isPostLiked ? Colors.red : Colors.white,
               size: 28,
             ),
-            onPressed: () {
-              if (FirebaseAuth.instance.currentUser == null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ConnexionPage(),
-                  ),
-                );
-                return;
-              }
-
-              _postLikeService.togglePostLike(widget.postId).then((_) {
-                if (!mounted) return;
+            onPressed: () async {
+              // Utiliser la mu00e9thode statique qui gu00e8re la redirection vers la page de connexion
+              final success = await PostLikeService.likeWithAuthCheck(context, widget.postId);
+              
+              // Si l'action a ru00e9ussi, mettre u00e0 jour l'interface
+              if (success && mounted) {
                 setState(() {
                   _isPostLiked = !_isPostLiked;
                   _likeCount = _isPostLiked ? _likeCount + 1 : _likeCount - 1;
                 });
-              }).catchError((e) {
-                print('Erreur lors du like: $e');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Erreur: ${e.toString()}')),
-                );
-              });
+              }
             },
           ),
           Text(
