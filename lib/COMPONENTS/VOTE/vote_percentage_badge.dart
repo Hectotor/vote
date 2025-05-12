@@ -17,6 +17,13 @@ class VotePercentageBadge extends StatelessWidget {
     this.fontSize,
     this.showHeart = false,
   }) : super(key: key);
+  
+  // Retourne une couleur basée sur le pourcentage
+  Color _getColorByPercentage(double p) {
+    if (p >= 75) return Color(0xFF4CAF50); // Vert
+    if (p >= 50) return Color(0xFFFFA726); // Orange
+    return Color(0xFFEF5350);              // Rouge doux
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,16 +42,16 @@ class VotePercentageBadge extends StatelessWidget {
             Text(
               '${percentage.toStringAsFixed(1)}%',
               style: TextStyle(
-                color: textColor ?? Colors.white,
+                color: showHeart ? _getColorByPercentage(percentage) : (textColor ?? Colors.white),
                 fontWeight: FontWeight.bold,
                 fontSize: fontSize ?? 20,
               ),
             ),
             if (showHeart) ...[
               const SizedBox(width: 4),
-              const Icon(
+              Icon(
                 Icons.favorite,
-                color: Colors.white,
+                color: _getColorByPercentage(percentage),
                 size: 16,
               ),
             ],
