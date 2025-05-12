@@ -17,15 +17,125 @@ class CommentPopup extends StatefulWidget {
     required this.userId,
     this.scrollController,
   }) : super(key: key);
+  
+  // Mu00e9thode publique statique pour ajouter un commentaire
+  static void addComment(String text) {
+    // Utilise une fonction du State pour ajouter le commentaire
+    _commentPopupGlobalKey.currentState?.addComment(text);
+  }
+  
+  // Clu00e9 globale pour accu00e9der au state depuis l'extu00e9rieur
+  static final GlobalKey<_CommentPopupState> _commentPopupGlobalKey = GlobalKey<_CommentPopupState>();
 
   @override
   State<CommentPopup> createState() => _CommentPopupState();
+  
+  // Mu00e9thode factory pour cru00e9er une instance avec la clu00e9 globale
+  factory CommentPopup.withGlobalKey({
+    required String postId,
+    required String userId,
+    ScrollController? scrollController,
+  }) {
+    return CommentPopup(
+      key: _commentPopupGlobalKey,
+      postId: postId,
+      userId: userId,
+      scrollController: scrollController,
+    );
+  }
 }
 
 class _CommentPopupState extends State<CommentPopup> {
   final TextEditingController _commentController = TextEditingController();
   final CommentService _commentService = CommentService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  
+  List<Map<String, dynamic>> _comments = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadComments();
+  }
+
+  Future<void> _loadComments() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final snapshot = await _commentService.getCommentsForPostOnce(widget.postId);
+      
+      if (mounted) {
+        setState(() {
+          _comments = snapshot.docs.map((doc) => {
+            'id': doc.id,
+            'postId': (doc.data() as Map<String, dynamic>)['postId'],
+            'userId': (doc.data() as Map<String, dynamic>)['userId'],
+            'text': (doc.data() as Map<String, dynamic>)['text'],
+            'createdAt': (doc.data() as Map<String, dynamic>)['createdAt'],
+            'likeCount': (doc.data() as Map<String, dynamic>)['likeCount'] ?? 0,
+          }).toList();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Erreur lors du chargement des commentaires: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  // Ajouter un commentaire localement puis sur le serveur
+  Future<void> addComment(String text) async {
+    if (text.trim().isEmpty) return;
+    
+    final user = _auth.currentUser;
+    if (user == null) return;
+    
+    // Créer un commentaire temporaire
+    final tempComment = {
+      'id': 'temp_${DateTime.now().millisecondsSinceEpoch}',
+      'postId': widget.postId,
+      'userId': user.uid,
+      'text': text,
+      'createdAt': DateTime.now(),
+      'likeCount': 0,
+    };
+    
+    // Ajouter localement
+    setState(() {
+      _comments.insert(0, tempComment);
+    });
+    
+    try {
+      // Envoyer au serveur
+      await _commentService.addComment(
+        postId: widget.postId,
+        text: text,
+      );
+      
+      // Optionnel: rafraîchir les commentaires pour avoir l'ID réel
+      // _loadComments();
+    } catch (e) {
+      print('Erreur lors de l\'ajout du commentaire: $e');
+      
+      // Supprimer le commentaire temporaire en cas d'erreur
+      if (mounted) {
+        setState(() {
+          _comments.removeWhere((c) => c['id'] == tempComment['id']);
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: ${e.toString()}'))
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -55,53 +165,40 @@ class _CommentPopupState extends State<CommentPopup> {
   }
 
   Widget _buildCommentsList() {
-    return FutureBuilder<QuerySnapshot>(
-      future: _commentService.getCommentsForPostOnce(widget.postId),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(child: Text('Erreur: ${snapshot.error}'));
-        }
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    if (_comments.isEmpty) {
+      return Center(
+        child: Text(
+          'Aucun commentaire',
+          style: TextStyle(
+            color: Colors.white54,
+            fontSize: 16,
+          ),
+        ),
+      );
+    }
 
-        final comments = snapshot.data?.docs ?? [];
-
-        if (comments.isEmpty) {
-          return Center(
-            child: Text(
-              'Aucun commentaire',
-              style: TextStyle(
-                color: Colors.white54,
-                fontSize: 16,
-              ),
-            ),
-          );
-        }
-
-        return Column(
-          children: [
-            for (var comment in comments)
-              CommentItem(
-                comment: {
-                  'id': comment.id,
-                  'postId': (comment.data() as Map<String, dynamic>)['postId'],
-                  'userId': (comment.data() as Map<String, dynamic>)['userId'],
-                  'text': (comment.data() as Map<String, dynamic>)['text'],
-                  'createdAt': (comment.data() as Map<String, dynamic>)['createdAt'],
-                  'likeCount': (comment.data() as Map<String, dynamic>)['likeCount'] ?? 0,
-                },
-                onDelete: (commentId) => _deleteComment(commentId, comment['postId']),
-                currentUserId: _auth.currentUser?.uid,
-              ),
-          ],
-        );
-      },
+    return Column(
+      children: [
+        for (var comment in _comments)
+          CommentItem(
+            comment: comment,
+            onDelete: (commentId) => _deleteComment(commentId, comment['postId']),
+            currentUserId: _auth.currentUser?.uid,
+          ),
+      ],
     );
   }
 
   Future<void> _deleteComment(String commentId, String postId) async {
+    // Supprimer localement d'abord
+    setState(() {
+      _comments.removeWhere((c) => c['id'] == commentId);
+    });
+    
     try {
       await _commentService.deleteComment(
         commentId: commentId,
@@ -115,6 +212,10 @@ class _CommentPopupState extends State<CommentPopup> {
       }
     } catch (e) {
       print('Erreur lors de la suppression du commentaire: $e');
+      
+      // Recharger les commentaires en cas d'erreur
+      _loadComments();
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur: ${e.toString()}')),
