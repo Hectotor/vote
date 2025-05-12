@@ -14,10 +14,10 @@ class PostLikeService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   
-  /// Mu00e9thode statique pour gu00e9rer le like avec redirection vers la page de connexion si l'utilisateur n'est pas connectu00e9
-  /// Retourne true si l'action a u00e9tu00e9 effectuu00e9e, false si l'utilisateur a u00e9tu00e9 redirigé vers la page de connexion
+  /// Méthode statique pour gérer le like avec redirection vers la page de connexion si l'utilisateur n'est pas connecté
+  /// Retourne true si l'action a été effectuée, false si l'utilisateur a été redirigé vers la page de connexion
   static Future<bool> likeWithAuthCheck(BuildContext context, String postId) async {
-    // Utiliser le service d'authentification pour vu00e9rifier si l'utilisateur est connectu00e9
+    // Utiliser le service d'authentification pour vérifier si l'utilisateur est connecté
     return await AuthRedirectService.executeIfAuthenticated(
       context, 
       () async {
@@ -47,15 +47,25 @@ class PostLikeService {
           .collection('likedPosts')
           .doc(postId);
       
+      final postRef = _firestore.collection('posts').doc(postId);
+      final postDoc = await postRef.get();
+      
+      if (!postDoc.exists) {
+        throw PostLikeException('Post non trouvé');
+      }
+      
+      final currentLikeCount = (postDoc.data()?['likeCount'] as int?) ?? 0;
+      
       final likeDoc = await userLikesRef.get();
       
       if (likeDoc.exists) {
         // Remove like
         await userLikesRef.delete();
         
-        // Update post like count
-        await _firestore.collection('posts').doc(postId).update({
-          'likeCount': FieldValue.increment(-1),
+        // Update post like count (ne pas descendre en dessous de 0)
+        final newLikeCount = currentLikeCount > 0 ? currentLikeCount - 1 : 0;
+        await postRef.update({
+          'likeCount': newLikeCount,
         });
       } else {
         // Add like
@@ -65,7 +75,7 @@ class PostLikeService {
         });
         
         // Update post like count
-        await _firestore.collection('posts').doc(postId).update({
+        await postRef.update({
           'likeCount': FieldValue.increment(1),
         });
       }
