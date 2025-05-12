@@ -21,9 +21,14 @@ class PostLikeService {
     return await AuthRedirectService.executeIfAuthenticated(
       context, 
       () async {
-        final service = PostLikeService();
-        await service.togglePostLike(postId);
-        return true;
+        try {
+          final service = PostLikeService();
+          await service.togglePostLike(postId);
+          return true;
+        } catch (e) {
+          // Ignorer silencieusement l'erreur et retourner false
+          return false;
+        }
       }
     ) ?? false;
   }

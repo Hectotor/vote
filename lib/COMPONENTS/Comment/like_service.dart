@@ -14,9 +14,14 @@ class LikeService {
     return await AuthRedirectService.executeIfAuthenticated(
       context, 
       () async {
-        final service = LikeService();
-        await service.toggleLike(commentId, commentAuthorId);
-        return true;
+        try {
+          final service = LikeService();
+          await service.toggleLike(commentId, commentAuthorId);
+          return true;
+        } catch (e) {
+          // Ignorer silencieusement l'erreur et retourner false
+          return false;
+        }
       }
     ) ?? false;
   }
