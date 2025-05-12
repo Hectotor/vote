@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
 import 'package:toplyke/COMPONENTS/menu_delete.dart';
 import 'package:toplyke/COMPONENTS/Post/post_report_service.dart';
 
@@ -44,33 +43,18 @@ class _PostMenuState extends State<PostMenu> {
 
   Future<void> _reportPost(BuildContext context) async {
     try {
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        if (!mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ConnexionPage()),
-        );
-        return;
-      }
-
-      final success = await _reportService.toggleReportPost(widget.postId);
+      // Utiliser la méthode statique qui gère la redirection vers la page de connexion
+      final success = await PostReportService.reportWithAuthCheck(
+        context,
+        widget.postId
+      );
       
       if (!mounted) return;
       
+      // Mettre à jour l'état local si le signalement a été effectué
       setState(() {
         _isReported = success;
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            success ? 'Post signalé' : 'Signalement annulé',
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: success ? Colors.red : Colors.green,
-        ),
-      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

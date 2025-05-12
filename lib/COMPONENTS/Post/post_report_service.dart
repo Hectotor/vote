@@ -1,9 +1,37 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import '../../SERVICES/auth_redirect_service.dart';
 
 class PostReportService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  
+  /// Méthode statique pour gérer le signalement avec redirection vers la page de connexion si l'utilisateur n'est pas connecté
+  /// Retourne true si l'action a été effectuée, false si l'utilisateur a été redirigé vers la page de connexion
+  static Future<bool> reportWithAuthCheck(BuildContext context, String postId) async {
+    // Utiliser le service d'authentification pour vérifier si l'utilisateur est connecté
+    return await AuthRedirectService.executeIfAuthenticated(
+      context, 
+      () async {
+        final service = PostReportService();
+        final success = await service.toggleReportPost(postId);
+        
+        // Afficher un message de confirmation
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success ? 'Post signalé' : 'Signalement annulé',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: success ? Colors.red : Colors.green,
+          ),
+        );
+        
+        return success;
+      }
+    ) ?? false;
+  }
 
   // Vérifier si l'utilisateur a déjà signalé ce post
   Future<bool> isPostReportedByUser(String postId) async {
