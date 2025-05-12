@@ -87,10 +87,10 @@ class _PostActionsState extends State<PostActions> {
   Future<void> _toggleSave() async {
     if (!mounted) return;
     
-    // Utiliser la mu00e9thode statique qui gu00e8re la redirection vers la page de connexion
+    // Utiliser la méthode statique qui gère la redirection vers la page de connexion
     final success = await PostSaveService.saveWithAuthCheck(context, widget.postId);
     
-    // Si l'action a ru00e9ussi, mettre u00e0 jour l'interface
+    // Si l'action a réussi, mettre à jour l'interface
     if (success && mounted) {
       setState(() {
         _isPostSaved = !_isPostSaved;
@@ -111,10 +111,10 @@ class _PostActionsState extends State<PostActions> {
               size: 28,
             ),
             onPressed: () async {
-              // Utiliser la mu00e9thode statique qui gu00e8re la redirection vers la page de connexion
+              // Utiliser la méthode statique qui gère la redirection vers la page de connexion
               final success = await PostLikeService.likeWithAuthCheck(context, widget.postId);
               
-              // Si l'action a ru00e9ussi, mettre u00e0 jour l'interface
+              // Si l'action a réussi, mettre à jour l'interface
               if (success && mounted) {
                 setState(() {
                   _isPostLiked = !_isPostLiked;
@@ -149,10 +149,12 @@ class _PostActionsState extends State<PostActions> {
                           : () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => PostPage(
+                                PageRouteBuilder(
+                                  pageBuilder: (context, animation1, animation2) => PostPage(
                                     postId: widget.postId,
                                   ),
+                                  transitionDuration: Duration.zero,
+                                  reverseTransitionDuration: Duration.zero,
                                 ),
                               );
                             },
@@ -178,10 +180,12 @@ class _PostActionsState extends State<PostActions> {
                     : () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => PostPage(
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation1, animation2) => PostPage(
                               postId: widget.postId,
                             ),
+                            transitionDuration: Duration.zero,
+                            reverseTransitionDuration: Duration.zero,
                           ),
                         );
                       },

@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:toplyke/navBar.dart';
 import 'description.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; // Import localization package
@@ -49,7 +48,9 @@ class MyApp extends StatelessWidget {
 }
 
 class AddPage extends StatefulWidget {
-  const AddPage({super.key});
+  final int previousIndex;
+  
+  const AddPage({super.key, this.previousIndex = 0});
 
   @override
   State<AddPage> createState() => _AddPageState();
@@ -113,12 +114,9 @@ class _AddPageState extends State<AddPage> {
           _mentions.clear();
         });
 
-        // Navigate to NavBar after a short delay
+        // Navigate to previous tab after a short delay
         Future.delayed(const Duration(milliseconds: 500), () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const NavBar()),
-          );
+          Navigator.pop(context);
         });
       } else {
         // Gérer l'erreur
@@ -137,11 +135,7 @@ class _AddPageState extends State<AddPage> {
   }
 
   void _cancel() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-          builder: (context) => const NavBar()), // Navigate back to NavBar
-    );
+    Navigator.pop(context);
   }
 
   void _updateImageState(int index) {

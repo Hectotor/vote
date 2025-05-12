@@ -9,24 +9,56 @@ import 'users/user_page.dart';
 import 'INSCRIPTION/connexion_screen.dart';
 
 class NavBar extends StatefulWidget {
-  const NavBar({super.key});
+  final int initialIndex;
+  
+  const NavBar({super.key, this.initialIndex = 0});
 
   @override
   _NavBarState createState() => _NavBarState();
 }
 
 class _NavBarState extends State<NavBar> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
   List<Widget> _pages = [];
 
   void _onItemTapped(int index) {
-    // Vérifier la connexion avant d'ouvrir la page d'ajout ou la page utilisateur
-    if (index == 2 || index == 4) { // Index de la page AddPage (2) et UserPage (4)
+    // Si on clique sur le bouton d'ajout
+    if (index == 2) {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const ConnexionPage()),
+          PageRouteBuilder(
+            pageBuilder: (context, animation1, animation2) => const ConnexionPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+        return;
+      }
+      // Naviguer vers AddPage sans transition
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation1, animation2) => const AddPage(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+      );
+      return;
+    }
+    
+    // Pour les autres onglets
+    if (index == 4) { // Page utilisateur
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation1, animation2) => const ConnexionPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
         return;
       }
@@ -40,6 +72,7 @@ class _NavBarState extends State<NavBar> {
   @override
   void initState() {
     super.initState();
+    _selectedIndex = widget.initialIndex;
     _pages = [
       const HomePage(),
       const SearchPage(),
