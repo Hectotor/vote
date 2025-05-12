@@ -10,7 +10,13 @@ class VoteService extends ChangeNotifier {
   Future<void> vote(String postId, String blocId, String userId) async {
     try {
       // Vérifier d'abord si l'utilisateur a déjà voté
-      final userVoteDoc = await _firestore.collection('userVotes').doc('$userId-$postId').get();
+      final userVoteRef = _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('votes')
+          .doc(postId);
+          
+      final userVoteDoc = await userVoteRef.get();
       if (userVoteDoc.exists) {
         print('L\'utilisateur a déjà voté pour ce post');
         return;
@@ -66,7 +72,7 @@ class VoteService extends ChangeNotifier {
       });
       
       // Marquer l'utilisateur comme ayant voté
-      await _firestore.collection('userVotes').doc('$userId-$postId').set({
+      await userVoteRef.set({
         'userId': userId,
         'postId': postId,
         'blocId': blocId, // Stocker aussi l'ID du bloc voté
@@ -79,13 +85,19 @@ class VoteService extends ChangeNotifier {
     }
   }
 
-  // Vérifier si l'utilisateur a déjà voté en utilisant une collection séparée
+  // Vérifier si l'utilisateur a déjà voté
   Future<bool> hasUserVoted(String postId) async {
     try {
       final user = _auth.currentUser;
       if (user == null) return false;
       
-      final doc = await _firestore.collection('userVotes').doc('${user.uid}-$postId').get();
+      final doc = await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('votes')
+          .doc(postId)
+          .get();
+          
       return doc.exists;
     } catch (e) {
       print('Erreur lors de la vérification du vote: $e');
@@ -185,7 +197,13 @@ class VoteService extends ChangeNotifier {
       final user = _auth.currentUser;
       if (user == null) return null;
       
-      final doc = await _firestore.collection('userVotes').doc('${user.uid}-$postId').get();
+      final doc = await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('votes')
+          .doc(postId)
+          .get();
+          
       if (!doc.exists) return null;
       
       return doc.data()?['blocId']?.toString();

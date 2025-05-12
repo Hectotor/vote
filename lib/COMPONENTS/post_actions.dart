@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'Post/post_like_service.dart';
 import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
+import 'package:toplyke/SERVICES/post_save_service.dart';
 import 'dart:async';
 
 class PostActions extends StatefulWidget {
@@ -24,10 +25,11 @@ class PostActions extends StatefulWidget {
 
 class _PostActionsState extends State<PostActions> {
   bool _isPostLiked = false;
+  bool _isPostSaved = false;
   int _likeCount = 0;
   StreamSubscription<QuerySnapshot>? _commentSubscription;
-
   final PostLikeService _postLikeService = PostLikeService();
+  final PostSaveService _postSaveService = PostSaveService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
@@ -35,6 +37,7 @@ class _PostActionsState extends State<PostActions> {
     super.initState();
     _checkPostLikeStatus();
     _fetchLikeCount();
+    _checkSavedStatus();
   }
 
   @override
@@ -67,6 +70,32 @@ class _PostActionsState extends State<PostActions> {
       });
     } catch (e) {
       print('Erreur lors de la récupération du compteur de likes: $e');
+    }
+  }
+
+  Future<void> _checkSavedStatus() async {
+    if (!mounted) return;
+    try {
+      final isSaved = await _postSaveService.isPostSaved(widget.postId);
+      if (!mounted) return;
+      setState(() {
+        _isPostSaved = isSaved;
+      });
+    } catch (e) {
+      debugPrint('Error checking save status: $e');
+    }
+  }
+
+  Future<void> _toggleSave() async {
+    if (!mounted) return;
+    try {
+      await _postSaveService.toggleSavePost(widget.postId);
+      if (!mounted) return;
+      setState(() {
+        _isPostSaved = !_isPostSaved;
+      });
+    } catch (e) {
+      debugPrint('Error toggling save: $e');
     }
   }
 
@@ -191,13 +220,11 @@ class _PostActionsState extends State<PostActions> {
           const Spacer(),
           IconButton(
             icon: Icon(
-              Icons.bookmark_border,
-              color: Colors.white,
+              _isPostSaved ? Icons.bookmark : Icons.bookmark_border,
+              color: _isPostSaved ? Colors.amber : Colors.white,
               size: 24,
             ),
-            onPressed: () {
-              // TODO: Implement save functionality
-            },
+            onPressed: _toggleSave,
           ),
         ],
       ),

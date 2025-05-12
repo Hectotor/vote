@@ -13,35 +13,38 @@ class PostLikeService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> togglePostLike(String postId) async {
-    if (_auth.currentUser == null) {
+    final user = _auth.currentUser;
+    if (user == null) {
       throw PostUnauthenticatedException();
     }
 
     try {
-      final userId = _auth.currentUser!.uid;
-      final likeRef = _firestore.collection('likes').doc('$postId-$userId');
-      final likeDoc = await likeRef.get();
+      final userId = user.uid;
+      final userLikesRef = _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('likedPosts')
+          .doc(postId);
+      
+      final likeDoc = await userLikesRef.get();
       
       if (likeDoc.exists) {
         // Remove like
-        await likeRef.delete();
+        await userLikesRef.delete();
         
         // Update post like count
-        final postRef = _firestore.collection('posts').doc(postId);
-        await postRef.update({
+        await _firestore.collection('posts').doc(postId).update({
           'likeCount': FieldValue.increment(-1),
         });
       } else {
         // Add like
-        await likeRef.set({
+        await userLikesRef.set({
           'postId': postId,
-          'userId': userId,
-          'createdAt': FieldValue.serverTimestamp(),
+          'likedAt': FieldValue.serverTimestamp(),
         });
         
         // Update post like count
-        final postRef = _firestore.collection('posts').doc(postId);
-        await postRef.update({
+        await _firestore.collection('posts').doc(postId).update({
           'likeCount': FieldValue.increment(1),
         });
       }
@@ -51,12 +54,16 @@ class PostLikeService {
   }
 
   Future<bool> isPostLiked(String postId) async {
-    if (_auth.currentUser == null) return false;
+    final user = _auth.currentUser;
+    if (user == null) return false;
 
     try {
-      final userId = _auth.currentUser!.uid;
-      final likeRef = _firestore.collection('likes').doc('$postId-$userId');
-      final likeDoc = await likeRef.get();
+      final likeDoc = await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('likedPosts')
+          .doc(postId)
+          .get();
       
       return likeDoc.exists;
     } catch (e) {
@@ -66,14 +73,21 @@ class PostLikeService {
 
   Future<int> getPostLikeCount(String postId) async {
     try {
+      // Utilisation de collectionGroup pour compter les likes à travers tous les utilisateurs
       final likes = await _firestore
-          .collection('likes')
+          .collectionGroup('likedPosts')
           .where('postId', isEqualTo: postId)
           .get();
       
       return likes.docs.length;
     } catch (e) {
-      throw PostLikeException('Erreur lors de la récupération du compteur de likes: $e');
+      // En cas d'erreur, on peut essayer de récupérer le compteur depuis le post
+      try {
+        final postDoc = await _firestore.collection('posts').doc(postId).get();
+        return (postDoc.data()?['likeCount'] as int?) ?? 0;
+      } catch (e) {
+        throw PostLikeException('Erreur lors de la récupération du compteur de likes: $e');
+      }
     }
   }
 }
