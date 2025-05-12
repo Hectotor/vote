@@ -1,0 +1,87 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class PostReportService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // Vérifier si l'utilisateur a déjà signalé ce post
+  Future<bool> isPostReportedByUser(String postId) async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+
+    try {
+      final doc = await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('reportedPosts')
+          .doc(postId)
+          .get();
+
+      return doc.exists;
+    } catch (e) {
+      print('Erreur lors de la vérification du signalement: $e');
+      return false;
+    }
+  }
+
+  // Signaler ou annuler le signalement d'un post
+  Future<bool> toggleReportPost(String postId) async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+
+    try {
+      final userReportRef = _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('reportedPosts')
+          .doc(postId);
+
+      final isReported = await isPostReportedByUser(postId);
+      
+      if (isReported) {
+        // Annuler le signalement
+        await userReportRef.delete();
+        
+        // Mettre à jour le compteur global des signalements
+        await _updateReportCount(postId, -1);
+      } else {
+        // Signaler le post
+        await userReportRef.set({
+          'postId': postId,
+          'reportedAt': FieldValue.serverTimestamp(),
+        });
+        
+        // Mettre à jour le compteur global des signalements
+        await _updateReportCount(postId, 1);
+      }
+      
+      return !isReported; // Retourne le nouvel état
+    } catch (e) {
+      print('Erreur lors du signalement: $e');
+      return false;
+    }
+  }
+
+  // Mettre à jour le compteur global des signalements pour un post
+  Future<void> _updateReportCount(String postId, int increment) async {
+    try {
+      await _firestore.collection('posts').doc(postId).update({
+        'reportCount': FieldValue.increment(increment),
+      });
+    } catch (e) {
+      print('Erreur lors de la mise à jour du compteur de signalements: $e');
+    }
+  }
+
+  // Obtenir le nombre total de signalements pour un post
+  Future<int> getReportCount(String postId) async {
+    try {
+      final doc = await _firestore.collection('posts').doc(postId).get();
+      return (doc.data()?['reportCount'] as int?) ?? 0;
+    } catch (e) {
+      print('Erreur lors de la récupération du nombre de signalements: $e');
+      return 0;
+    }
+  }
+}

@@ -7,6 +7,7 @@ import 'package:toplyke/COMPONENTS/Comment/comment_popup.dart';
 import 'package:toplyke/HOME/poll_grid_home_modern_new.dart';
 import 'package:toplyke/COMPONENTS/Comment/comment_input.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:toplyke/COMPONENTS/Post/comment_service.dart'; // Import CommentService
 
 class PostPage extends StatefulWidget {
   final String postId;
@@ -37,22 +38,22 @@ class _PostPageState extends State<PostPage> {
         return;
       }
 
-      print('Ajout du commentaire à Firestore...');
-      await _firestore.collection('comments').add({
-        'postId': widget.postId,
-        'userId': user.uid,
-        'text': text,
-        'createdAt': FieldValue.serverTimestamp(),
-        'likeCount': 0,
-      });
+      print('Ajout du commentaire...');
+      final commentService = CommentService();
+      await commentService.addComment(
+        postId: widget.postId,
+        text: text,
+      );
 
       print('Commentaire ajouté avec succès');
       _commentController.clear();
     } catch (e) {
       print('Erreur lors de l\'ajout du commentaire: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: ${e.toString()}')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: ${e.toString()}')),
+        );
+      }
     }
   }
 

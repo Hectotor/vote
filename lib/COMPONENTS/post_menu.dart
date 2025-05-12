@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
 import 'package:toplyke/COMPONENTS/menu_delete.dart';
+import 'package:toplyke/COMPONENTS/Post/post_report_service.dart';
 
 class PostMenu extends StatefulWidget {
   final String postId;
@@ -21,21 +21,20 @@ class PostMenu extends StatefulWidget {
 class _PostMenuState extends State<PostMenu> {
   bool _isReported = false;
   final MenuDelete _deleteService = MenuDelete();
+  final PostReportService _reportService = PostReportService();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfReported();
+  }
 
   Future<void> _checkIfReported() async {
     try {
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) return;
-
-      final report = await FirebaseFirestore.instance
-          .collection('reports')
-          .doc(widget.postId)
-          .get();
-
-      if (report.exists && report.data() != null) {
-        final reporters = report.data()!['reporters'] as List<dynamic>;
+      final isReported = await _reportService.isPostReportedByUser(widget.postId);
+      if (mounted) {
         setState(() {
-          _isReported = reporters.contains(currentUser.uid);
+          _isReported = isReported;
         });
       }
     } catch (e) {
@@ -47,6 +46,7 @@ class _PostMenuState extends State<PostMenu> {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
+        if (!mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ConnexionPage()),
@@ -54,70 +54,35 @@ class _PostMenuState extends State<PostMenu> {
         return;
       }
 
-      final reportRef = FirebaseFirestore.instance.collection('reports').doc(widget.postId);
-      final report = await reportRef.get();
+      final success = await _reportService.toggleReportPost(widget.postId);
+      
+      if (!mounted) return;
+      
+      setState(() {
+        _isReported = success;
+      });
 
-      if (report.exists && report.data() != null) {
-        final reporters = report.data()!['reporters'] as List<dynamic>;
-        if (reporters.contains(currentUser.uid)) {
-          // Désigneraler
-          await reportRef.update({
-            'reportCount': FieldValue.increment(-1),
-            'reporters': FieldValue.arrayRemove([currentUser.uid]),
-          });
-          setState(() {
-            _isReported = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Signalement annulé'),
-            ),
-          );
-        } else {
-          // Signaler
-          await reportRef.set({
-            'postId': widget.postId,
-            'reportCount': FieldValue.increment(1),
-            'reporters': FieldValue.arrayUnion([currentUser.uid]),
-          }, SetOptions(merge: true));
-          setState(() {
-            _isReported = true;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Post signalé'),
-            ),
-          );
-        }
-      } else {
-        // Premier signalement
-        await reportRef.set({
-          'postId': widget.postId,
-          'reportCount': 1,
-          'reporters': [currentUser.uid],
-        });
-        setState(() {
-          _isReported = true;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Post signalé'),
-          ),
-        );
-      }
-    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erreur lors du signalement: $e'),
+          content: Text(
+            success ? 'Post signalé' : 'Signalement annulé',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: success ? Colors.red : Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Erreur lors du signalement: $e',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
         ),
       );
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _checkIfReported();
   }
 
   @override
@@ -159,18 +124,15 @@ class _PostMenuState extends State<PostMenu> {
             ),
           ),
         );
-        
-        // Afficher l'option de suppression uniquement si l'utilisateur est le propriétaire
+
+        // Afficher l'option de suppression uniquement pour le propriétaire
         if (isOwner) {
           items.add(
-            PopupMenuItem<String>(
+            const PopupMenuItem<String>(
               value: 'delete',
               child: Row(
-                children: const [
-                  Icon(
-                    Icons.delete,
-                    color: Colors.red,
-                  ),
+                children: [
+                  Icon(Icons.delete, color: Colors.red),
                   SizedBox(width: 8),
                   Text(
                     'Supprimer',
@@ -184,13 +146,9 @@ class _PostMenuState extends State<PostMenu> {
             ),
           );
         }
-        
+
         return items;
       },
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      color: Colors.black.withOpacity(0.8),
     );
   }
 }

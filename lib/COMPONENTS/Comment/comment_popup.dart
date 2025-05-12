@@ -4,8 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../INSCRIPTION/connexion_screen.dart';
 import '../../../COMPONENTS/avatar.dart';
 import '../../../COMPONENTS/date_formatter.dart';
+import '../../../COMPONENTS/Post/comment_service.dart';
 import 'like_service.dart';
-import 'comment_expander.dart';
 
 class CommentPopup extends StatefulWidget {
   final String postId;
@@ -25,7 +25,8 @@ class CommentPopup extends StatefulWidget {
 
 class _CommentPopupState extends State<CommentPopup> {
   final TextEditingController _commentController = TextEditingController();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final CommentService _commentService = CommentService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
@@ -33,9 +34,9 @@ class _CommentPopupState extends State<CommentPopup> {
     super.dispose();
   }
 
-  void _handleLike(String commentId) async {
+  void _handleLike(String commentId, String commentAuthorId) async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
+      final user = _auth.currentUser;
       if (user == null) {
         Navigator.push(
           context,
@@ -47,14 +48,16 @@ class _CommentPopupState extends State<CommentPopup> {
       }
 
       final likeService = LikeService();
-      await likeService.toggleLike(commentId);
+      await likeService.toggleLike(commentId, commentAuthorId);
 
       setState(() {});
     } catch (e) {
       print('Erreur lors du like: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: ${e.toString()}')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: ${e.toString()}')),
+        );
+      }
     }
   }
 
@@ -81,11 +84,7 @@ class _CommentPopupState extends State<CommentPopup> {
 
   Widget _buildCommentsList() {
     return StreamBuilder<QuerySnapshot>(
-      stream: _firestore
-          .collection('comments')
-          .where('postId', isEqualTo: widget.postId)
-          .orderBy('createdAt', descending: true)
-          .snapshots(),
+      stream: _commentService.getCommentsForPost(widget.postId),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(child: Text('Erreur: ${snapshot.error}'));
@@ -121,27 +120,57 @@ class _CommentPopupState extends State<CommentPopup> {
                   'createdAt': (comment.data() as Map<String, dynamic>)['createdAt'],
                   'likeCount': (comment.data() as Map<String, dynamic>)['likeCount'] ?? 0,
                 },
-                onLike: () => _handleLike(comment.id),
+                onLike: () => _handleLike(comment.id, (comment.data() as Map<String, dynamic>)['userId']),
+                onDelete: (commentId) => _deleteComment(commentId, comment['postId']),
+                currentUserId: _auth.currentUser?.uid,
               ),
           ],
         );
       },
     );
   }
+
+  Future<void> _deleteComment(String commentId, String postId) async {
+    try {
+      await _commentService.deleteComment(
+        commentId: commentId,
+        postId: postId,
+      );
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Commentaire supprimé')),
+        );
+      }
+    } catch (e) {
+      print('Erreur lors de la suppression du commentaire: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: ${e.toString()}')),
+        );
+      }
+    }
+  }
 }
 
 class CommentItem extends StatelessWidget {
   final Map<String, dynamic> comment;
   final VoidCallback onLike;
+  final Function(String) onDelete;
+  final String? currentUserId;
 
   const CommentItem({
     Key? key,
     required this.comment,
     required this.onLike,
+    required this.onDelete,
+    this.currentUserId,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final isCurrentUser = comment['userId'] == currentUserId;
+    
     return FutureBuilder<DocumentSnapshot>(
       future: FirebaseFirestore.instance
           .collection('users')
@@ -156,7 +185,7 @@ class CommentItem extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        final userData = snapshot.data!.data() as Map<String, dynamic>;
+        final userData = snapshot.data!.data() as Map<String, dynamic>? ?? {};
         final pseudo = userData['pseudo'] ?? 'Utilisateur';
 
         return Padding(
@@ -187,51 +216,38 @@ class CommentItem extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
+                        if (isCurrentUser)
+                          GestureDetector(
+                            onTap: () => onDelete(comment['id']),
+                            child: const Icon(Icons.delete, color: Colors.grey, size: 16),
+                          ),
+                        const SizedBox(width: 8),
                         Text(
-                          DateFormatter.formatDate(comment['createdAt'] ?? Timestamp.now()),
+                          _formatCommentDate(comment['createdAt']),
                           style: const TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                       ],
                     ),
-                    //const SizedBox(height: 4),
+                    const SizedBox(height: 4),
+                    Text(
+                      comment['text'] ?? '',
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                    const SizedBox(height: 4),
                     Row(
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        GestureDetector(
+                          onTap: onLike,
+                          child: Row(
                             children: [
-                              CommentExpander(
-                                text: comment['text'] ?? '',
-                                maxLines: 2,
+                              const Icon(Icons.favorite_border, size: 16, color: Colors.grey),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${comment['likeCount'] ?? 0}',
+                                style: const TextStyle(color: Colors.grey, fontSize: 12),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: Icon(
-                                    (comment['likes'] as List<String>?)?.contains(FirebaseAuth.instance.currentUser?.uid) ?? false
-                                        ? Icons.favorite
-                                        : Icons.favorite_border,
-                                    color: (comment['likes'] as List<String>?)?.contains(FirebaseAuth.instance.currentUser?.uid) ?? false
-                                        ? Colors.red
-                                        : Colors.white,
-                                    size: 15,
-                                  ),
-                                  onPressed: onLike,
-                                ),
-                                Text(
-                                  '${comment['likeCount'] ?? 0}',
-                                  style: const TextStyle(color: Colors.white70, fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ],
                         ),
                       ],
                     ),
@@ -243,5 +259,29 @@ class CommentItem extends StatelessWidget {
         );
       },
     );
+  }
+
+  // Méthode pour formater la date du commentaire
+  String _formatCommentDate(dynamic date) {
+    if (date == null) return 'À l\'instant';
+    
+    try {
+      if (date is Timestamp) {
+        return DateFormatter.formatDate(date.toDate());
+      } else if (date is DateTime) {
+        return DateFormatter.formatDate(date);
+      } else if (date is Map && date['_seconds'] != null) {
+        // Cas où la date est un Timestamp sérialisé
+        return DateFormatter.formatDate(DateTime.fromMillisecondsSinceEpoch(
+          date['_seconds'] * 1000,
+          isUtc: true,
+        ));
+      } else {
+        return 'Date inconnue';
+      }
+    } catch (e) {
+      print('Erreur de format de date: $e');
+      return 'Date invalide';
+    }
   }
 }

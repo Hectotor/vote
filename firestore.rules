@@ -15,5 +15,73 @@ service cloud.firestore {
       // Supprimer : uniquement si authentifié
       allow delete: if request.auth != null;
     }
+    
+    // Règles spécifiques pour les collections utilisateurs
+    match /users/{userId} {
+      // Autoriser la lecture du profil utilisateur à tous
+      match /userData/{document} {
+        allow read: if true;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Règles pour les collections qui utilisent collectionGroup
+      match /commentsPosts/{commentId} {
+        allow read: if true;
+        allow create: if request.auth != null && request.auth.uid == userId;
+        allow update: if request.auth != null && request.auth.uid == request.resource.data.userId;
+        allow delete: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      }
+      
+      match /likedComments/{commentId} {
+        allow read: if true;
+        allow create, delete: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      match /likedPosts/{postId} {
+        allow read: if true;
+        allow create, delete: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      match /reportedPosts/{postId} {
+        allow read: if request.auth != null; // Seuls les utilisateurs connectés peuvent voir les signalements
+        allow create: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      match /savedPosts/{postId} {
+        allow read: if request.auth != null && request.auth.uid == userId; // Privé à l'utilisateur
+        allow create, delete: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      match /votes/{voteId} {
+        allow read: if true;
+        allow create, update: if request.auth != null && request.auth.uid == userId;
+        allow delete: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Règles pour les requêtes collectionGroup (nécessaires pour les recherches globales)
+    match /{path=**}/commentsPosts/{document=**} {
+      allow read: if true;
+    }
+    
+    match /{path=**}/likedComments/{document=**} {
+      allow read: if true;
+    }
+    
+    match /{path=**}/likedPosts/{document=**} {
+      allow read: if true;
+    }
+    
+    match /{path=**}/reportedPosts/{document=**} {
+      allow read: if request.auth != null; // Seuls les utilisateurs connectés peuvent voir les signalements
+    }
+    
+    match /{path=**}/savedPosts/{document=**} {
+      allow read: if request.auth != null; // Privé, seulement l'utilisateur connecté peut voir ses propres sauvegardes
+    }
+    
+    match /{path=**}/votes/{document=**} {
+      allow read: if true;
+    }
   }
 }
