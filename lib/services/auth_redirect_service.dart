@@ -41,13 +41,18 @@ class AuthRedirectService {
   }
 
   /// Redirige l'utilisateur vers la page de connexion
-  static void _redirectToLogin(BuildContext context) {
+  static void redirectToLogin(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const ConnexionPage(),
       ),
     );
+  }
+
+  /// Redirige l'utilisateur vers la page de connexion (méthode privée)
+  static void _redirectToLogin(BuildContext context) {
+    redirectToLogin(context);
   }
 
   /// Vérifie si l'utilisateur est connecté

@@ -1,14 +1,28 @@
-const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-admin.initializeApp();
 
-exports.togglePostLike = functions.https.onCall(async (data, context) => {
-  const uid = context.auth && context.auth.uid;
+// Note: Nous initialisons Firebase Admin uniquement dans index.js pour u00e9viter les doubles initialisations
+const functions = require('firebase-functions');
+
+// Export direct de la fonction (sera encapsulu00e9e avec onCall dans index.js)
+module.exports = async (data, context) => {
+  console.log('Toggle Post Like function called', { data, auth: context.auth });
+  
+  // Vérification de l'authentification
+  if (!context.auth) {
+    console.error('No auth context');
+    throw new functions.https.HttpsError("unauthenticated", "L'utilisateur doit être authentifié");
+  }
+  
+  const uid = context.auth.uid;
   const postId = data.postId;
 
-  if (!uid || !postId) {
-    throw new functions.https.HttpsError("invalid-argument", "Missing uid or postId");
+  if (!postId) {
+    console.error('Missing postId');
+    throw new functions.https.HttpsError("invalid-argument", "Missing postId");
   }
+  
+  console.log(`Processing like toggle for user ${uid} on post ${postId}`);
+
 
   const postRef = admin.firestore().doc(`posts/${postId}`);
   const likeRef = postRef.collection("likedPosts").doc(uid);
@@ -33,4 +47,4 @@ exports.togglePostLike = functions.https.onCall(async (data, context) => {
     });
     return { liked: true };
   }
-});
+};

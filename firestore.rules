@@ -1,87 +1,83 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Règle générique pour toutes les collections
-    match /{collection}/{document=**} {
-      // Tout le monde peut lire
+    // Règle pour la lecture des profils utilisateurs (pour l'avatar)
+    match /users/{userId} {
+      allow read: if true;  // Tout le monde peut lire les profils
+      allow write: if request.auth != null && request.auth.uid == userId;  // Seul l'utilisateur peut modifier son profil
+    }
+
+    // Règle pour la collection likes
+    match /likes/{likeId} {
+      // Lecture : tout le monde peut voir qui a liké
       allow read: if true;
       
-      // Créer : uniquement si authentifié
+      // Création : uniquement si authentifié et si l'utilisateur est celui qui like
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      
+      // Suppression : uniquement si authentifié et si l'utilisateur est celui qui a liké
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    match /posts/{postId} {
+      // Lecture : tout le monde peut lire les posts
+      allow read: if true;
+      
+      // Création : uniquement si authentifié
       allow create: if request.auth != null;
       
-      // Mettre à jour : uniquement si authentifié
-      allow update: if request.auth != null;
+      // Mise à jour : uniquement si authentifié
+      // Pour le compteur de likes, tout utilisateur authentifié peut le mettre à jour
+      allow update: if request.auth != null && (
+        // Si la mise à jour concerne uniquement likesCount
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount'])) ||
+        // Ou si l'utilisateur est l'auteur du post
+        resource.data.userId == request.auth.uid
+      );
       
-      // Supprimer : uniquement si authentifié
-      allow delete: if request.auth != null;
+      // Supprimer : uniquement si authentifié et propriétaire
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+
+      // Sous-collection commentaires
+      match /commentsPosts/{commentId} {
+        allow read: if true;
+        allow create: if request.auth != null;
+        allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      }
     }
     
-    // Règles spécifiques pour les collections utilisateurs
+    // Règles pour les utilisateurs et leurs sous-collections
     match /users/{userId} {
-      // Autoriser la lecture du profil utilisateur à tous
+      // Profil utilisateur (userData)
       match /userData/{document} {
         allow read: if true;
         allow write: if request.auth != null && request.auth.uid == userId;
       }
       
-      // Règles pour les collections qui utilisent collectionGroup
-      match /commentsPosts/{commentId} {
-        allow read: if true;
-        allow create: if request.auth != null && request.auth.uid == userId;
-        allow update: if request.auth != null && request.auth.uid == request.resource.data.userId;
-        allow delete: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      }
-      
-      match /likedComments/{commentId} {
-        allow read: if true;
-        allow create, delete: if request.auth != null && request.auth.uid == userId;
-      }
-      
-      match /likedPosts/{postId} {
-        allow read: if true;
-        allow create, delete: if request.auth != null && request.auth.uid == userId;
-      }
-      
-      match /reportedPosts/{postId} {
-        allow read: if request.auth != null; // Seuls les utilisateurs connectés peuvent voir les signalements
-        allow create: if request.auth != null && request.auth.uid == userId;
-      }
-      
+      // Posts sauvegardés
       match /savedPosts/{postId} {
-        allow read: if request.auth != null && request.auth.uid == userId; // Privé à l'utilisateur
+        allow read: if request.auth != null && request.auth.uid == userId;
         allow create, delete: if request.auth != null && request.auth.uid == userId;
       }
       
-      match /votes/{voteId} {
-        allow read: if true;
-        allow create, update: if request.auth != null && request.auth.uid == userId;
-        allow delete: if request.auth != null && request.auth.uid == userId;
+      // Posts signalés
+      match /reportedPosts/{postId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null && request.auth.uid == userId;
       }
     }
-    
-    // Règles pour les requêtes collectionGroup (nécessaires pour les recherches globales)
-    match /{path=**}/commentsPosts/{document=**} {
+
+    // Règles pour les requêtes collectionGroup
+    match /{path=**}/commentsPosts/{commentId} {
       allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
-    
-    match /{path=**}/likedComments/{document=**} {
-      allow read: if true;
-    }
-    
-    match /{path=**}/likedPosts/{document=**} {
-      allow read: if true;
-    }
-    
-    match /{path=**}/reportedPosts/{document=**} {
-      allow read: if request.auth != null; // Seuls les utilisateurs connectés peuvent voir les signalements
-    }
-    
-    match /{path=**}/savedPosts/{document=**} {
-      allow read: if request.auth != null; // Privé, seulement l'utilisateur connecté peut voir ses propres sauvegardes
-    }
-    
-    match /{path=**}/votes/{document=**} {
-      allow read: if true;
+
+    match /{path=**}/savedPosts/{postId} {
+      allow read: if request.auth != null && request.auth.uid == request.auth.uid;
+      allow write: if request.auth != null && request.auth.uid == request.auth.uid;
     }
   }
 }
