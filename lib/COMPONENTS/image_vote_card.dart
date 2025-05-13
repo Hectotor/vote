@@ -92,6 +92,7 @@ class ImageVoteCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     child: EditableTextCard(
                       initialText: bloc['text'],
+                      isPublished: true, // Passer à true pour empêcher l'édition sur la page d'accueil
                       onTextChanged: (value) {
                         // Mettre à jour le texte du bloc
                         bloc['text'] = value;

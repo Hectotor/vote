@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class EditableTextCard extends StatelessWidget {
+  final bool isPublished;
   final String initialText;
   final ValueChanged<String> onTextChanged;
   final TextAlign textAlign;
@@ -11,6 +12,7 @@ class EditableTextCard extends StatelessWidget {
     Key? key,
     required this.initialText,
     required this.onTextChanged,
+    required this.isPublished,
     this.textAlign = TextAlign.center,
     this.style = const TextStyle(
       color: Colors.white,
@@ -40,6 +42,7 @@ class EditableTextCard extends StatelessWidget {
         maxLines: null,
         textInputAction: TextInputAction.done,
         onChanged: onTextChanged,
+        readOnly: isPublished,
       ),
     );
   }

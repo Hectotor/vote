@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
 import 'package:toplyke/navBar.dart';
 
 class MenuDelete {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> deletePost(String postId, String userId, BuildContext context) async {
@@ -101,10 +100,12 @@ class MenuDelete {
         return;
       }
 
-      debugPrint('Début de la suppression du post $postId');
+      debugPrint('Début de la suppression du post $postId et de toutes ses données associées');
       
-      // Supprimer le post - la Cloud Function s'occupera du nettoyage
-      await _firestore.collection('posts').doc(postId).delete();
+      // Appeler la Cloud Function pour supprimer le post et toutes ses données associées
+      // Cette approche est plus robuste pour un réseau social avec potentiellement beaucoup de données
+      final callable = FirebaseFunctions.instance.httpsCallable('deletePostAndAllData');
+      await callable.call({'postId': postId});
       
       // Afficher le message de succès
       scaffoldMessenger.showSnackBar(
