@@ -44,6 +44,13 @@ class _PostActionsState extends State<PostActions> {
   Future<void> _checkSavedStatus() async {
     if (!mounted) return;
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null && user.uid == widget.userId) {
+        setState(() {
+          _isPostSaved = false;
+        });
+        return;
+      }
       final isSaved = await _postSaveService.isPostSaved(widget.postId);
       if (!mounted) return;
       setState(() {
