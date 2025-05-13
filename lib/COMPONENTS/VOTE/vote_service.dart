@@ -43,13 +43,31 @@ class VoteService extends ChangeNotifier {
     if (hasVoted) {
       throw Exception("Vous avez déjà voté pour ce post.");
     }
+    // 1. Enregistrer le vote dans votesPosts
     await _firestore.collection('votesPosts').doc('${user.uid}_$postId').set({
       'userId': user.uid,
       'postId': postId,
       'blocId': blocId,
       'timestamp': FieldValue.serverTimestamp()
     });
-    print('Vote enregistré avec succès');
+    // 2. Mettre à jour le bloc correspondant dans posts
+    final postRef = _firestore.collection('posts').doc(postId);
+    final postSnap = await postRef.get();
+    if (!postSnap.exists) return;
+    final data = postSnap.data() as Map<String, dynamic>;
+    List blocs = data['blocs'] as List;
+    if (blocId < 0 || blocId >= blocs.length) return;
+    Map bloc = Map<String, dynamic>.from(blocs[blocId]);
+    // Mettre à jour voteCount et votes
+    bloc['voteCount'] = (bloc['voteCount'] ?? 0) + 1;
+    List votes = (bloc['votes'] ?? []).toList();
+    if (!votes.contains(user.uid)) {
+      votes.add(user.uid);
+    }
+    bloc['votes'] = votes;
+    blocs[blocId] = bloc;
+    await postRef.update({'blocs': blocs});
+    print('Vote enregistré et compteur mis à jour dans posts');
   }
 
   // Vérifier si l'utilisateur a déjà voté
