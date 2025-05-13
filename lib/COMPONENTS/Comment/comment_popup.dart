@@ -347,32 +347,47 @@ class _CommentItemState extends State<CommentItem> {
   Widget _buildLikeRow(Map<String, dynamic> comment) {
     final commentId = comment['id'];
     final postId = comment['postId'];
-    final likeCount = comment['likesCountComment'] ?? 0;
-    return FutureBuilder<bool>(
-      future: _commentService.isCommentLiked(commentId),
-      builder: (context, snapshot) {
-        final isLiked = snapshot.data ?? false;
-        return GestureDetector(
-          onTap: () async {
-            await _commentService.toggleCommentLike(commentId, postId);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return SizedBox();
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('commentsPosts')
+          .doc(commentId)
+          .snapshots(),
+      builder: (context, commentSnapshot) {
+        final likeCount = (commentSnapshot.data?.data() as Map<String, dynamic>?)?['likesCountComment'] ?? 0;
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('commentLikes')
+              .where('commentId', isEqualTo: commentId)
+              .where('userId', isEqualTo: user.uid)
+              .limit(1)
+              .snapshots(),
+          builder: (context, snapshot) {
+            final isLiked = (snapshot.data?.docs.isNotEmpty ?? false);
+            return GestureDetector(
+              onTap: () async {
+                await _commentService.toggleCommentLike(commentId, postId);
+              },
+              child: Row(
+                children: [
+                  Icon(
+                    isLiked ? Icons.favorite : Icons.favorite_border,
+                    size: 16,
+                    color: isLiked ? Colors.red : Colors.grey,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$likeCount',
+                    style: TextStyle(
+                      color: isLiked ? Colors.red : Colors.grey,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            );
           },
-          child: Row(
-            children: [
-              Icon(
-                isLiked ? Icons.favorite : Icons.favorite_border,
-                size: 16,
-                color: isLiked ? Colors.red : Colors.grey,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '$likeCount',
-                style: TextStyle(
-                  color: isLiked ? Colors.red : Colors.grey,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
         );
       },
     );

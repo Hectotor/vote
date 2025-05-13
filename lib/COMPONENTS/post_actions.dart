@@ -5,6 +5,7 @@ import 'Post/post_like_service.dart';
 import 'package:toplyke/SERVICES/post_save_service.dart';
 import 'dart:async';
 import 'ANIMATION/heart_animation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PostActions extends StatefulWidget {
   final String postId;
@@ -69,49 +70,60 @@ class _PostActionsState extends State<PostActions> {
 
   @override
   Widget build(BuildContext context) {
-    final userId = widget.userId;
     return Padding(
       padding: const EdgeInsets.only(left: 4, right: 4, bottom: 4),
       child: Row(
         children: [
           // StreamBuilder pour le like
-          StreamBuilder<QuerySnapshot>(
+          StreamBuilder<DocumentSnapshot>(
             stream: FirebaseFirestore.instance
-                .collection('likes')
-                .where('postId', isEqualTo: widget.postId)
+                .collection('posts')
+                .doc(widget.postId)
                 .snapshots(),
-            builder: (context, snapshot) {
-              final likes = snapshot.data?.docs ?? [];
-              final likeCount = likes.length;
-              final isLiked = likes.any((doc) => doc['userId'] == userId);
-              return Row(
-                children: [
-                  HeartAnimation(
-                    animate: _likeLoading || (isLiked != _lastIsLiked),
-                    isLiked: isLiked,
-                    onTap: _likeLoading
-                        ? null
-                        : () async {
-                            setState(() {
-                              _likeLoading = true;
-                              _lastIsLiked = isLiked;
-                            });
-                            await PostLikeService.likeWithAuthCheck(context, widget.postId);
-                            setState(() {
-                              _likeLoading = false;
-                              _lastIsLiked = !isLiked; // pour bien relancer l'anim si besoin
-                            });
-                          },
-                    size: 28,
-                  ),
-                  Text(
-                    '$likeCount',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+            builder: (context, postSnapshot) {
+              final postData = postSnapshot.data?.data() as Map<String, dynamic>?;
+              final likeCount = postData?['likesCount'] ?? 0;
+              final user = FirebaseAuth.instance.currentUser;
+              if (user == null) return SizedBox();
+              return StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('likes')
+                    .where('postId', isEqualTo: widget.postId)
+                    .where('userId', isEqualTo: user.uid)
+                    .limit(1)
+                    .snapshots(),
+                builder: (context, likeSnapshot) {
+                  final isLiked = (likeSnapshot.data?.docs.isNotEmpty ?? false);
+                  return Row(
+                    children: [
+                      HeartAnimation(
+                        animate: _likeLoading || (isLiked != _lastIsLiked),
+                        isLiked: isLiked,
+                        onTap: _likeLoading
+                            ? null
+                            : () async {
+                                setState(() {
+                                  _likeLoading = true;
+                                  _lastIsLiked = isLiked;
+                                });
+                                await PostLikeService.likeWithAuthCheck(context, widget.postId);
+                                setState(() {
+                                  _likeLoading = false;
+                                  _lastIsLiked = !isLiked; // pour bien relancer l'anim si besoin
+                                });
+                              },
+                        size: 28,
+                      ),
+                      Text(
+                        '$likeCount',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  );
+                },
               );
             },
           ),
