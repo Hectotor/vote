@@ -40,10 +40,8 @@ class PostReportService {
 
     try {
       final doc = await _firestore
-          .collection('users')
-          .doc(user.uid)
           .collection('reportedPosts')
-          .doc(postId)
+          .doc('${user.uid}_$postId')
           .get();
 
       return doc.exists;
@@ -59,28 +57,24 @@ class PostReportService {
     if (user == null) return false;
 
     try {
-      final userReportRef = _firestore
-          .collection('users')
-          .doc(user.uid)
+      final globalReportRef = _firestore
           .collection('reportedPosts')
-          .doc(postId);
+          .doc('${user.uid}_$postId');
 
       final isReported = await isPostReportedByUser(postId);
       
       if (isReported) {
         // Annuler le signalement
-        await userReportRef.delete();
-        
+        await globalReportRef.delete();
         // Mettre à jour le compteur global des signalements
         await _updateReportCount(postId, -1);
       } else {
         // Signaler le post
-        await userReportRef.set({
+        await globalReportRef.set({
+          'userId': user.uid,
           'postId': postId,
           'reportedAt': FieldValue.serverTimestamp(),
         });
-        
-        // Mettre à jour le compteur global des signalements
         await _updateReportCount(postId, 1);
       }
       
