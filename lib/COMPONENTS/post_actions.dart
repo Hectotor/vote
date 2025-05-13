@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'Post/post_like_service.dart';
 import 'package:toplyke/SERVICES/post_save_service.dart';
 import 'dart:async';
+import 'ANIMATION/heart_animation.dart';
 
 class PostActions extends StatefulWidget {
   final String postId;
@@ -22,53 +23,21 @@ class PostActions extends StatefulWidget {
 }
 
 class _PostActionsState extends State<PostActions> {
-  bool _isPostLiked = false;
   bool _isPostSaved = false;
-  int _likeCount = 0;
-  StreamSubscription<QuerySnapshot>? _commentSubscription;
-  final PostLikeService _postLikeService = PostLikeService();
+  bool _likeLoading = false;
+  bool _lastIsLiked = false;
   final PostSaveService _postSaveService = PostSaveService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void initState() {
     super.initState();
-    _checkPostLikeStatus();
-    _fetchLikeCount();
     _checkSavedStatus();
   }
 
   @override
   void dispose() {
-    _commentSubscription?.cancel();
     super.dispose();
-  }
-
-  Future<void> _checkPostLikeStatus() async {
-    if (!mounted) return;
-    try {
-      final isLiked = await _postLikeService.isPostLiked(widget.postId);
-      if (!mounted) return;
-      setState(() {
-        _isPostLiked = isLiked;
-      });
-    } catch (e) {
-      print('Erreur lors de la vérification du like: $e');
-    }
-  }
-
-  Future<void> _fetchLikeCount() async {
-    if (!mounted) return;
-    try {
-      final postDoc = await _firestore.collection('posts').doc(widget.postId).get();
-      final likeCount = postDoc.data()?['likeCount'] as int? ?? 0;
-      if (!mounted) return;
-      setState(() {
-        _likeCount = likeCount;
-      });
-    } catch (e) {
-      print('Erreur lors de la récupération du compteur de likes: $e');
-    }
   }
 
   Future<void> _checkSavedStatus() async {
@@ -100,42 +69,57 @@ class _PostActionsState extends State<PostActions> {
 
   @override
   Widget build(BuildContext context) {
+    final userId = widget.userId;
     return Padding(
       padding: const EdgeInsets.only(left: 4, right: 4, bottom: 4),
       child: Row(
         children: [
-          IconButton(
-            icon: Icon(
-              _isPostLiked ? Icons.favorite : Icons.favorite_border,
-              color: _isPostLiked ? Colors.red : Colors.white,
-              size: 28,
-            ),
-            onPressed: () async {
-              // Utiliser la méthode statique qui gère la redirection vers la page de connexion
-              final success = await PostLikeService.likeWithAuthCheck(context, widget.postId);
-              
-              // Si l'action a réussi, mettre à jour l'interface
-              if (success && mounted) {
-                setState(() {
-                  _isPostLiked = !_isPostLiked;
-                  _likeCount = _isPostLiked ? _likeCount + 1 : _likeCount - 1;
-                });
-              }
+          // StreamBuilder pour le like
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('likes')
+                .where('postId', isEqualTo: widget.postId)
+                .snapshots(),
+            builder: (context, snapshot) {
+              final likes = snapshot.data?.docs ?? [];
+              final likeCount = likes.length;
+              final isLiked = likes.any((doc) => doc['userId'] == userId);
+              return Row(
+                children: [
+                  HeartAnimation(
+                    animate: _likeLoading || (isLiked != _lastIsLiked),
+                    isLiked: isLiked,
+                    onTap: _likeLoading
+                        ? null
+                        : () async {
+                            setState(() {
+                              _likeLoading = true;
+                              _lastIsLiked = isLiked;
+                            });
+                            await PostLikeService.likeWithAuthCheck(context, widget.postId);
+                            setState(() {
+                              _likeLoading = false;
+                              _lastIsLiked = !isLiked; // pour bien relancer l'anim si besoin
+                            });
+                          },
+                    size: 28,
+                  ),
+                  Text(
+                    '$likeCount',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              );
             },
-          ),
-          Text(
-            '$_likeCount',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-            ),
           ),
           const SizedBox(width: 16),
           StreamBuilder<DocumentSnapshot>(
             stream: _firestore.collection('posts').doc(widget.postId).snapshots(),
             builder: (context, snapshot) {
               final commentCount = (snapshot.data?.data() as Map<String, dynamic>?)?['commentCount'] ?? 0;
-              
               return Row(
                 children: [
                   IconButton(

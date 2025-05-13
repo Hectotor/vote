@@ -1,0 +1,84 @@
+import 'package:flutter/material.dart';
+
+class HeartAnimation extends StatefulWidget {
+  final bool animate;
+  final bool isLiked;
+  final VoidCallback? onTap;
+  final double size;
+  final Duration duration;
+
+  const HeartAnimation({
+    Key? key,
+    required this.animate,
+    required this.isLiked,
+    this.onTap,
+    this.size = 28,
+    this.duration = const Duration(milliseconds: 500), // un peu plus long
+  }) : super(key: key);
+
+  @override
+  State<HeartAnimation> createState() => _HeartAnimationState();
+}
+
+class _HeartAnimationState extends State<HeartAnimation>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: widget.duration,
+    );
+
+    _scaleAnim = TweenSequence([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.4)
+            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: 40,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.4, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeOutBack)),
+        weight: 60,
+      ),
+    ]).animate(_controller);
+  }
+
+  @override
+  void didUpdateWidget(covariant HeartAnimation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.animate && !oldWidget.animate) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _scaleAnim,
+      builder: (context, child) {
+        final bool showRed = _scaleAnim.value > 1.05 || widget.isLiked;
+        return Transform.scale(
+          scale: _scaleAnim.value,
+          child: IconButton(
+            icon: Icon(
+              showRed ? Icons.favorite : Icons.favorite_border,
+              color: showRed ? Colors.red : Colors.white,
+              size: widget.size,
+            ),
+            onPressed: widget.onTap,
+          ),
+        );
+      },
+    );
+  }
+}

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../COMPONENTS/avatar.dart';
-import 'like_service.dart';
 import '../Post/comment_service.dart';
 import '../../../COMPONENTS/date_formatter.dart' as formatter;
 
@@ -75,7 +74,7 @@ class _CommentPopupState extends State<CommentPopup> {
             'userId': (doc.data() as Map<String, dynamic>)['userId'],
             'text': (doc.data() as Map<String, dynamic>)['text'],
             'createdAt': (doc.data() as Map<String, dynamic>)['createdAt'],
-            'likeCount': (doc.data() as Map<String, dynamic>)['likeCount'] ?? 0,
+            'likesCountComment': (doc.data() as Map<String, dynamic>)['likesCountComment'] ?? 0,
           }).toList();
           _isLoading = false;
         });
@@ -104,7 +103,7 @@ class _CommentPopupState extends State<CommentPopup> {
       'userId': user.uid,
       'text': text,
       'createdAt': DateTime.now(),
-      'likeCount': 0,
+      'likesCountComment': 0,
     };
     
     // Ajouter localement
@@ -242,33 +241,14 @@ class CommentItem extends StatefulWidget {
 }
 
 class _CommentItemState extends State<CommentItem> {
-  bool _isLiked = false;
-  int _likeCount = 0;
   bool _isLoading = true;
   DocumentSnapshot? _userDoc;
-  final LikeService _likeService = LikeService();
+  final CommentService _commentService = CommentService();
 
   @override
   void initState() {
     super.initState();
-    _likeCount = widget.comment['likeCount'] ?? 0;
-    _checkIfLiked();
     _loadUserData();
-  }
-
-  Future<void> _checkIfLiked() async {
-    if (widget.currentUserId == null) return;
-    
-    try {
-      final hasLiked = await _likeService.hasUserLiked(widget.comment['id']);
-      if (mounted) {
-        setState(() {
-          _isLiked = hasLiked;
-        });
-      }
-    } catch (e) {
-      print('Erreur lors de la vérification du like: $e');
-    }
   }
 
   Future<void> _loadUserData() async {
@@ -289,32 +269,6 @@ class _CommentItemState extends State<CommentItem> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _toggleLike() async {
-    if (widget.currentUserId == null) return;
-    
-    setState(() {
-      _isLiked = !_isLiked;
-      _likeCount += _isLiked ? 1 : -1;
-    });
-
-    try {
-      // Passer l'ID de l'auteur du commentaire
-      await _likeService.toggleLike(
-        widget.comment['id'],
-        widget.comment['userId'], // ID de l'auteur du commentaire
-      );
-    } catch (e) {
-      print('Erreur lors du like du commentaire: $e');
-      // Revenir en arrière en cas d'erreur
-      if (mounted) {
-        setState(() {
-          _isLiked = !_isLiked;
-          _likeCount += _isLiked ? 1 : -1;
         });
       }
     }
@@ -381,35 +335,46 @@ class _CommentItemState extends State<CommentItem> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: _toggleLike,
-                      child: Row(
-                        children: [
-                          Icon(
-                            _isLiked ? Icons.favorite : Icons.favorite_border,
-                            size: 16,
-                            color: _isLiked ? Colors.red : Colors.grey,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$_likeCount',
-                            style: TextStyle(
-                              color: _isLiked ? Colors.red : Colors.grey,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                _buildLikeRow(widget.comment),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLikeRow(Map<String, dynamic> comment) {
+    final commentId = comment['id'];
+    final postId = comment['postId'];
+    final likeCount = comment['likesCountComment'] ?? 0;
+    return FutureBuilder<bool>(
+      future: _commentService.isCommentLiked(commentId),
+      builder: (context, snapshot) {
+        final isLiked = snapshot.data ?? false;
+        return GestureDetector(
+          onTap: () async {
+            await _commentService.toggleCommentLike(commentId, postId);
+          },
+          child: Row(
+            children: [
+              Icon(
+                isLiked ? Icons.favorite : Icons.favorite_border,
+                size: 16,
+                color: isLiked ? Colors.red : Colors.grey,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '$likeCount',
+                style: TextStyle(
+                  color: isLiked ? Colors.red : Colors.grey,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
