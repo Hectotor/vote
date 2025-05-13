@@ -40,15 +40,13 @@ class VoteService extends ChangeNotifier {
   Future<void> vote(String postId, String blocId, String userId) async {
     try {
       // Vérifier d'abord si l'utilisateur a déjà voté
-      final userVoteRef = _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('votes')
-          .doc(postId);
-          
-      final userVoteDoc = await userVoteRef.get();
-      if (userVoteDoc.exists) {
-        print('L\'utilisateur a déjà voté pour ce post');
+      final globalVoteRef = _firestore
+          .collection('votesPosts')
+          .doc('${userId}_$postId');
+      
+      final globalVoteDoc = await globalVoteRef.get();
+      if (globalVoteDoc.exists) {
+        print("L'utilisateur a déjà voté pour ce post");
         return;
       }
       
@@ -56,59 +54,35 @@ class VoteService extends ChangeNotifier {
       final index = int.tryParse(blocId) ?? 0;
       
       // Récupérer le document pour préserver sa structure
-      final doc = await _firestore.collection('posts').doc(postId).get();
-      if (!doc.exists) {
-        print('Post non trouvé');
+      final postRef = _firestore.collection('posts').doc(postId);
+      final postDoc = await postRef.get();
+      if (!postDoc.exists) {
+        print('Le post n\'existe pas');
         return;
       }
-      
-      final data = doc.data();
-      if (data == null) {
-        print('Données du post vides');
-        return;
-      }
-      
-      // Récupérer les blocs
-      final List<dynamic> blocs = List.from(data['blocs'] ?? []);
-      if (index >= blocs.length) {
-        print('Index de bloc invalide');
-        return;
-      }
-      
-      // Mettre à jour le compteur de votes du bloc et le tableau votes
-      final Map<String, dynamic> bloc = Map<String, dynamic>.from(blocs[index]);
-      
-      // Initialiser le tableau votes s'il n'existe pas
-      if (bloc['votes'] == null) {
-        bloc['votes'] = [];
-      } else if (bloc['votes'] is! List) {
-        bloc['votes'] = [];
-      }
-      
-      // S'assurer que l'utilisateur n'est pas déjà dans le tableau
-      if (!bloc['votes'].contains(userId)) {
-        bloc['votes'].add(userId);
-      }
-      
-      // Mettre à jour le voteCount pour qu'il corresponde à la longueur du tableau votes
-      bloc['voteCount'] = (bloc['votes'] as List).length;
-      
-      // Mettre à jour le bloc dans la liste
+      final data = postDoc.data();
+      if (data == null) return;
+      final blocs = List<Map<String, dynamic>>.from(data['blocs'] ?? []);
+      if (index >= blocs.length) return;
+      final bloc = Map<String, dynamic>.from(blocs[index]);
+      bloc['voteCount'] = (bloc['voteCount'] ?? 0) + 1;
       blocs[index] = bloc;
-      
-      // Mettre à jour le document avec la structure préservée
-      await _firestore.collection('posts').doc(postId).update({
-        'blocs': blocs
+      // Calculer le voteCount total pour le post
+      int totalVoteCount = 0;
+      for (final b in blocs) {
+        totalVoteCount += (b['voteCount'] ?? 0) as int;
+      }
+      await postRef.update({
+        'blocs': blocs,
+        'voteCount': totalVoteCount,
       });
-      
-      // Marquer l'utilisateur comme ayant voté
-      await userVoteRef.set({
+      // Marquer l'utilisateur comme ayant voté dans votesPosts
+      await globalVoteRef.set({
         'userId': userId,
         'postId': postId,
-        'blocId': blocId, // Stocker aussi l'ID du bloc voté
+        'blocId': blocId,
         'timestamp': FieldValue.serverTimestamp()
       });
-      
       print('Vote enregistré avec succès');
     } catch (e) {
       print('Erreur lors du vote: $e');
@@ -120,14 +94,10 @@ class VoteService extends ChangeNotifier {
     try {
       final user = _auth.currentUser;
       if (user == null) return false;
-      
       final doc = await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .collection('votes')
-          .doc(postId)
+          .collection('votesPosts')
+          .doc('${user.uid}_$postId')
           .get();
-          
       return doc.exists;
     } catch (e) {
       print('Erreur lors de la vérification du vote: $e');
@@ -221,21 +191,16 @@ class VoteService extends ChangeNotifier {
     });
   }
 
-  // Obtenir l'ID du bloc pour lequel l'utilisateur a voté
+  // Récupérer le bloc sur lequel l'utilisateur a voté
   Future<String?> getUserVoteBlocId(String postId) async {
     try {
       final user = _auth.currentUser;
       if (user == null) return null;
-      
       final doc = await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .collection('votes')
-          .doc(postId)
+          .collection('votesPosts')
+          .doc('${user.uid}_$postId')
           .get();
-          
       if (!doc.exists) return null;
-      
       return doc.data()?['blocId']?.toString();
     } catch (e) {
       print('Erreur lors de la récupération du vote utilisateur: $e');
