@@ -27,10 +27,8 @@ class PostSaveService {
     if (user == null) return false;
 
     final doc = await _firestore
-        .collection('users')
-        .doc(user.uid)
         .collection('savedPosts')
-        .doc(postId)
+        .doc('${user.uid}_$postId')
         .get();
 
     return doc.exists;
@@ -41,21 +39,24 @@ class PostSaveService {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    final savedPostsRef = _firestore
-        .collection('users')
-        .doc(user.uid)
+    final globalSavedPostsRef = _firestore
         .collection('savedPosts')
-        .doc(postId);
+        .doc('${user.uid}_$postId');
+
+    final postRef = _firestore.collection('posts').doc(postId);
 
     final isSaved = await isPostSaved(postId);
     
     if (isSaved) {
-      await savedPostsRef.delete();
+      await globalSavedPostsRef.delete();
+      await postRef.update({'saveCount': FieldValue.increment(-1)});
     } else {
-      await savedPostsRef.set({
-        'savedAt': FieldValue.serverTimestamp(),
+      await globalSavedPostsRef.set({
+        'userId': user.uid,
         'postId': postId,
+        'savedAt': FieldValue.serverTimestamp(),
       });
+      await postRef.update({'saveCount': FieldValue.increment(1)});
     }
   }
 }
