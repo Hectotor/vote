@@ -5,7 +5,7 @@ const admin = require('firebase-admin');
 admin.initializeApp();
 
 // Import de la fonction togglePostLike
-const togglePostLike = require('./toggle_post_like');
+const deleteCommentAndLikes = require('./deleteCommentAndLikes');
 
 // Export des fonctions Cloud
-exports.togglePostLike = functions.https.onCall(togglePostLike);
+exports.deleteCommentAndLikes = functions.https.onCall(deleteCommentAndLikes.deleteCommentAndLikes);
