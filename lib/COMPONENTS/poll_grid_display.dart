@@ -112,9 +112,18 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
           // Calcul sécurisé du pourcentage
           double calculatePercentage(String blocId) {
             try {
-              final totalVotes = votes.values.fold<int>(0, (a, b) => a + b);
+              int totalVotes = votes.values.fold<int>(0, (a, b) => a + b);
+              int blocVotes = votes[blocId] ?? 0;
+              // Optimistic UI : si l'utilisateur vient de voter, on ajoute son vote localement
+              final bool optimistic = _hasVoted && _votedBlocId != null;
+              if (optimistic) {
+                totalVotes += 1;
+                if (blocId == _votedBlocId) {
+                  blocVotes += 1;
+                }
+              }
               if (totalVotes == 0) return 0;
-              return (votes[blocId] ?? 0) / totalVotes * 100;
+              return (blocVotes / totalVotes) * 100;
             } catch (e) {
               print('Erreur de calcul de pourcentage: $e');
               return 0;
