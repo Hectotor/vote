@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'auth_redirect_service.dart';
+import '../../services/auth_redirect_service.dart';
 
 class PostSaveService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

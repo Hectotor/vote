@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:toplyke/HOME/post_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'Post/post_like_service.dart';
-import 'package:toplyke/SERVICES/post_save_service.dart';
+import 'package:toplyke/COMPONENTS/Post/post_save_service.dart';
 import 'dart:async';
 import 'ANIMATION/heart_animation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
