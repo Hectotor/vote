@@ -67,7 +67,15 @@ class VoteService extends ChangeNotifier {
     bloc['votes'] = votes;
     blocs[blocId] = bloc;
     await postRef.update({'blocs': blocs});
-    print('Vote enregistré et compteur mis à jour dans posts');
+    // Calculer la somme totale des votes
+    int totalVotesCount = 0;
+    for (var b in blocs) {
+      if (b is Map && b['voteCount'] != null) {
+        totalVotesCount += (b['voteCount'] as int? ?? 0);
+      }
+    }
+    await postRef.update({'totalVotesCount': totalVotesCount});
+    print('Vote enregistré, compteur mis à jour et totalVotesCount actualisé dans posts');
   }
 
   // Vérifier si l'utilisateur a déjà voté

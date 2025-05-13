@@ -64,7 +64,6 @@ class PublishService {
         'profilePhotoUrl': userData['profilePhotoUrl'],
         'filterColor': userData['filterColor'],
         'blocs': [],
-        'voteCount': 0,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
@@ -87,8 +86,6 @@ class PublishService {
             final imageUrl = await _uploadImage(images[i]!, postId);
             bloc['postImageUrl'] = imageUrl;
             bloc['filterColor'] = imageFilters[i].value == 0 ? null : imageFilters[i].value.toString();
-            bloc['voteCount'] = 0;  // Initialiser le compteur de votes
-            bloc['votes'] = [];  // Initialiser la liste des votes
             print('Successfully uploaded image $i: $imageUrl');
             
             // Ajouter le bloc seulement s'il a une image
