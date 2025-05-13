@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../SERVICES/auth_redirect_service.dart';
 
@@ -30,63 +29,27 @@ class VoteService extends ChangeNotifier {
         }
         
         // Enregistrer le vote
-        await voteService.vote(postId, blocId, userId);
+        await voteService.vote(postId, int.parse(blocId));
         return true;
       }
     ) ?? false;
   }
 
-  // Solution ultra-simplifiée: incrémenter directement le compteur de votes
-  Future<void> vote(String postId, String blocId, String userId) async {
-    try {
-      // Vérifier d'abord si l'utilisateur a déjà voté
-      final globalVoteRef = _firestore
-          .collection('votesPosts')
-          .doc('${userId}_$postId');
-      
-      final globalVoteDoc = await globalVoteRef.get();
-      if (globalVoteDoc.exists) {
-        print("L'utilisateur a déjà voté pour ce post");
-        return;
-      }
-      
-      // Convertir blocId en index numérique
-      final index = int.tryParse(blocId) ?? 0;
-      
-      // Récupérer le document pour préserver sa structure
-      final postRef = _firestore.collection('posts').doc(postId);
-      final postDoc = await postRef.get();
-      if (!postDoc.exists) {
-        print('Le post n\'existe pas');
-        return;
-      }
-      final data = postDoc.data();
-      if (data == null) return;
-      final blocs = List<Map<String, dynamic>>.from(data['blocs'] ?? []);
-      if (index >= blocs.length) return;
-      final bloc = Map<String, dynamic>.from(blocs[index]);
-      bloc['voteCount'] = (bloc['voteCount'] ?? 0) + 1;
-      blocs[index] = bloc;
-      // Calculer le voteCount total pour le post
-      int totalVoteCount = 0;
-      for (final b in blocs) {
-        totalVoteCount += (b['voteCount'] ?? 0) as int;
-      }
-      await postRef.update({
-        'blocs': blocs,
-        'voteCount': totalVoteCount,
-      });
-      // Marquer l'utilisateur comme ayant voté dans votesPosts
-      await globalVoteRef.set({
-        'userId': userId,
-        'postId': postId,
-        'blocId': blocId,
-        'timestamp': FieldValue.serverTimestamp()
-      });
-      print('Vote enregistré avec succès');
-    } catch (e) {
-      print('Erreur lors du vote: $e');
+  // Empêche l'utilisateur de voter plusieurs fois pour le même post
+  Future<void> vote(String postId, int blocId) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception("Utilisateur non connecté");
+    final hasVoted = await hasUserVoted(postId);
+    if (hasVoted) {
+      throw Exception("Vous avez déjà voté pour ce post.");
     }
+    await _firestore.collection('votesPosts').doc('${user.uid}_$postId').set({
+      'userId': user.uid,
+      'postId': postId,
+      'blocId': blocId,
+      'timestamp': FieldValue.serverTimestamp()
+    });
+    print('Vote enregistré avec succès');
   }
 
   // Vérifier si l'utilisateur a déjà voté
