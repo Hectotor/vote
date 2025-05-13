@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import '../../../COMPONENTS/avatar.dart';
 import '../Post/comment_service.dart';
+import 'delete_comment_service.dart';
 import '../../../COMPONENTS/date_formatter.dart' as formatter;
 
 class CommentPopup extends StatefulWidget {
@@ -194,24 +194,32 @@ class _CommentPopupState extends State<CommentPopup> {
   }
 
   Future<void> _deleteComment(String commentId, String postId) async {
-    try {
-      // Appel Cloud Function
-      final callable = FirebaseFunctions.instance.httpsCallable('deleteCommentAndLikes');
-      await callable.call({'commentId': commentId, 'postId': postId});
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Commentaire supprimé')),
-        );
-      }
-    } catch (e) {
-      print('Erreur lors de la suppression du commentaire: $e');
-      _loadComments();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: ${e.toString()}')),
-        );
-      }
-    }
+    final deleteService = DeleteCommentService();
+    await deleteService.deleteCommentAndLikes(
+      commentId: commentId,
+      postId: postId,
+      context: context,
+      removeCommentLocally: (id) {
+        setState(() {
+          _comments.removeWhere((c) => c['id'] == id);
+        });
+      },
+      onSuccess: () {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Commentaire supprimé')),
+          );
+        }
+      },
+      onError: (e) {
+        _loadComments();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erreur: ${e.toString()}')),
+          );
+        }
+      },
+    );
   }
 }
 

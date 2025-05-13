@@ -1,6 +1,5 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-admin.initializeApp();
 
 exports.deleteCommentAndLikes = functions.https.onCall(async (data, context) => {
   const { commentId, postId } = data;
