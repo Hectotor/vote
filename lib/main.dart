@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/painting.dart';
 import 'package:provider/provider.dart';
 import 'package:toplyke/COMPONENTS/VOTE/vote_service.dart';
+import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -89,7 +91,7 @@ class MyApp extends StatelessWidget {
         Locale('fr', 'FR'), // Add French locale
         Locale('en', ''),
       ],
-      home: const SplashScreen(), // Set ScreenPage as the home widget
+      home: const ConnexionPage(), // Set ScreenPage as the home widget
     );
   }
 }
