@@ -106,23 +106,32 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
       return StreamBuilder<Map<String, int>>(
         stream: _voteService.watchVotes(widget.postId),
         builder: (context, snapshot) {
-          // Utiliser les données du stream ou une Map vide par défaut
-          final votes = snapshot.data ?? {};
+          // Nous n'utilisons plus les données du stream car nous calculons directement à partir des blocs
           
           // Calcul sécurisé du pourcentage
           double calculatePercentage(String blocId) {
             try {
-              int totalVotes = votes.values.fold<int>(0, (a, b) => a + b);
-              int blocVotes = votes[blocId] ?? 0;
-              // Optimistic UI : si l'utilisateur vient de voter, on ajoute son vote localement
-              final bool optimistic = _hasVoted && _votedBlocId != null;
-              if (optimistic) {
-                totalVotes += 1;
-                if (blocId == _votedBlocId) {
-                  blocVotes += 1;
+              // Calcul du total des votes directement à partir des blocs
+              int totalVotes = 0;
+              for (var bloc in widget.blocs) {
+                if (bloc is Map && bloc['voteCount'] != null) {
+                  totalVotes += (bloc['voteCount'] as int? ?? 0);
                 }
               }
+              
+              // Trouver le bloc correspondant et obtenir son nombre de votes
+              int blocVotes = 0;
+              for (var i = 0; i < widget.blocs.length; i++) {
+                if (i.toString() == blocId && widget.blocs[i] is Map) {
+                  blocVotes = (widget.blocs[i]['voteCount'] as int? ?? 0);
+                  break;
+                }
+              }
+              
+              // Si aucun vote, retourner 0
               if (totalVotes == 0) return 0;
+              
+              // Calcul du pourcentage exact
               return (blocVotes / totalVotes) * 100;
             } catch (e) {
               print('Erreur de calcul de pourcentage: $e');
