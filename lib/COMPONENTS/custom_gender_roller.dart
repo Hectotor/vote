@@ -14,7 +14,7 @@ class CustomGenderRoller {
       'Homme',
       'Femme',
       'Non-binaire',
-      'Pru00e9fu00e8re ne pas dire',
+      'Préfère ne pas dire',
     ];
 
     // Genre su00e9lectionnu00e9 par du00e9faut
