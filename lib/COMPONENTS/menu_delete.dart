@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_functions/cloud_functions.dart';
+
 import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
 import 'package:toplyke/navBar.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 class MenuDelete {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -14,7 +15,11 @@ class MenuDelete {
     
     try {
       final currentUser = _auth.currentUser;
+      print('UID courant pour suppression : \\${currentUser?.uid}');
       if (currentUser == null) {
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('Vous devez être connecté pour supprimer un post.')),
+        );
         navigator.push(
           MaterialPageRoute(builder: (context) => const ConnexionPage()),
         );
@@ -101,12 +106,15 @@ class MenuDelete {
       }
 
       debugPrint('Début de la suppression du post $postId et de toutes ses données associées');
-      
-      // Appeler la Cloud Function pour supprimer le post et toutes ses données associées
-      // Cette approche est plus robuste pour un réseau social avec potentiellement beaucoup de données
-      final callable = FirebaseFunctions.instance.httpsCallable('deletePostAndAllData');
-      await callable.call({'postId': postId});
-      
+
+      // Appeler la nouvelle Cloud Function pour suppression totale
+      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('deletePostAndAllData');
+      final result = await callable.call(<String, dynamic>{'postId': postId});
+      final data = result.data;
+      if (data == null || data['success'] != true) {
+        throw Exception('Erreur lors de la suppression du post (Cloud Function): $data');
+      }
+
       // Afficher le message de succès
       scaffoldMessenger.showSnackBar(
         const SnackBar(
