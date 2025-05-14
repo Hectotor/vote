@@ -2,9 +2,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:toplyke/COMPONENTS/custom_date_roller.dart';
-import 'package:toplyke/COMPONENTS/custom_gender_roller.dart';
+import 'package:toplyke/INSCRIPTION/custom_date_roller.dart';
+import 'package:toplyke/INSCRIPTION/custom_gender_roller.dart';
 import 'package:toplyke/main.dart';
 import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
 import 'package:toplyke/INSCRIPTION/email_verification_popup.dart';
