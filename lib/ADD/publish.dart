@@ -16,13 +16,19 @@ class PublishService {
 
   // Extraire les hashtags du texte
   List<String> _extractHashtags(String text) {
-    final hashtags = RegExp(r'#\w+').allMatches(text).map((m) => m.group(0)!.substring(1)).toList();
+    final hashtags = RegExp(r'#\w+')
+        .allMatches(text)
+        .map((m) => m.group(0)!.substring(1).toLowerCase())
+        .toList();
     return hashtags;
   }
 
   // Extraire les mentions du texte
   List<String> _extractMentions(String text) {
-    final mentions = RegExp(r'@\w+').allMatches(text).map((m) => m.group(0)!.substring(1)).toList();
+    final mentions = RegExp(r'@\w+')
+        .allMatches(text)
+        .map((m) => m.group(0)!.substring(1).toLowerCase())
+        .toList();
     return mentions;
   }
 
@@ -127,7 +133,7 @@ class PublishService {
         for (String hashtag in extractedHashtags) {
           final hashtagDoc = _firestore.collection('hashtags').doc(hashtag);
           transaction.set(hashtagDoc, {
-            'name': '#$hashtag',
+            'name': hashtag.toLowerCase(),
             'postIds': FieldValue.arrayUnion([postRef.id]),
           }, SetOptions(merge: true));
         }
@@ -136,7 +142,7 @@ class PublishService {
         for (String mention in extractedMentions) {
           final mentionDoc = _firestore.collection('mentions').doc(mention);
           transaction.set(mentionDoc, {
-            'name': '@$mention',
+            'name': mention.toLowerCase(),
             'postIds': FieldValue.arrayUnion([postRef.id]),
           }, SetOptions(merge: true));
         }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'show_suggestions.dart';
 
 class DescriptionField extends StatefulWidget {
   final TextEditingController controller;
@@ -16,12 +16,12 @@ class DescriptionField extends StatefulWidget {
 }
 
 class _DescriptionFieldState extends State<DescriptionField> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<String> _hashtags = [];
   List<String> _mentions = [];
   List<String> _suggestions = [];
   OverlayEntry? _overlayEntry;
   final LayerLink _layerLink = LayerLink();
+  final ShowSuggestions _showSuggestionsService = ShowSuggestions();
 
   @override
   void initState() {
@@ -40,13 +40,13 @@ class _DescriptionFieldState extends State<DescriptionField> {
     // Extraire les hashtags
     final hashtagRegex = RegExp(r'#\w+');
     final foundHashtags = hashtagRegex.allMatches(text)
-        .map((match) => match.group(0)!)
+        .map((match) => match.group(0)!.toLowerCase())
         .toList();
 
     // Extraire les mentions
     final mentionRegex = RegExp(r'@\w+');
     final foundMentions = mentionRegex.allMatches(text)
-        .map((match) => match.group(0)!)
+        .map((match) => match.group(0)!.toLowerCase())
         .toList();
 
     // Supprimer les doublons
@@ -71,64 +71,28 @@ class _DescriptionFieldState extends State<DescriptionField> {
     
     if (selection.baseOffset != selection.extentOffset) return;
 
-    // Trouver le mot en cours
-    final lastWord = _getLastWord(text, selection.baseOffset);
+    // Trouver le mot en cours avec le service
+    final lastWord = _showSuggestionsService.getLastWord(text, selection.baseOffset);
     if (lastWord.isEmpty) {
       _hideSuggestions();
       return;
     }
 
-    if (lastWord.startsWith('#')) {
-      final query = lastWord.substring(1).toLowerCase();
-      if (query.isEmpty) {
-        _hideSuggestions();
-        return;
-      }
-
-      // Chercher dans Firebase
-      final snapshot = await _firestore
-          .collection('hashtags')
-          .where('name', isGreaterThanOrEqualTo: '#$query')
-          .where('name', isLessThan: '#${query}z')
-          .limit(5)
-          .get();
-
-      setState(() {
-        _suggestions = snapshot.docs.map((doc) => doc.data()['name'] as String).toList();
-      });
-    } else if (lastWord.startsWith('@')) {
-      final query = lastWord.substring(1).toLowerCase();
-      if (query.isEmpty) {
-        _hideSuggestions();
-        return;
-      }
-
-      // Chercher dans Firebase
-      final snapshot = await _firestore
-          .collection('mentions')
-          .where('name', isGreaterThanOrEqualTo: '@$query')
-          .where('name', isLessThan: '@${query}z')
-          .limit(5)
-          .get();
-
-      setState(() {
-        _suggestions = snapshot.docs.map((doc) => doc.data()['name'] as String).toList();
-      });
-    } else {
+    // Ru00e9cupu00e9rer les suggestions via le service
+    final suggestions = await _showSuggestionsService.getSuggestions(lastWord);
+    if (suggestions.isEmpty) {
       _hideSuggestions();
       return;
     }
+    
+    setState(() {
+      _suggestions = suggestions;
+    });
 
     _showOverlay();
   }
 
-  String _getLastWord(String text, int position) {
-    if (position == 0) return '';
-    
-    final textBeforeCursor = text.substring(0, position);
-    final words = textBeforeCursor.split(' ');
-    return words.last;
-  }
+  // Utilise maintenant la mu00e9thode du service ShowSuggestions
 
   void _showOverlay() {
     _hideSuggestions();
@@ -140,8 +104,8 @@ class _DescriptionFieldState extends State<DescriptionField> {
 
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: offset.dy + renderBox.size.height,
-        left: offset.dx,
+        top: (offset.dy + renderBox.size.height).toDouble(),
+        left: offset.dx.toDouble(),
         width: renderBox.size.width,
         child: Material(
           elevation: 4.0,
@@ -151,7 +115,7 @@ class _DescriptionFieldState extends State<DescriptionField> {
             itemCount: _suggestions.length,
             itemBuilder: (context, index) {
               return ListTile(
-                title: Text(_suggestions[index]),
+                title: Text(_suggestions[index]),  // Déjà formaté avec # ou @
                 onTap: () => _onSuggestionSelected(_suggestions[index]),
               );
             },
@@ -171,7 +135,7 @@ class _DescriptionFieldState extends State<DescriptionField> {
   void _onSuggestionSelected(String suggestion) {
     final text = widget.controller.text;
     final selection = widget.controller.selection;
-    final lastWord = _getLastWord(text, selection.baseOffset);
+    final lastWord = _showSuggestionsService.getLastWord(text, selection.baseOffset);
     
     if (lastWord.isEmpty) return;
 
