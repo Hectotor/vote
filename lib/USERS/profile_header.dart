@@ -9,10 +9,12 @@ import '../ADD/addoption.dart';
 
 class ProfileHeader extends StatefulWidget {
   final String userId;
+  final Map<String, dynamic> userData;
 
   const ProfileHeader({
     Key? key,
     required this.userId,
+    required this.userData,
   }) : super(key: key);
 
   @override
@@ -110,36 +112,21 @@ class _ProfileHeaderState extends State<ProfileHeader> {
     }
   }
 
-  Future<Map<String, dynamic>> _getUserData() async {
-    final doc = await _firestore.collection('users').doc(widget.userId).get();
-    final userData = doc.data() as Map<String, dynamic>;
-    
+  @override
+  void initState() {
+    super.initState();
     // Initialiser le contrôleur de bio avec la valeur existante
-    if (userData['bio'] != null) {
-      _bioController.text = userData['bio'];
+    if (widget.userData['bio'] != null) {
+      _bioController.text = widget.userData['bio'];
     }
-    
-    return userData;
+    // Initialiser l'URL de l'image de profil
+    _profileImageUrl = widget.userData['profilePhotoUrl'];
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _getUserData(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (!snapshot.hasData) {
-          return const Center(child: Text('Profil non trouvé'));
-        }
-
-        final userData = snapshot.data!;
-        _profileImageUrl = userData['profilePhotoUrl'];
-
-        return Container(
-          padding: const EdgeInsets.only(top: 0, bottom: 0, left: 16, right: 16),
+    return Container(
+      padding: const EdgeInsets.only(top: 0, bottom: 0, left: 16, right: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -172,21 +159,21 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                           // Espacement avant le premier stat
                           const SizedBox(width: 16),
                           _buildStatColumn(
-                            count: userData['posts']?.length ?? 0,
+                            count: widget.userData['posts']?.length ?? 0,
                             label: 'Posts',
                             color: Colors.blue,
                           ),
                           // Espacement entre les stats
                           const SizedBox(width: 32),
                           _buildStatColumn(
-                            count: userData['followers']?.length ?? 0,
+                            count: widget.userData['followers']?.length ?? 0,
                             label: 'Followers',
                             color: Colors.purple,
                           ),
                           // Espacement entre les stats
                           const SizedBox(width: 32),
                           _buildStatColumn(
-                            count: userData['following']?.length ?? 0,
+                            count: widget.userData['following']?.length ?? 0,
                             label: 'Following',
                             color: Colors.orange,
                           ),
@@ -203,15 +190,13 @@ class _ProfileHeaderState extends State<ProfileHeader> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                 child: BioField(
-                  userData: userData,
+                  userData: widget.userData,
                   controller: _bioController,
                 ),
               ),
             ],
           ),
         );
-      },
-    );
   }
 
   Widget _buildStatColumn({

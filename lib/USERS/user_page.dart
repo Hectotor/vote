@@ -12,6 +12,9 @@ class UserPage extends StatefulWidget {
 
 class _UserPageState extends State<UserPage> {
   String? _userId;
+  String? _pseudo;
+  Map<String, dynamic>? _userData;
+  bool _showPosts = true; // true pour Posts, false pour Sauvegardés
 
   @override
   void initState() {
@@ -22,39 +25,45 @@ class _UserPageState extends State<UserPage> {
   Future<void> _loadUserId() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      
+      // Récupérer toutes les données utilisateur en une seule fois
+      final data = doc.data() ?? {};
+      
       setState(() {
         _userId = user.uid;
+        _pseudo = data['pseudo'];
+        _userData = data;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_userId == null) {
+    if (_userId == null || _userData == null) {
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
         ),
       );
     }
+    
+
 
     return Scaffold(
       appBar: AppBar(
-        title: FutureBuilder(
-          future: _getUserPseudo(),
-          builder: (context, snapshot) {
-            const SizedBox(width: 16);
-            return Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                snapshot.data ?? 'Utilisateur',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            );
-          },
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            _pseudo ?? 'Utilisateur',
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
         centerTitle: false,
         actions: [
@@ -73,19 +82,127 @@ class _UserPageState extends State<UserPage> {
           const SizedBox(width: 16),
         ],
       ),
-      body: ProfileHeader(userId: _userId!),
+      body: Column(
+        children: [
+          // En-tête du profil avec les données utilisateur déjà chargées
+          ProfileHeader(
+            userId: _userId!,
+            userData: _userData!,
+          ),
+          
+          // Bannière de navigation
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF151019),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                )
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Bouton Posts
+                  _buildNavButton(
+                    label: 'Posts',
+                    icon: Icons.grid_on,
+                    isSelected: _showPosts,
+                    onTap: () {
+                      setState(() {
+                        _showPosts = true;
+                      });
+                    },
+                  ),
+                  
+                  // Bouton Sauvegardés
+                  _buildNavButton(
+                    label: 'Sauvegardés',
+                    icon: Icons.bookmark,
+                    isSelected: !_showPosts,
+                    onTap: () {
+                      setState(() {
+                        _showPosts = false;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Contenu avec IndexedStack pour u00e9viter le rechargement complet
+          Expanded(
+            child: IndexedStack(
+              index: _showPosts ? 0 : 1,
+              children: [
+                // Page des posts de l'utilisateur (index 0)
+                Container(
+                  color: Colors.black,
+                  child: const Center(
+                    child: Text(
+                      'Posts de l\'utilisateur',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+                // Page des posts sauvegardus (index 1)
+                Container(
+                  color: Colors.black,
+                  child: const Center(
+                    child: Text(
+                      'Posts sauvegardés',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Future<String?> _getUserPseudo() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return null;
 
-    final doc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .get();
-
-    return doc.data()?['pseudo'];
+  
+  // Méthode helper pour construire les boutons de navigation
+  Widget _buildNavButton({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: isSelected ? Colors.blue : Colors.grey,
+            size: 24,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.blue : Colors.grey,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Container(
+            height: 2,
+            width: 40,
+            color: isSelected ? Colors.blue : Colors.transparent,
+          ),
+        ],
+      ),
+    );
   }
 }
