@@ -41,7 +41,7 @@ class ResetPasswordPopup {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  backgroundColor: Colors.transparent,
+                  backgroundColor: const Color(0xFF151019),
                 ),
                 child: Container(
                   width: 100,
