@@ -51,10 +51,12 @@ class HeartAnimation extends StatelessWidget {
               child: AnimatedOpacity(
                 opacity: showHeart ? _getRandomOpacity() : 0.0,
                 duration: const Duration(milliseconds: 300),
-                child: Icon(
-                  Icons.favorite,
-                  color: color,
-                  size: _getRandomSize(),
+                child: Text(
+                  '😍', // Emoji heart_eyes (😍)
+                  style: TextStyle(
+                    fontSize: _getRandomSize(),
+                    color: color,
+                  ),
                 ),
               ),
             );
