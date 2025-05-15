@@ -42,22 +42,24 @@ class CustomDateRoller {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setState) {
-            return SafeArea(
-              top: false,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF151019),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 15,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 8),
-                    )
-                  ],
-                ),
-                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).padding.bottom + 16,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF151019),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 15,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 8),
+                  )
+                ],
+              ),
+              child: SafeArea(
+                top: false,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -92,7 +94,7 @@ class CustomDateRoller {
                         backgroundColor: Colors.transparent,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),
