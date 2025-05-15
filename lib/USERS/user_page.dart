@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'profile_header.dart';
+import 'user_content_view.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key});
@@ -143,21 +144,17 @@ class _UserPageState extends State<UserPage> {
                 // Page des posts de l'utilisateur (index 0)
                 Container(
                   color: Colors.black,
-                  child: const Center(
-                    child: Text(
-                      'Posts de l\'utilisateur',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                  child: UserContentView(
+                    userId: _userId!,
+                    showPosts: true,
                   ),
                 ),
-                // Page des posts sauvegardus (index 1)
+                // Page des posts sauvegardés (index 1)
                 Container(
                   color: Colors.black,
-                  child: const Center(
-                    child: Text(
-                      'Posts sauvegardés',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                  child: UserContentView(
+                    userId: _userId!,
+                    showPosts: false,
                   ),
                 ),
               ],
