@@ -7,6 +7,8 @@ import 'package:toplyke/INSCRIPTION/email_verification_popup.dart';
 import 'package:toplyke/INSCRIPTION/steps/pseudo_step.dart';
 import 'package:toplyke/INSCRIPTION/steps/gender_step.dart';
 import 'package:toplyke/INSCRIPTION/steps/birth_date_step.dart';
+import 'package:toplyke/INSCRIPTION/steps/email_step.dart';
+import 'package:toplyke/INSCRIPTION/steps/password_step.dart';
 
 class MultiStepInscription extends StatefulWidget {
   const MultiStepInscription({Key? key}) : super(key: key);
@@ -224,94 +226,6 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
         return false;
     }
   }
-  
-  // Mu00e9thode commune pour cru00e9er des champs de texte stylu00e9s
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    bool obscureText = false,
-    Widget? suffixIcon,
-    TextInputType keyboardType = TextInputType.text,
-    String? hintText,
-    FocusNode? focusNode,
-  }) {
-    return TextFormField(
-      controller: controller,
-      focusNode: focusNode,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      onChanged: (value) {
-        setState(() {});
-        // Convertir automatiquement l'email en minuscules
-        if (keyboardType == TextInputType.emailAddress) {
-          final lowercase = value.toLowerCase();
-          if (value != lowercase) {
-            controller.value = controller.value.copyWith(
-              text: lowercase,
-              selection: TextSelection.collapsed(offset: lowercase.length),
-            );
-          }
-        }
-      },
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration( 
-        filled: true,
-        fillColor: Colors.grey[900],
-        labelText: label,
-        hintText: hintText,
-        hintStyle: TextStyle(
-          color: Colors.grey[600],
-          fontSize: 14,
-        ),
-        labelStyle: TextStyle(
-          color: Colors.grey[400],
-          fontSize: 16,
-        ),
-        prefixIcon: Icon(
-          icon,
-          color: Colors.grey[400],
-          size: 22,
-        ),
-        suffixIcon: suffixIcon,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.grey[800]!,
-            width: 1,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(
-            color: Colors.white,
-            width: 1,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.red[400]!,
-            width: 1,
-          ),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.red[400]!,
-            width: 1.5,
-          ),
-        ),
-        errorStyle: TextStyle(
-          color: Colors.red[400],
-        ),
-      ),
-    );
-  }
 
   Future<void> _register() async {
     if (!_isStepValid()) return;
@@ -468,209 +382,22 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
   }
 
   Widget _buildEmailStep() {
-    return Column(
-      children: [
-        const SizedBox(height: 40),
-        const Text(
-          'Quelle est ton adresse email ?',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 40),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildTextField(
-                controller: _emailController,
-                label: 'Adresse e-mail',
-                icon: Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress,
-                hintText: 'exemple@email.com',
-                focusNode: _emailFocusNode,
-              ),
-              const SizedBox(height: 24),
-              // Bouton Suivant
-              SizedBox(
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading || !_isStepValid() ? null : _nextStep,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.blue[600]!,
-                          Colors.blue[900]!
-                        ],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                    ),
-                    curve: Curves.easeInOut,
-                    child: Container(
-                      width: double.infinity,
-                      height: 56,
-                      alignment: Alignment.center,
-                      child: _isLoading
-                          ? const CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 3,
-                            )
-                          : const Text(
-                              'Suivant',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const Spacer(),
-      ],
+    return EmailStep(
+      emailController: _emailController,
+      emailFocusNode: _emailFocusNode,
+      isLoading: _isLoading,
+      isStepValid: _isStepValid,
+      onNextStep: _nextStep,
     );
   }
 
   Widget _buildPasswordStep() {
-    bool _obscureText = true;
-    
-    return StatefulBuilder(
-      builder: (context, setState) {
-        return Column(
-          children: [
-            const SizedBox(height: 40),
-            const Text(
-              'Crée un mot de passe',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 40),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildTextField(
-                    controller: _passwordController,
-                    label: 'Mot de passe',
-                    icon: Icons.lock_outline,
-                    obscureText: _obscureText,
-                    hintText: 'Au moins 6 caractères',
-                    focusNode: _passwordFocusNode,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureText ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.grey[400],
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureText = !_obscureText;
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (_passwordController.text.isNotEmpty &&
-                      _passwordController.text.length < 6)
-                    const Text(
-                      'Le mot de passe doit contenir au moins 6 caractères',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  const SizedBox(height: 24),
-                  // Bouton Terminer
-                  SizedBox(
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _isLoading || !_isStepValid() ? null : _nextStep,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.blue[600]!,
-                              Colors.blue[900]!
-                            ],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
-                        ),
-                        curve: Curves.easeInOut,
-                        child: Container(
-                          width: double.infinity,
-                          height: 56,
-                          alignment: Alignment.center,
-                          child: _isLoading
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 3,
-                                )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Text(
-                                      'Terminer',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                    SizedBox(width: 10),
-                                    Icon(
-                                      Icons.check_circle_outline,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                  ],
-                                ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Spacer(),
-          ],
-        );
-      },
+    return PasswordStep(
+      passwordController: _passwordController,
+      passwordFocusNode: _passwordFocusNode,
+      isLoading: _isLoading,
+      isStepValid: _isStepValid,
+      onNextStep: _nextStep,
     );
   }
 }
