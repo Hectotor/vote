@@ -59,12 +59,13 @@ class CustomDateRoller {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent, // Arriu00e8re-plan transparent
-      barrierColor: Colors.transparent, // Supprime l'arriu00e8re-plan sombre
+      barrierColor: Colors.transparent, // Arriu00e8re-plan transparent (pas de masque)
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      isDismissible: true,
-      enableDrag: true,
+      isDismissible: false, // Empu00eache la fermeture en appuyant u00e0 l'extu00e9rieur
+      enableDrag: false, // Empu00eache la fermeture par glissement
+
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setState) {
@@ -121,6 +122,9 @@ class CustomDateRoller {
                                   selectedDayIndex = index;
                                   currentDate = newDate;
                                 });
+                                
+                                // Mettre u00e0 jour la date en temps ru00e9el
+                                onDateSelected(currentDate);
                               },
                               childDelegate: ListWheelChildBuilderDelegate(
                                 childCount: days.length,
@@ -186,6 +190,9 @@ class CustomDateRoller {
                                   
                                   currentDate = newDate;
                                 });
+                                
+                                // Mettre u00e0 jour la date en temps ru00e9el
+                                onDateSelected(currentDate);
                               },
                               childDelegate: ListWheelChildBuilderDelegate(
                                 childCount: months.length,
@@ -251,6 +258,9 @@ class CustomDateRoller {
                                   
                                   currentDate = newDate;
                                 });
+                                
+                                // Mettre u00e0 jour la date en temps ru00e9el
+                                onDateSelected(currentDate);
                               },
                               childDelegate: ListWheelChildBuilderDelegate(
                                 childCount: years.length,
@@ -274,7 +284,7 @@ class CustomDateRoller {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -282,8 +292,7 @@ class CustomDateRoller {
           },
         );
       },
-    ).then((_) {
-      onDateSelected(currentDate);
-    });
+    );
+    // La date est du00e9ju00e0 mise u00e0 jour en temps ru00e9el, pas besoin de le faire u00e0 nouveau ici
   }
 }
