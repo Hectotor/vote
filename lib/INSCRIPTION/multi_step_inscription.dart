@@ -34,6 +34,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
 
   bool _isCheckingPseudo = false;
   String? _pseudoErrorMessage;
+  bool _emailVerificationSent = false;
   
   // Focus nodes pour les champs de texte
   final FocusNode _pseudoFocusNode = FocusNode();
@@ -243,8 +244,10 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
         password: _passwordController.text.trim(),
       );
 
-      // Envoyer l'email de vérification
-      await userCredential.user!.sendEmailVerification();
+      // Envoyer l'email de vérification seulement si ce n'est pas déjà fait
+      if (!_emailVerificationSent) {
+        await userCredential.user!.sendEmailVerification();
+      }
 
       // Sauvegarder les informations supplémentaires dans Firestore
       await FirebaseFirestore.instance
@@ -266,8 +269,8 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
         'postsCount': 0,
       });
 
-      // Afficher le popup de vérification d'email
-      if (mounted) {
+      // Afficher le popup de vérification d'email seulement si ce n'est pas déjà fait
+      if (mounted && !_emailVerificationSent) {
         await showDialog(
           context: context,
           builder: (context) => EmailVerificationPopup(
@@ -388,6 +391,12 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
       isLoading: _isLoading,
       isStepValid: _isStepValid,
       onNextStep: _nextStep,
+      onEmailVerificationSent: (email) {
+        // Stocker l'information que l'email a été vérifié
+        setState(() {
+          _emailVerificationSent = true;
+        });
+      },
     );
   }
 
