@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:toplyke/INSCRIPTION/inscription_screen.dart';
+import 'package:toplyke/INSCRIPTION/multi_step_inscription.dart';
 import 'package:toplyke/main.dart';
 import 'package:toplyke/navBar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -305,7 +305,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const InscriptionPage(),
+                              builder: (context) => const MultiStepInscription(),
                             ),
                           );
                         },
