@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:toplyke/INSCRIPTION/email_verification_popup.dart';
+import 'dart:async';
 
 class EmailStep extends StatefulWidget {
   final TextEditingController emailController;
@@ -29,6 +30,9 @@ class _EmailStepState extends State<EmailStep> {
   bool _isVerifying = false;
   bool _showResendButton = false;
   bool _emailSent = false;
+  bool _isSuccessMessage = false;
+  Timer? _verificationTimer;
+  UserCredential? _tempUserCredential;
   @override
   void initState() {
     super.initState();
@@ -36,6 +40,12 @@ class _EmailStepState extends State<EmailStep> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(widget.emailFocusNode);
     });
+  }
+  
+  @override
+  void dispose() {
+    _verificationTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -155,6 +165,41 @@ class _EmailStepState extends State<EmailStep> {
       ],
     );
   }
+  
+  // Vérifie périodiquement si l'email a été confirmé
+  void _startVerificationCheck() {
+    // Annuler tout timer existant
+    _verificationTimer?.cancel();
+    
+    // Créer un nouveau timer qui vérifie toutes les 500ms
+    _verificationTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) async {
+      if (_tempUserCredential?.user == null) {
+        timer.cancel();
+        return;
+      }
+      
+      try {
+        // Recharger l'utilisateur pour obtenir les dernières informations
+        await _tempUserCredential!.user!.reload();
+        
+        // Vérifier si l'email est vérifié
+        final user = _tempUserCredential!.user;
+        if (user != null && user.emailVerified) {
+          // Annuler le timer
+          timer.cancel();
+          
+          // Passer à l'étape suivante
+          if (mounted && widget.onNextStep != null) {
+            widget.onNextStep!();
+          }
+        }
+      } catch (e) {
+        // En cas d'erreur, arrêter la vérification
+        timer.cancel();
+        print('Erreur lors de la vérification de l\'email: $e');
+      }
+    });
+  }
 
   // Renvoie un email de vérification pour un compte existant
   Future<void> _resendVerificationEmail(BuildContext context) async {
@@ -214,13 +259,23 @@ class _EmailStepState extends State<EmailStep> {
     try {
       // Créer un utilisateur temporaire pour envoyer l'email de vérification
       // L'utilisateur sera supprimé lors de la création réelle du compte
-      UserCredential tempUser = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      _tempUserCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: 'TemporaryPassword123!', // Mot de passe temporaire qui sera remplacé
       );
       
       // Envoyer l'email de vérification
-      await tempUser.user!.sendEmailVerification();
+      await _tempUserCredential!.user!.sendEmailVerification();
+      
+      // Afficher un message de succès en vert
+      setState(() {
+        _emailErrorMessage = 'Lien de confirmation envoyé. Clique dessus pour activer ton compte.';
+        _isSuccessMessage = true;
+        _showResendButton = true;  // Afficher le lien de renvoi
+      });
+      
+      // Démarrer une vérification périodique pour voir si l'email a été confirmé
+      _startVerificationCheck();
       
       // Afficher le popup de confirmation
       if (context.mounted) {
@@ -232,8 +287,8 @@ class _EmailStepState extends State<EmailStep> {
         );
       }
       
-      // Supprimer l'utilisateur temporaire
-      await tempUser.user!.delete();
+      // Ne pas supprimer l'utilisateur temporaire tout de suite
+      // Il sera supprimé plus tard si l'utilisateur ne confirme pas son email
       
       // Notifier que l'email a été envoyé (si le callback est fourni)
       if (widget.onEmailVerificationSent != null) {
@@ -353,7 +408,7 @@ class _EmailStepState extends State<EmailStep> {
           ),
         ),
         errorStyle: TextStyle(
-          color: Colors.red[400],
+          color: _isSuccessMessage ? Colors.green : Colors.red[400],
         ),
       ),
       onChanged: (value) {
@@ -370,6 +425,7 @@ class _EmailStepState extends State<EmailStep> {
         if (_emailErrorMessage != null) {
           setState(() {
             _emailErrorMessage = null;
+            _isSuccessMessage = false;
           });
         }
       },
