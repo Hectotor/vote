@@ -5,6 +5,7 @@ import 'package:toplyke/INSCRIPTION/custom_date_roller.dart';
 import 'package:toplyke/INSCRIPTION/custom_gender_roller.dart';
 import 'package:toplyke/INSCRIPTION/email_verification_popup.dart';
 import 'package:toplyke/INSCRIPTION/steps/pseudo_step.dart';
+import 'package:toplyke/INSCRIPTION/steps/gender_step.dart';
 
 class MultiStepInscription extends StatefulWidget {
   const MultiStepInscription({Key? key}) : super(key: key);
@@ -425,101 +426,12 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
   }
 
   Widget _buildGenderStep() {
-    return Column(
-      children: [
-        const SizedBox(height: 40), // Espacement depuis le haut
-        const Text(
-          'Tu es?',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 40), // Espacement avant le bouton
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _openGenderSelector,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[900],
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: Text(
-                    _genderController.text.isEmpty
-                        ? 'Homme'
-                        : _genderController.text,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Bouton Suivant
-              SizedBox(
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading || !_isStepValid() ? null : _nextStep,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.blue[600]!,
-                          Colors.blue[900]!
-                        ],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                    ),
-                    curve: Curves.easeInOut,
-                    child: Container(
-                      width: double.infinity,
-                      height: 56,
-                      alignment: Alignment.center,
-                      child: _isLoading
-                          ? const CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 3,
-                            )
-                          : const Text(
-                              'Suivant',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Pousse le contenu vers le haut
-        const Spacer(),
-      ],
+    return GenderStep(
+      genderController: _genderController,
+      onOpenGenderSelector: _openGenderSelector,
+      isLoading: _isLoading,
+      isStepValid: _isStepValid,
+      onNextStep: _nextStep,
     );
   }
 
