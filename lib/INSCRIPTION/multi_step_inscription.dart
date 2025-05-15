@@ -303,110 +303,312 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
   }
 
   Widget _buildBirthDateStep() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Quelle est votre date de naissance ?',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+    return Column(
+      children: [
+        const SizedBox(height: 40),
+        const Text(
+          'Quelle est ta date de naissance ?',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-          const SizedBox(height: 32),
-          ElevatedButton(
-            onPressed: () {
-              DateTime? initialDate;
-              if (_dateNaissanceController.text.isNotEmpty) {
-                final parts = _dateNaissanceController.text.split('/');
-                if (parts.length == 3) {
-                  initialDate = DateTime(
-                    int.parse(parts[2]),
-                    int.parse(parts[1]),
-                    int.parse(parts[0]),
-                  );
-                }
-              }
-              
-              CustomDateRoller.show(
-                context,
-                initialDate: initialDate ?? DateTime.now().subtract(const Duration(days: 6570)),
-                minDate: DateTime(1900),
-                maxDate: DateTime.now(),
-                onDateSelected: (date) {
-                  setState(() {
-                    _dateNaissanceController.text = 
-                        '${date.day.toString().padLeft(2, '0')}/'
-                        '${date.month.toString().padLeft(2, '0')}/'
-                        '${date.year}';
-                  });
-                },
-              );
-            },
-            child: Text(
-              _dateNaissanceController.text.isEmpty
-                  ? 'Sélectionner une date'
-                  : _dateNaissanceController.text,
-            ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 40),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    DateTime? initialDate;
+                    if (_dateNaissanceController.text.isNotEmpty) {
+                      final parts = _dateNaissanceController.text.split('/');
+                      if (parts.length == 3) {
+                        initialDate = DateTime(
+                          int.parse(parts[2]),
+                          int.parse(parts[1]),
+                          int.parse(parts[0]),
+                        );
+                      }
+                    }
+                    
+                    CustomDateRoller.show(
+                      context,
+                      initialDate: initialDate ?? DateTime.now().subtract(const Duration(days: 6570)),
+                      minDate: DateTime(1900),
+                      maxDate: DateTime.now(),
+                      onDateSelected: (date) {
+                        setState(() {
+                          _dateNaissanceController.text = 
+                              '${date.day.toString().padLeft(2, '0')}/'
+                              '${date.month.toString().padLeft(2, '0')}/'
+                              '${date.year}';
+                        });
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[900],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    _dateNaissanceController.text.isEmpty
+                        ? 'Sélectionner une date'
+                        : _dateNaissanceController.text,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Bouton Suivant
+              SizedBox(
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isLoading || !_isStepValid() ? null : _nextStep,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue[600]!,
+                          Colors.blue[900]!
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                    ),
+                    curve: Curves.easeInOut,
+                    child: Container(
+                      width: double.infinity,
+                      height: 56,
+                      alignment: Alignment.center,
+                      child: _isLoading
+                          ? const CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            )
+                          : const Text(
+                              'Suivant',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        const Spacer(),
+      ],
     );
   }
 
   Widget _buildPseudoStep() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Choisissez un pseudo',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+    return Column(
+      children: [
+        const SizedBox(height: 40),
+        const Text(
+          'Choisis un pseudo',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-          const SizedBox(height: 32),
-          TextField(
-            controller: _pseudoController,
-            decoration: const InputDecoration(
-              labelText: 'Pseudo',
-              border: OutlineInputBorder(),
-              hintText: 'Entrez votre pseudo',
-            ),
-            onChanged: (_) => setState(() {}),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 40),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _pseudoController,
+                decoration: const InputDecoration(
+                  labelText: 'Pseudo',
+                  border: OutlineInputBorder(),
+                  hintText: 'Entrez votre pseudo',
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 16),
+              if (_pseudoController.text.isNotEmpty && _pseudoController.text.length < 3)
+                const Text(
+                  'Le pseudo doit contenir au moins 3 caractères',
+                  style: TextStyle(color: Colors.red),
+                ),
+              const SizedBox(height: 24),
+              // Bouton Suivant
+              SizedBox(
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isLoading || !_isStepValid() ? null : _nextStep,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue[600]!,
+                          Colors.blue[900]!
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                    ),
+                    curve: Curves.easeInOut,
+                    child: Container(
+                      width: double.infinity,
+                      height: 56,
+                      alignment: Alignment.center,
+                      child: _isLoading
+                          ? const CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            )
+                          : const Text(
+                              'Suivant',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          if (_pseudoController.text.isNotEmpty && _pseudoController.text.length < 3)
-            const Text(
-              'Le pseudo doit contenir au moins 3 caractères',
-              style: TextStyle(color: Colors.red),
-            ),
-        ],
-      ),
+        ),
+        const Spacer(),
+      ],
     );
   }
 
   Widget _buildEmailStep() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Quelle est votre adresse email ?',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+    return Column(
+      children: [
+        const SizedBox(height: 40),
+        const Text(
+          'Quelle est ton adresse email ?',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-          const SizedBox(height: 32),
-          TextField(
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              labelText: 'Email',
-              border: OutlineInputBorder(),
-              hintText: 'exemple@email.com',
-            ),
-            onChanged: (_) => setState(() {}),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 40),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                  hintText: 'exemple@email.com',
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 24),
+              // Bouton Suivant
+              SizedBox(
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isLoading || !_isStepValid() ? null : _nextStep,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue[600]!,
+                          Colors.blue[900]!
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                    ),
+                    curve: Curves.easeInOut,
+                    child: Container(
+                      width: double.infinity,
+                      height: 56,
+                      alignment: Alignment.center,
+                      child: _isLoading
+                          ? const CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            )
+                          : const Text(
+                              'Suivant',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        const Spacer(),
+      ],
     );
   }
 
@@ -415,45 +617,120 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
     
     return StatefulBuilder(
       builder: (context, setState) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Créez un mot de passe',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        return Column(
+          children: [
+            const SizedBox(height: 40),
+            const Text(
+              'Crée un mot de passe',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
-              const SizedBox(height: 32),
-              TextField(
-                controller: _passwordController,
-                obscureText: _obscureText,
-                decoration: InputDecoration(
-                  labelText: 'Mot de passe',
-                  border: const OutlineInputBorder(),
-                  hintText: 'Au moins 6 caractères',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureText ? Icons.visibility : Icons.visibility_off,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 40),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: _obscureText,
+                    decoration: InputDecoration(
+                      labelText: 'Mot de passe',
+                      border: const OutlineInputBorder(),
+                      hintText: 'Au moins 6 caractères',
+                      filled: true,
+                      fillColor: Colors.white,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureText ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureText = !_obscureText;
+                          });
+                        },
+                      ),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureText = !_obscureText;
-                      });
-                    },
+                    onChanged: (_) => setState(() {}),
                   ),
-                ),
-                onChanged: (_) => setState(() {}),
+                  const SizedBox(height: 16),
+                  if (_passwordController.text.isNotEmpty &&
+                      _passwordController.text.length < 6)
+                    const Text(
+                      'Le mot de passe doit contenir au moins 6 caractères',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  const SizedBox(height: 24),
+                  // Bouton Terminer
+                  SizedBox(
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _isLoading || !_isStepValid() ? null : _nextStep,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.blue[600]!,
+                              Colors.blue[900]!
+                            ],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                        ),
+                        curve: Curves.easeInOut,
+                        child: Container(
+                          width: double.infinity,
+                          height: 56,
+                          alignment: Alignment.center,
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Text(
+                                      'Terminer',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                        letterSpacing: 1.2,
+                                      ),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Icon(
+                                      Icons.check_circle_outline,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              if (_passwordController.text.isNotEmpty &&
-                  _passwordController.text.length < 6)
-                const Text(
-                  'Le mot de passe doit contenir au moins 6 caractères',
-                  style: TextStyle(color: Colors.red),
-                ),
-            ],
-          ),
+            ),
+            const Spacer(),
+          ],
         );
       },
     );
