@@ -21,6 +21,14 @@ class BirthDateStep extends StatefulWidget {
 }
 
 class _BirthDateStepState extends State<BirthDateStep> {
+  // Mu00e9thode pour passer u00e0 l'u00e9tape suivante
+  void _goToNextStep() {
+    // Passer directement u00e0 l'u00e9tape suivante
+    if (widget.onNextStep != null) {
+      widget.onNextStep!();
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -66,7 +74,7 @@ class _BirthDateStepState extends State<BirthDateStep> {
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: widget.isLoading || !widget.isStepValid() ? null : widget.onNextStep,
+                  onPressed: widget.isLoading || !widget.isStepValid() ? null : _goToNextStep,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     foregroundColor: Colors.white,

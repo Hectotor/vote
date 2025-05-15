@@ -55,7 +55,8 @@ class CustomDateRoller {
       (index) => index + 1
     );
 
-    await showModalBottomSheet(
+    
+    showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent, // Arriu00e8re-plan transparent
@@ -63,8 +64,9 @@ class CustomDateRoller {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      isDismissible: false, // Empu00eache la fermeture en appuyant u00e0 l'extu00e9rieur
-      enableDrag: false, // Empu00eache la fermeture par glissement
+      isDismissible: true, // Permet la fermeture en appuyant u00e0 l'extu00e9rieur
+      enableDrag: true, // Permet la fermeture par glissement
+      useSafeArea: true, // Utilise la zone su00e9curitaire
 
       builder: (ctx) {
         return StatefulBuilder(
