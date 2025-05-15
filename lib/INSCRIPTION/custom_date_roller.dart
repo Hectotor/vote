@@ -58,7 +58,8 @@ class CustomDateRoller {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF000000),
+      backgroundColor: Colors.transparent, // Arriu00e8re-plan transparent
+      barrierColor: Colors.transparent, // Supprime l'arriu00e8re-plan sombre
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),

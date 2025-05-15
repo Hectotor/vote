@@ -31,6 +31,10 @@ class AddOption extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF000000),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 0.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.white.withValues(alpha: 0.4),
