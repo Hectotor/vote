@@ -23,22 +23,20 @@ class AddOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 300,
+      height: 400,
       padding: EdgeInsets.only(
-        top: 10, 
-        left: 24, 
-        right: 24,
+        top: 14,
         bottom: MediaQuery.of(context).padding.bottom + 16,
       ),
       decoration: BoxDecoration(
         color: const Color(0xFF000000),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.4), // 0.4 opacity
+            color: Colors.white.withValues(alpha: 0.4),
             blurRadius: 30,
             spreadRadius: 0.5,
-            offset: const Offset(0, 10), // ombre légère vers le bas
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -46,35 +44,42 @@ class AddOption extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Barre de glissement supprimée pour correspondre au design de CustomDateRoller
-          SizedBox(height: 16),
-          _buildModernTile(
-            title: 'Choisir une image',
-            icon: Icons.image_outlined,
-            onTap: () => _pickAndProcessImage(context, ImageSource.gallery),
-          ),
-          SizedBox(height: 24),
-          _buildModernTile(
-            title: 'Prendre une photo',
-            icon: Icons.camera_alt_outlined,
-            onTap: () => _pickAndProcessImage(context, ImageSource.camera),
-          ),
-          if (hasImage)
-            Column(
-              children: [
-                SizedBox(height: 24),
-                _buildModernTile(
-                  title: 'Supprimer l\'image',
-                  icon: Icons.delete_outline,
-                  onTap: () {
-                    if (onRemoveImage != null) {
-                      onRemoveImage!();
-                    }
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
+
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: _buildModernTile(
+              title: 'Choisir une image',
+              icon: Icons.image_outlined,
+              onTap: () => _pickAndProcessImage(context, ImageSource.gallery),
             ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: _buildModernTile(
+              title: 'Prendre une photo',
+              icon: Icons.camera_alt_outlined,
+              onTap: () => _pickAndProcessImage(context, ImageSource.camera),
+            ),
+          ),
+          if (hasImage) ...[
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: _buildModernTile(
+                title: 'Supprimer l\'image',
+                icon: Icons.delete_outline,
+                onTap: () {
+                  if (onRemoveImage != null) {
+                    onRemoveImage!();
+                  }
+                  // Ne pas fermer la page automatiquement
+                },
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -136,37 +141,41 @@ class AddOption extends StatelessWidget {
   Widget _buildModernTile({
     required String title,
     required IconData icon,
-    required VoidCallback? onTap,
+    required VoidCallback onTap,
   }) {
-    final isDelete = title == "Supprimer l'image";
-    
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-        decoration: BoxDecoration(
-          color: isDelete ? const Color(0xFFE53E3E) : const Color(0xFF2D3748),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: Colors.white,
-              size: 24,
-            ),
-            SizedBox(width: 8),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: Colors.white, size: 22),
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
