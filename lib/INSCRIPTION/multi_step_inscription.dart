@@ -27,9 +27,24 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  bool _isCheckingPseudo = false;
+  String? _pseudoErrorMessage;
+  
+  // Focus nodes pour les champs de texte
+  final FocusNode _pseudoFocusNode = FocusNode();
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
+    
+    // Ajouter un listener pour vérifier la disponibilité du pseudo
+    _pseudoController.addListener(() {
+      if (_pseudoController.text.length >= 3) {
+        _checkPseudoAvailability();
+      }
+    });
     
     // Ouvrir automatiquement les sélecteurs selon l'étape initiale
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -49,7 +64,55 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
     _dateNaissanceController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    
+    // Libérer les focus nodes
+    _pseudoFocusNode.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    
     super.dispose();
+  }
+  
+  // Vérifie si le pseudo est disponible dans Firestore
+  Future<bool> _isPseudoAvailable(String pseudo) async {
+    try {
+      // Vérifier dans la collection users
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('pseudo', isEqualTo: pseudo.toLowerCase())
+          .limit(1)
+          .get();
+
+      return querySnapshot.docs.isEmpty;
+    } catch (e) {
+      print('Erreur lors de la vérification du pseudo : $e');
+      throw e;
+    }
+  }
+  
+  // Vérifie la disponibilité du pseudo et met à jour l'interface
+  Future<void> _checkPseudoAvailability() async {
+    if (_pseudoController.text.isEmpty) return;
+
+    if (!_isCheckingPseudo) {
+      setState(() {
+        _isCheckingPseudo = true;
+        _pseudoErrorMessage = null;
+      });
+
+      try {
+        bool isAvailable = await _isPseudoAvailable(_pseudoController.text.trim());
+        setState(() {
+          _isCheckingPseudo = false;
+          _pseudoErrorMessage = isAvailable ? null : 'Ce pseudo est déjà utilisé';
+        });
+      } catch (e) {
+        setState(() {
+          _isCheckingPseudo = false;
+          _pseudoErrorMessage = 'Erreur lors de la vérification du pseudo';
+        });
+      }
+    }
   }
   
   // Méthode pour ouvrir le sélecteur de genre
@@ -110,6 +173,21 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
         _openGenderSelector();
       } else if (_currentStep == 1) {
         _openBirthDateSelector();
+      } else if (_currentStep == 2) {
+        // Focus sur le champ de pseudo
+        Future.delayed(const Duration(milliseconds: 400), () {
+          _pseudoFocusNode.requestFocus();
+        });
+      } else if (_currentStep == 3) {
+        // Focus sur le champ d'email
+        Future.delayed(const Duration(milliseconds: 400), () {
+          _emailFocusNode.requestFocus();
+        });
+      } else if (_currentStep == 4) {
+        // Focus sur le champ de mot de passe
+        Future.delayed(const Duration(milliseconds: 400), () {
+          _passwordFocusNode.requestFocus();
+        });
       }
     } else if (_currentStep == 4) {
       _register();
@@ -133,7 +211,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
       case 1: // Date de naissance
         return _dateNaissanceController.text.isNotEmpty;
       case 2: // Pseudo
-        return _pseudoController.text.length >= 3;
+        return _pseudoController.text.length >= 3 && _pseudoErrorMessage == null;
       case 3: // Email
         return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
             .hasMatch(_emailController.text);
@@ -142,6 +220,94 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
       default:
         return false;
     }
+  }
+  
+  // Mu00e9thode commune pour cru00e9er des champs de texte stylu00e9s
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    TextInputType keyboardType = TextInputType.text,
+    String? hintText,
+    FocusNode? focusNode,
+  }) {
+    return TextFormField(
+      controller: controller,
+      focusNode: focusNode,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      onChanged: (value) {
+        setState(() {});
+        // Convertir automatiquement l'email en minuscules
+        if (keyboardType == TextInputType.emailAddress) {
+          final lowercase = value.toLowerCase();
+          if (value != lowercase) {
+            controller.value = controller.value.copyWith(
+              text: lowercase,
+              selection: TextSelection.collapsed(offset: lowercase.length),
+            );
+          }
+        }
+      },
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration( 
+        filled: true,
+        fillColor: Colors.grey[900],
+        labelText: label,
+        hintText: hintText,
+        hintStyle: TextStyle(
+          color: Colors.grey[600],
+          fontSize: 14,
+        ),
+        labelStyle: TextStyle(
+          color: Colors.grey[400],
+          fontSize: 16,
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: Colors.grey[400],
+          size: 22,
+        ),
+        suffixIcon: suffixIcon,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(
+            color: Colors.grey[800]!,
+            width: 1,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(
+            color: Colors.white,
+            width: 1,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(
+            color: Colors.red[400]!,
+            width: 1,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(
+            color: Colors.red[400]!,
+            width: 1.5,
+          ),
+        ),
+        errorStyle: TextStyle(
+          color: Colors.red[400],
+        ),
+      ),
+    );
   }
 
   Future<void> _register() async {
@@ -459,7 +625,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
       children: [
         const SizedBox(height: 40),
         const Text(
-          'Choisis un pseudo',
+          'Choisis ton pseudo',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -473,22 +639,35 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextField(
+              _buildTextField(
                 controller: _pseudoController,
-                decoration: const InputDecoration(
-                  labelText: 'Pseudo',
-                  border: OutlineInputBorder(),
-                  hintText: 'Entrez votre pseudo',
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                onChanged: (_) => setState(() {}),
+                label: 'Pseudo',
+                icon: Icons.person_outline,
+                focusNode: _pseudoFocusNode,
+                suffixIcon: _isCheckingPseudo
+                    ? Container(
+                        width: 20,
+                        height: 20,
+                        margin: const EdgeInsets.all(12),
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.grey,
+                        ),
+                      )
+                    : _pseudoErrorMessage == null && _pseudoController.text.length >= 3
+                        ? const Icon(Icons.check_circle, color: Colors.green)
+                        : null,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               if (_pseudoController.text.isNotEmpty && _pseudoController.text.length < 3)
                 const Text(
                   'Le pseudo doit contenir au moins 3 caractères',
                   style: TextStyle(color: Colors.red),
+                ),
+              if (_pseudoErrorMessage != null)
+                Text(
+                  _pseudoErrorMessage!,
+                  style: TextStyle(color: Colors.red[400]),
                 ),
               const SizedBox(height: 24),
               // Bouton Suivant
@@ -568,17 +747,13 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextField(
+              _buildTextField(
                 controller: _emailController,
+                label: 'Adresse e-mail',
+                icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                  hintText: 'exemple@email.com',
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                onChanged: (_) => setState(() {}),
+                hintText: 'exemple@email.com',
+                focusNode: _emailFocusNode,
               ),
               const SizedBox(height: 24),
               // Bouton Suivant
@@ -662,27 +837,24 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextField(
+                  _buildTextField(
                     controller: _passwordController,
+                    label: 'Mot de passe',
+                    icon: Icons.lock_outline,
                     obscureText: _obscureText,
-                    decoration: InputDecoration(
-                      labelText: 'Mot de passe',
-                      border: const OutlineInputBorder(),
-                      hintText: 'Au moins 6 caractères',
-                      filled: true,
-                      fillColor: Colors.white,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureText ? Icons.visibility : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureText = !_obscureText;
-                          });
-                        },
+                    hintText: 'Au moins 6 caractères',
+                    focusNode: _passwordFocusNode,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureText ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.grey[400],
                       ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureText = !_obscureText;
+                        });
+                      },
                     ),
-                    onChanged: (_) => setState(() {}),
                   ),
                   const SizedBox(height: 16),
                   if (_passwordController.text.isNotEmpty &&
