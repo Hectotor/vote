@@ -752,7 +752,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
                 label: 'Adresse e-mail',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
-                hintText: 'exemple@email.com',
+
                 focusNode: _emailFocusNode,
               ),
               const SizedBox(height: 24),
