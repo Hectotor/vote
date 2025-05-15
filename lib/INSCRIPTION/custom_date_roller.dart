@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart' show CupertinoDatePicker, CupertinoDatePickerMode;
 
 class CustomDateRoller {
   static Future<void> show(
@@ -10,25 +9,51 @@ class CustomDateRoller {
     DateTime? maxDate,
   }) async {
     final now = DateTime.now();
-    final minYear = minDate?.year ?? 1900;
-    final maxYear = maxDate?.year ?? now.year;
     
     // S'assurer que la date initiale n'est pas dans le futur
-    DateTime safeInitialDate = initialDate ?? now;
-    if (safeInitialDate.isAfter(now)) {
-      safeInitialDate = now;
+    DateTime currentDate = initialDate ?? DateTime(now.year - 18, now.month, now.day);
+    if (currentDate.isAfter(now)) {
+      currentDate = now;
     }
     
-    DateTime currentDate = safeInitialDate;
+    // Limites de dates
+    final DateTime minDateTime = minDate ?? DateTime(1900, 1, 1);
+    final DateTime maxDateTime = maxDate ?? now;
     
-    // Extraire les composants de date
-    int selectedDay = currentDate.day;
-    int selectedMonth = currentDate.month;
-    int selectedYear = currentDate.year;
+    // Listes pour les jours, mois et années
+    final List<int> years = List.generate(
+      maxDateTime.year - minDateTime.year + 1, 
+      (index) => minDateTime.year + index
+    ).reversed.toList(); // Années en ordre décroissant
     
-    void updateCurrentDate() {
-      currentDate = DateTime(selectedYear, selectedMonth, selectedDay);
+    final List<String> months = [
+      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+    ];
+    
+    // Indices sélectionnés initialement
+    int selectedYearIndex = years.indexOf(currentDate.year);
+    int selectedMonthIndex = currentDate.month - 1;
+    int selectedDayIndex = currentDate.day - 1;
+    
+    // Contrôleurs de défilement
+    final FixedExtentScrollController yearController = 
+        FixedExtentScrollController(initialItem: selectedYearIndex);
+    final FixedExtentScrollController monthController = 
+        FixedExtentScrollController(initialItem: selectedMonthIndex);
+    final FixedExtentScrollController dayController = 
+        FixedExtentScrollController(initialItem: selectedDayIndex);
+    
+    // Fonction pour obtenir le nombre de jours dans un mois
+    int getDaysInMonth(int year, int month) {
+      return DateTime(year, month + 1, 0).day;
     }
+    
+    // Liste initiale des jours
+    List<int> days = List.generate(
+      getDaysInMonth(currentDate.year, currentDate.month), 
+      (index) => index + 1
+    );
 
     await showModalBottomSheet(
       context: context,
@@ -66,23 +91,186 @@ class CustomDateRoller {
                     const SizedBox(height: 14),
                     SizedBox(
                       height: 240,
-                      child: CupertinoDatePicker(
-                        mode: CupertinoDatePickerMode.date,
-                        initialDateTime: currentDate,
-                        onDateTimeChanged: (newDate) {
-                          // Ne pas autoriser la sélection d'une date future
-                          if (newDate.isAfter(now)) {
-                            return;
-                          }
-                          selectedDay = newDate.day;
-                          selectedMonth = newDate.month;
-                          selectedYear = newDate.year;
-                          updateCurrentDate();
-                        },
-                        minimumYear: minYear,
-                        maximumYear: maxYear,
-                        maximumDate: now,
-                        backgroundColor: Colors.transparent,
+                      child: Row(
+                        children: [
+                          // Sélecteur de jour
+                          Expanded(
+                            child: ListWheelScrollView.useDelegate(
+                              controller: dayController,
+                              itemExtent: 50,
+                              physics: const FixedExtentScrollPhysics(),
+                              perspective: 0.005,
+                              diameterRatio: 1.2,
+                              onSelectedItemChanged: (index) {
+                                // Cru00e9er la nouvelle date
+                                final newDate = DateTime(
+                                  years[selectedYearIndex],
+                                  selectedMonthIndex + 1,
+                                  days[index],
+                                );
+                                
+                                // Vu00e9rifier si la date est dans le futur
+                                if (newDate.isAfter(now)) {
+                                  // Revenir u00e0 la su00e9lection pru00e9cu00e9dente
+                                  dayController.jumpToItem(selectedDayIndex);
+                                  return;
+                                }
+                                
+                                setState(() {
+                                  selectedDayIndex = index;
+                                  currentDate = newDate;
+                                });
+                              },
+                              childDelegate: ListWheelChildBuilderDelegate(
+                                childCount: days.length,
+                                builder: (context, index) {
+                                  return Center(
+                                    child: Text(
+                                      days[index].toString(),
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: index == selectedDayIndex 
+                                            ? FontWeight.bold 
+                                            : FontWeight.normal,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          
+                          // Sélecteur de mois
+                          Expanded(
+                            child: ListWheelScrollView.useDelegate(
+                              controller: monthController,
+                              itemExtent: 50,
+                              physics: const FixedExtentScrollPhysics(),
+                              perspective: 0.005,
+                              diameterRatio: 1.2,
+                              onSelectedItemChanged: (index) {
+                                // Calculer le nombre de jours dans le nouveau mois
+                                final newDaysInMonth = getDaysInMonth(years[selectedYearIndex], index + 1);
+                                final newDays = List.generate(newDaysInMonth, (i) => i + 1);
+                                
+                                // Ajuster le jour sélectionné si nécessaire
+                                int newDayIndex = selectedDayIndex;
+                                if (newDayIndex >= newDays.length) {
+                                  newDayIndex = newDays.length - 1;
+                                }
+                                
+                                // Créer la nouvelle date
+                                final newDate = DateTime(
+                                  years[selectedYearIndex],
+                                  index + 1,
+                                  newDays[newDayIndex],
+                                );
+                                
+                                // Vérifier si la date est dans le futur
+                                if (newDate.isAfter(now)) {
+                                  // Revenir à la sélection précédente
+                                  monthController.jumpToItem(selectedMonthIndex);
+                                  return;
+                                }
+                                
+                                setState(() {
+                                  selectedMonthIndex = index;
+                                  days = newDays;
+                                  
+                                  if (selectedDayIndex != newDayIndex) {
+                                    selectedDayIndex = newDayIndex;
+                                    dayController.jumpToItem(selectedDayIndex);
+                                  }
+                                  
+                                  currentDate = newDate;
+                                });
+                              },
+                              childDelegate: ListWheelChildBuilderDelegate(
+                                childCount: months.length,
+                                builder: (context, index) {
+                                  return Center(
+                                    child: Text(
+                                      months[index],
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: index == selectedMonthIndex 
+                                            ? FontWeight.bold 
+                                            : FontWeight.normal,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          
+                          // Sélecteur d'année
+                          Expanded(
+                            child: ListWheelScrollView.useDelegate(
+                              controller: yearController,
+                              itemExtent: 50,
+                              physics: const FixedExtentScrollPhysics(),
+                              perspective: 0.005,
+                              diameterRatio: 1.2,
+                              onSelectedItemChanged: (index) {
+                                // Calculer le nombre de jours dans le mois pour la nouvelle année
+                                final newDaysInMonth = getDaysInMonth(years[index], selectedMonthIndex + 1);
+                                final newDays = List.generate(newDaysInMonth, (i) => i + 1);
+                                
+                                // Ajuster le jour sélectionné si nécessaire
+                                int newDayIndex = selectedDayIndex;
+                                if (newDayIndex >= newDays.length) {
+                                  newDayIndex = newDays.length - 1;
+                                }
+                                
+                                // Créer la nouvelle date
+                                final newDate = DateTime(
+                                  years[index],
+                                  selectedMonthIndex + 1,
+                                  newDays[newDayIndex],
+                                );
+                                
+                                // Vérifier si la date est dans le futur
+                                if (newDate.isAfter(now)) {
+                                  // Revenir à la sélection précédente
+                                  yearController.jumpToItem(selectedYearIndex);
+                                  return;
+                                }
+                                
+                                setState(() {
+                                  selectedYearIndex = index;
+                                  days = newDays;
+                                  
+                                  if (selectedDayIndex != newDayIndex) {
+                                    selectedDayIndex = newDayIndex;
+                                    dayController.jumpToItem(selectedDayIndex);
+                                  }
+                                  
+                                  currentDate = newDate;
+                                });
+                              },
+                              childDelegate: ListWheelChildBuilderDelegate(
+                                childCount: years.length,
+                                builder: (context, index) {
+                                  return Center(
+                                    child: Text(
+                                      years[index].toString(),
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: index == selectedYearIndex 
+                                            ? FontWeight.bold 
+                                            : FontWeight.normal,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 24),

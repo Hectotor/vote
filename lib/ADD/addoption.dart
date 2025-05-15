@@ -23,48 +23,31 @@ class AddOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 500,
-            decoration: BoxDecoration(
-              color: const Color(0xFF151019),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 15,
-                  spreadRadius: 1,
-                  offset: const Offset(0, 8),
-                )
-              ],
-            ),
-      
-      padding: EdgeInsets.only(top: 10, left: 24, right: 24),
+      height: 300,
+      padding: EdgeInsets.only(
+        top: 10, 
+        left: 24, 
+        right: 24,
+        bottom: MediaQuery.of(context).padding.bottom + 16,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF000000),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.4), // 0.4 opacity
+            blurRadius: 30,
+            spreadRadius: 0.5,
+            offset: const Offset(0, 10), // ombre légère vers le bas
+          ),
+        ],
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 150),
-            child: Container(
-              height: 6,
-              decoration: BoxDecoration(
-                color: const Color(0xFF2D3748),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              alignment: Alignment.center,
-            ),
-          ),
+          // Barre de glissement supprimée pour correspondre au design de CustomDateRoller
           SizedBox(height: 16),
-          Text(
-            'Gérer',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
-          ),
-          SizedBox(height: 32),
           _buildModernTile(
             title: 'Choisir une image',
             icon: Icons.image_outlined,

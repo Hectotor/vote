@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart' show CupertinoPicker, FixedExtentScrollController;
 
 class CustomGenderRoller {
   static Future<void> show(
@@ -15,18 +14,19 @@ class CustomGenderRoller {
       'Préfère ne pas dire',
     ];
     
-    int selectedIndex = initialGender != null ? genders.indexOf(initialGender) : 0;
-    if (selectedIndex == -1) selectedIndex = 0;
+    // Initialisation de l'index sélectionné
+    int selectedIndex = initialGender != null ? genders.indexOf(initialGender) : -1;
+    if (selectedIndex < 0) selectedIndex = 0;
     
-    String selectedGender = genders[selectedIndex];
-    final FixedExtentScrollController scrollController = 
-        FixedExtentScrollController(initialItem: selectedIndex);
-    // Genre sélectionné par défaut
+    // Contrôleur de défilement
+    final FixedExtentScrollController controller = FixedExtentScrollController(
+      initialItem: selectedIndex,
+    );
 
-    // Variable pour stocker le genre sélectionné, accessible via une closure
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: const Color(0xFF000000),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -37,7 +37,7 @@ class CustomGenderRoller {
           builder: (context, setState) {
             return Container(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).padding.bottom + 16, // Ajoute un padding supplémentaire en bas
+                bottom: MediaQuery.of(context).padding.bottom + 16,
               ),
               decoration: BoxDecoration(
                 color: const Color(0xFF000000),
@@ -46,13 +46,11 @@ class CustomGenderRoller {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.4), // plus doux
+                    color: Colors.white.withValues(alpha: 0.4),
                     blurRadius: 30,
                     spreadRadius: 0.5,
-                    offset: const Offset(0, 10), // ombre légère vers le bas
+                    offset: const Offset(0, 10),
                   ),
-
-
                 ],
               ),
               child: SafeArea(
@@ -62,30 +60,39 @@ class CustomGenderRoller {
                   children: [
                     const SizedBox(height: 14),
                     SizedBox(
-                      height: 200,
-                      child: CupertinoPicker(
-                        scrollController: scrollController,
+                      height: 240,
+                      child: ListWheelScrollView.useDelegate(
+                        controller: controller,
                         itemExtent: 50,
+                        physics: const FixedExtentScrollPhysics(),
+                        perspective: 0.005,
+                        diameterRatio: 1.2,
                         onSelectedItemChanged: (index) {
                           setState(() {
-                            selectedGender = genders[index];
+                            selectedIndex = index;
+                            onGenderSelected(genders[index]);
                           });
                         },
-                        children: List<Widget>.generate(
-                          genders.length,
-                          (index) => Center(
-                            child: Text(
-                              genders[index],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
+                        childDelegate: ListWheelChildBuilderDelegate(
+                          childCount: genders.length,
+                          builder: (context, index) {
+                            return Center(
+                              child: Text(
+                                genders[index],
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: index == selectedIndex 
+                                      ? FontWeight.bold 
+                                      : FontWeight.normal,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24), // Augmenté pour plus d'espace en bas
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),
@@ -94,7 +101,9 @@ class CustomGenderRoller {
         );
       },
     ).then((_) {
-      onGenderSelected(selectedGender);
+      if (selectedIndex >= 0) {
+        onGenderSelected(genders[selectedIndex]);
+      }
     });
   }
 }
