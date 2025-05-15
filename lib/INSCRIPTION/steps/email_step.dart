@@ -166,6 +166,17 @@ class _EmailStepState extends State<EmailStep> {
     );
   }
   
+  // Supprime l'utilisateur temporaire s'il existe
+  Future<void> _cleanupTempUser() async {
+    if (_tempUserCredential?.user != null) {
+      try {
+        await _tempUserCredential!.user!.delete();
+      } catch (e) {
+        print('Erreur lors de la suppression de l\'utilisateur temporaire: $e');
+      }
+    }
+  }
+  
   // Vérifie périodiquement si l'email a été confirmé
   void _startVerificationCheck() {
     // Annuler tout timer existant
@@ -421,11 +432,19 @@ class _EmailStepState extends State<EmailStep> {
           );
         }
         
-        // Réinitialiser le message d'erreur lorsque l'utilisateur modifie l'email
-        if (_emailErrorMessage != null) {
+        // Réinitialiser le message d'erreur et arrêter la vérification lorsque l'utilisateur modifie l'email
+        if (_emailErrorMessage != null || _verificationTimer != null) {
+          // Annuler la vérification périodique
+          _verificationTimer?.cancel();
+          _verificationTimer = null;
+          
+          // Supprimer l'utilisateur temporaire si possible
+          _cleanupTempUser();
+          
           setState(() {
             _emailErrorMessage = null;
             _isSuccessMessage = false;
+            _tempUserCredential = null;
           });
         }
       },
