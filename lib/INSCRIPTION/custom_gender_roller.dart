@@ -45,12 +45,12 @@ class CustomGenderRoller {
                   top: Radius.circular(16),
                 ),
                 boxShadow: [
-     BoxShadow(
-                      color: Colors.white.withOpacity(0.5), // plus doux
-                      blurRadius: 30,
-                      spreadRadius: 2,
-                      offset: const Offset(0, 10), // ombre légère vers le bas
-                    ),
+                  BoxShadow(
+                    color: Colors.white.withValues(alpha: 0.4), // plus doux
+                    blurRadius: 30,
+                    spreadRadius: 0.5,
+                    offset: const Offset(0, 10), // ombre légère vers le bas
+                  ),
 
 
                 ],

@@ -33,7 +33,7 @@ class CustomDateRoller {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF151019),
+      backgroundColor: const Color(0xFF000000),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -47,15 +47,15 @@ class CustomDateRoller {
                 bottom: MediaQuery.of(context).padding.bottom + 16,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF151019),
+                color: const Color(0xFF000000),
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 15,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 8),
-                  )
+                    color: Colors.white.withValues(alpha: 0.4), // plus doux
+                    blurRadius: 30,
+                    spreadRadius: 0.5,
+                    offset: const Offset(0, 10), // ombre légère vers le bas
+                  ),
                 ],
               ),
               child: SafeArea(
@@ -63,15 +63,6 @@ class CustomDateRoller {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 10),
-                    Container(
-                      width: 120,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2D3748),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
                     const SizedBox(height: 14),
                     SizedBox(
                       height: 240,
