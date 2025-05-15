@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:toplyke/INSCRIPTION/custom_date_roller.dart';
 import 'package:toplyke/INSCRIPTION/custom_gender_roller.dart';
 import 'package:toplyke/INSCRIPTION/email_verification_popup.dart';
+import 'package:toplyke/INSCRIPTION/steps/pseudo_step.dart';
 
 class MultiStepInscription extends StatefulWidget {
   const MultiStepInscription({Key? key}) : super(key: key);
@@ -621,110 +622,23 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
   }
 
   Widget _buildPseudoStep() {
-    return Column(
-      children: [
-        const SizedBox(height: 40),
-        const Text(
-          'Choisis ton pseudo',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 40),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildTextField(
-                controller: _pseudoController,
-                label: 'Pseudo',
-                icon: Icons.person_outline,
-                focusNode: _pseudoFocusNode,
-                suffixIcon: _isCheckingPseudo
-                    ? Container(
-                        width: 20,
-                        height: 20,
-                        margin: const EdgeInsets.all(12),
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.grey,
-                        ),
-                      )
-                    : _pseudoErrorMessage == null && _pseudoController.text.length >= 3
-                        ? const Icon(Icons.check_circle, color: Colors.green)
-                        : null,
-              ),
-              const SizedBox(height: 8),
-              if (_pseudoController.text.isNotEmpty && _pseudoController.text.length < 3)
-                const Text(
-                  'Le pseudo doit contenir au moins 3 caractères',
-                  style: TextStyle(color: Colors.red),
-                ),
-              if (_pseudoErrorMessage != null)
-                Text(
-                  _pseudoErrorMessage!,
-                  style: TextStyle(color: Colors.red[400]),
-                ),
-              const SizedBox(height: 24),
-              // Bouton Suivant
-              SizedBox(
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading || !_isStepValid() ? null : _nextStep,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.blue[600]!,
-                          Colors.blue[900]!
-                        ],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                    ),
-                    curve: Curves.easeInOut,
-                    child: Container(
-                      width: double.infinity,
-                      height: 56,
-                      alignment: Alignment.center,
-                      child: _isLoading
-                          ? const CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 3,
-                            )
-                          : const Text(
-                              'Suivant',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const Spacer(),
-      ],
+    return PseudoStep(
+      pseudoController: _pseudoController,
+      pseudoFocusNode: _pseudoFocusNode,
+      isCheckingPseudo: _isCheckingPseudo,
+      pseudoErrorMessage: _pseudoController.text.isNotEmpty && _pseudoController.text.length < 3
+          ? 'Le pseudo doit contenir au moins 3 caractères'
+          : _pseudoErrorMessage,
+      onPseudoChanged: (value) {
+        if (value.length >= 3) {
+          _checkPseudoAvailability();
+        } else {
+          setState(() {
+            _pseudoErrorMessage = null;
+          });
+        }
+      },
+      onNextStep: _isLoading || !_isStepValid() ? null : _nextStep,
     );
   }
 
@@ -752,7 +666,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
                 label: 'Adresse e-mail',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
-
+                hintText: 'exemple@email.com',
                 focusNode: _emailFocusNode,
               ),
               const SizedBox(height: 24),
