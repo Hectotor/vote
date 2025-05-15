@@ -28,6 +28,20 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
   String? _errorMessage;
 
   @override
+  void initState() {
+    super.initState();
+    
+    // Ouvrir automatiquement les sélecteurs selon l'étape initiale
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_currentStep == 0) {
+        _openGenderSelector();
+      } else if (_currentStep == 1) {
+        _openBirthDateSelector();
+      }
+    });
+  }
+  
+  @override
   void dispose() {
     _pageController.dispose();
     _pseudoController.dispose();
@@ -37,6 +51,51 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
     _passwordController.dispose();
     super.dispose();
   }
+  
+  // Méthode pour ouvrir le sélecteur de genre
+  void _openGenderSelector() {
+    CustomGenderRoller.show(
+      context,
+      initialGender: _genderController.text.isNotEmpty 
+          ? _genderController.text 
+          : 'Homme',
+      onGenderSelected: (gender) {
+        setState(() {
+          _genderController.text = gender;
+        });
+      },
+    );
+  }
+
+  // Méthode pour ouvrir le sélecteur de date de naissance
+  void _openBirthDateSelector() {
+    DateTime? initialDate;
+    if (_dateNaissanceController.text.isNotEmpty) {
+      final parts = _dateNaissanceController.text.split('/');
+      if (parts.length == 3) {
+        initialDate = DateTime(
+          int.parse(parts[2]),
+          int.parse(parts[1]),
+          int.parse(parts[0]),
+        );
+      }
+    }
+    
+    CustomDateRoller.show(
+      context,
+      initialDate: initialDate ?? DateTime.now().subtract(const Duration(days: 6570)),
+      minDate: DateTime(1900),
+      maxDate: DateTime.now(),
+      onDateSelected: (date) {
+        setState(() {
+          _dateNaissanceController.text = 
+              '${date.day.toString().padLeft(2, '0')}/'
+              '${date.month.toString().padLeft(2, '0')}/'
+              '${date.year}';
+        });
+      },
+    );
+  }
 
   void _nextStep() {
     if (_currentStep < 4) {
@@ -45,6 +104,13 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
         curve: Curves.easeInOut,
       );
       setState(() => _currentStep++);
+      
+      // Ouvrir automatiquement les sélecteurs selon l'étape
+      if (_currentStep == 0) {
+        _openGenderSelector();
+      } else if (_currentStep == 1) {
+        _openBirthDateSelector();
+      }
     } else if (_currentStep == 4) {
       _register();
     }
@@ -213,19 +279,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    CustomGenderRoller.show(
-                      context,
-                      initialGender: _genderController.text.isNotEmpty 
-                          ? _genderController.text 
-                          : 'Homme',
-                      onGenderSelected: (gender) {
-                        setState(() {
-                          _genderController.text = gender;
-                        });
-                      },
-                    );
-                  },
+                  onPressed: _openGenderSelector,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[900],
                     foregroundColor: Colors.white,
@@ -236,7 +290,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
                   ),
                   child: Text(
                     _genderController.text.isEmpty
-                        ? 'Sélectionner un genre'
+                        ? 'Homme'
                         : _genderController.text,
                     style: const TextStyle(fontSize: 16),
                   ),
@@ -324,34 +378,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    DateTime? initialDate;
-                    if (_dateNaissanceController.text.isNotEmpty) {
-                      final parts = _dateNaissanceController.text.split('/');
-                      if (parts.length == 3) {
-                        initialDate = DateTime(
-                          int.parse(parts[2]),
-                          int.parse(parts[1]),
-                          int.parse(parts[0]),
-                        );
-                      }
-                    }
-                    
-                    CustomDateRoller.show(
-                      context,
-                      initialDate: initialDate ?? DateTime.now().subtract(const Duration(days: 6570)),
-                      minDate: DateTime(1900),
-                      maxDate: DateTime.now(),
-                      onDateSelected: (date) {
-                        setState(() {
-                          _dateNaissanceController.text = 
-                              '${date.day.toString().padLeft(2, '0')}/'
-                              '${date.month.toString().padLeft(2, '0')}/'
-                              '${date.year}';
-                        });
-                      },
-                    );
-                  },
+                  onPressed: _openBirthDateSelector,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[900],
                     foregroundColor: Colors.white,
