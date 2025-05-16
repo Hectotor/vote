@@ -84,7 +84,7 @@ class PostLikeService {
           transaction.update(postRef, {
             'likesCount': FieldValue.increment(-1)
           });
-          print('[PostLikeService] Post unlikeé');
+          print('[PostLikeService] Post unliké par l\'utilisateur ${user.uid} (${user.email})');
         } else {
           // LIKE - Créer un nouveau document de like
           final likeRef = _firestore.collection('likes').doc();
@@ -98,7 +98,7 @@ class PostLikeService {
           transaction.update(postRef, {
             'likesCount': FieldValue.increment(1)
           });
-          print('[PostLikeService] Post liké');
+          print('[PostLikeService] Post liké par l\'utilisateur ${user.uid} (${user.email})');
         }
       });
       

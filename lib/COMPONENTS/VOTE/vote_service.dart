@@ -82,7 +82,7 @@ class VoteService extends ChangeNotifier {
   Future<bool> hasUserVoted(String postId) async {
     try {
       final user = _auth.currentUser;
-      if (user == null) return false;
+      if (user == null || !user.emailVerified) return false;
       final doc = await _firestore
           .collection('votesPosts')
           .doc('${user.uid}_$postId')

@@ -178,7 +178,7 @@ class _UserContentViewState extends State<UserContentView> {
           // Grille d'images du post
           if (data['blocs'] != null && data['blocs'] is List && (data['blocs'] as List).isNotEmpty)
             PollGridHomeModern(
-              blocs: data['blocs'],
+              blocs: (data['blocs'] as List).cast<Map<String, dynamic>>(),
               postId: postId,
             ),
           
