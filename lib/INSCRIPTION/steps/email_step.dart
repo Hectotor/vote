@@ -30,11 +30,17 @@ class _EmailStepState extends State<EmailStep> {
   String? _errorText;
   bool _isLoading = false;
 
+  bool isValidEmail(String email) {
+    if (email.isEmpty) return false;
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
   Future<void> _handleNextStep() async {
     if (mounted) {
       setState(() {
         _isLoading = true;
         _errorText = null;
+
       });
     }
     try {
@@ -61,6 +67,7 @@ class _EmailStepState extends State<EmailStep> {
         if (mounted) {
           setState(() {
             _errorText = 'Oups, ce compte est déjà utilisé';
+
             _isLoading = false;
           });
         }
@@ -73,6 +80,7 @@ class _EmailStepState extends State<EmailStep> {
         if (mounted) {
           setState(() {
             _errorText = 'Oups, ce compte est déjà utilisé';
+
             _isLoading = false;
           });
         }
@@ -132,6 +140,14 @@ class _EmailStepState extends State<EmailStep> {
                 height: 56,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : () async {
+                    // Vérifier le format de l'email avant de continuer
+                    if (!isValidEmail(widget.emailController.text)) {
+                      setState(() {
+                        _errorText = 'Oups, il y a une erreur dans ton adresse e-mail.';
+                      });
+                      return;
+                    }
+                    
                     if (!widget.isStepValid()) return;
                     await _handleNextStep();
                   },
@@ -202,7 +218,7 @@ class _EmailStepState extends State<EmailStep> {
             filled: true,
             fillColor: Colors.grey[900],
             labelText: 'Adresse e-mail',
-            hintText: 'exemple@email.com',
+            //hintText: 'exemple@email.com',
             hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
             labelStyle: TextStyle(
               color: Colors.grey[400],
