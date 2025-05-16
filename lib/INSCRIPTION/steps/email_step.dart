@@ -34,101 +34,28 @@ class _EmailStepState extends State<EmailStep> {
         _isLoading = true;
       });
     }
+
     try {
       // Désactiver le bouton pendant le traitement
       if (mounted) {
         setState(() {
           _errorText = null; // Réinitialiser l'erreur
+          _isLoading = true;
         });
       }
 
       // Créer le compte avec Firebase Auth
       final email = widget.emailController.text.trim();
-      try {
-        // Vérifier d'abord si l'email existe déjà
-        final List<String> existingEmails = await _auth.fetchSignInMethodsForEmail(email);
-        if (existingEmails.isNotEmpty) {
-          if (mounted) {
-            setState(() {
-              _errorText = 'Cette adresse email est déjà utilisée';
-            });
-          }
-          return;
-        }
 
+      // Vérifier d'abord si l'email existe déjà
+      final List<String> existingEmails = await _auth.fetchSignInMethodsForEmail(email);
+
+      if (existingEmails.isNotEmpty) {
+        // L'email existe déjà, vérifier si il est déjà vérifié
+        await _checkExistingEmail(email);
+      } else {
         // Créer le compte si l'email n'existe pas
-        try {
-          final credential = await _auth.createUserWithEmailAndPassword(
-            email: email,
-            password: 'temp_password', // Mot de passe temporaire qui sera changé plus tard
-          );
-
-          // Vérifier si l'utilisateur a été créé
-          if (credential.user == null) {
-            throw Exception('Échec de la création du compte');
-          }
-
-          // Envoyer l'email de vérification
-          try {
-            await credential.user?.sendEmailVerification();
-            if (mounted) {
-              setState(() {
-                _errorText = 'Un email de vérification a été envoyé à $email. Veuillez le vérifier.';
-              });
-            }
-          } catch (e) {
-            if (mounted) {
-              setState(() {
-                _errorText = 'Échec de l\'envoi de l\'email de vérification: ${e.toString()}';
-              });
-            }
-            throw e; // Relancer l'erreur pour que le bloc catch supérieur la gère
-          }
-        } catch (e) {
-          if (mounted) {
-            setState(() {
-              _errorText = 'Échec de la création du compte: ${e.toString()}';
-            });
-          }
-          throw e; // Relancer l'erreur pour que le bloc catch supérieur la gère
-        }
-
-        // Vérifier si l'email est vérifié
-        if (_auth.currentUser?.emailVerified ?? false) {
-          // L'email est vérifié, on peut passer à l'étape suivante
-          if (mounted) {
-            setState(() {
-              widget.onNextStep?.call(); // Appeler le callback pour passer à l'étape suivante
-            });
-          }
-        } else {
-          // L'email n'est pas encore vérifié
-          if (mounted) {
-            setState(() {
-              _errorText = 'Veuillez vérifier votre email avant de continuer. Nous avons envoyé un lien de vérification à $email';
-            });
-          }
-        }
-      } on FirebaseAuthException catch (e) {
-        // Gérer les erreurs Firebase
-        if (mounted) {
-          setState(() {
-            if (e.code == 'email-already-in-use') {
-              _errorText = 'Cette adresse email est déjà utilisée';
-            } else {
-              _errorText = 'Erreur: ${e.message}';
-            }
-            _isLoading = false;
-          });
-        }
-      } catch (e) {
-        // Gérer d'autres erreurs
-        if (mounted) {
-          setState(() {
-            _errorText = 'Une erreur est survenue: $e';
-            _isLoading = false;
-          });
-        }
+        await _createAccount(email);
       }
     } catch (e) {
       // Gérer d'autres erreurs
@@ -143,6 +70,106 @@ class _EmailStepState extends State<EmailStep> {
         setState(() {
           _isLoading = false;
         });
+      }
+    }
+  }
+
+  Future<void> _checkExistingEmail(String email) async {
+    try {
+      final user = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: 'temp_password',
+      );
+
+      if (user.user?.emailVerified ?? false) {
+        // L'email est déjà vérifié, on peut passer à l'étape suivante
+        if (mounted) {
+          setState(() {
+            widget.onNextStep?.call(); // Appeler le callback pour passer à l'étape suivante
+          });
+        }
+      } else {
+        // L'email existe mais n'est pas vérifié
+        if (mounted) {
+          setState(() {
+            _errorText = 'Cette adresse email est déjà utilisée mais n\'est pas encore vérifiée. Vérifiez votre email.';
+          });
+        }
+      }
+    } catch (e) {
+      // Si on ne peut pas se connecter avec le mot de passe temporaire, l'email n'est pas vérifié
+      if (mounted) {
+        setState(() {
+          _errorText = 'Cette adresse email est déjà utilisée mais n\'est pas encore vérifiée. Vérifiez votre email.';
+        });
+      }
+    }
+  }
+
+  Future<void> _createAccount(String email) async {
+    try {
+      // Vérifier une dernière fois si l'email existe déjà
+      final List<String> existingEmails = await _auth.fetchSignInMethodsForEmail(email);
+      if (existingEmails.isNotEmpty) {
+        await _checkExistingEmail(email);
+        return;
+      }
+
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: 'temp_password', // Mot de passe temporaire qui sera changé plus tard
+      );
+
+      // Vérifier si l'utilisateur a été créé
+      if (credential.user == null) {
+        throw Exception('Échec de la création du compte');
+      }
+
+      // Envoyer l'email de vérification
+      try {
+        await credential.user?.sendEmailVerification();
+        if (mounted) {
+          setState(() {
+            _errorText = 'Un email de vérification a été envoyé à $email. Veuillez le vérifier.';
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _errorText = 'Échec de l\'envoi de l\'email de vérification: ${e.toString()}';
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
+      // Vérifier si l'email est vérifié
+      if (_auth.currentUser?.emailVerified ?? false) {
+        // L'email est vérifié, on peut passer à l'étape suivante
+        if (mounted) {
+          setState(() {
+            widget.onNextStep?.call(); // Appeler le callback pour passer à l'étape suivante
+          });
+        }
+      } else {
+        // L'email n'est pas encore vérifié
+        if (mounted) {
+          setState(() {
+            _errorText = 'Veuillez vérifier votre email avant de continuer. Nous avons envoyé un lien de vérification à $email';
+          });
+        }
+      }
+    } catch (e) {
+      if (e is FirebaseAuthException && e.code == 'email-already-in-use') {
+        // Si l'email est déjà utilisé, vérifier son état de vérification
+        await _checkExistingEmail(email);
+      } else {
+        if (mounted) {
+          setState(() {
+            _errorText = 'Échec de la création du compte: ${e.toString()}';
+          });
+        }
+        throw e; // Relancer l'erreur pour que le bloc catch supérieur la gère
       }
     }
   }
