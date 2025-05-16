@@ -391,12 +391,6 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
       isLoading: _isLoading,
       isStepValid: _isStepValid,
       onNextStep: _nextStep,
-      onEmailVerificationSent: (email) {
-        // Stocker l'information que l'email a été vérifié
-        setState(() {
-          _emailVerificationSent = true;
-        });
-      },
     );
   }
 
