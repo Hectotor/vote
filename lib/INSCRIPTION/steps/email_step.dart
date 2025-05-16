@@ -26,8 +26,14 @@ class EmailStep extends StatefulWidget {
 class _EmailStepState extends State<EmailStep> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? _errorText;
+  bool _isLoading = false;
 
   Future<void> _handleNextStep() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
     try {
       // Désactiver le bouton pendant le traitement
       if (mounted) {
@@ -51,16 +57,44 @@ class _EmailStepState extends State<EmailStep> {
         }
 
         // Créer le compte si l'email n'existe pas
-        final credential = await _auth.createUserWithEmailAndPassword(
-          email: email,
-          password: 'temp_password', // Mot de passe temporaire qui sera changé plus tard
-        );
+        try {
+          final credential = await _auth.createUserWithEmailAndPassword(
+            email: email,
+            password: 'temp_password', // Mot de passe temporaire qui sera changé plus tard
+          );
 
-        // Envoyer l'email de vérification
-        await credential.user?.sendEmailVerification();
+          // Vérifier si l'utilisateur a été créé
+          if (credential.user == null) {
+            throw Exception('Échec de la création du compte');
+          }
+
+          // Envoyer l'email de vérification
+          try {
+            await credential.user?.sendEmailVerification();
+            if (mounted) {
+              setState(() {
+                _errorText = 'Un email de vérification a été envoyé à $email. Veuillez le vérifier.';
+              });
+            }
+          } catch (e) {
+            if (mounted) {
+              setState(() {
+                _errorText = 'Échec de l\'envoi de l\'email de vérification: ${e.toString()}';
+              });
+            }
+            throw e; // Relancer l'erreur pour que le bloc catch supérieur la gère
+          }
+        } catch (e) {
+          if (mounted) {
+            setState(() {
+              _errorText = 'Échec de la création du compte: ${e.toString()}';
+            });
+          }
+          throw e; // Relancer l'erreur pour que le bloc catch supérieur la gère
+        }
 
         // Vérifier si l'email est vérifié
-        if (credential.user?.emailVerified ?? false) {
+        if (_auth.currentUser?.emailVerified ?? false) {
           // L'email est vérifié, on peut passer à l'étape suivante
           if (mounted) {
             setState(() {
@@ -84,6 +118,7 @@ class _EmailStepState extends State<EmailStep> {
             } else {
               _errorText = 'Erreur: ${e.message}';
             }
+            _isLoading = false;
           });
         }
       } catch (e) {
@@ -91,6 +126,7 @@ class _EmailStepState extends State<EmailStep> {
         if (mounted) {
           setState(() {
             _errorText = 'Une erreur est survenue: $e';
+            _isLoading = false;
           });
         }
       }
@@ -99,6 +135,13 @@ class _EmailStepState extends State<EmailStep> {
       if (mounted) {
         setState(() {
           _errorText = 'Une erreur est survenue: $e';
+          _isLoading = false;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
         });
       }
     }
@@ -139,8 +182,8 @@ class _EmailStepState extends State<EmailStep> {
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () async {
-                    if (widget.isLoading || !widget.isStepValid()) return;
+                  onPressed: _isLoading ? null : () async {
+                    if (!widget.isStepValid()) return;
                     await _handleNextStep();
                   },
                   style: ElevatedButton.styleFrom(
@@ -170,7 +213,7 @@ class _EmailStepState extends State<EmailStep> {
                       width: double.infinity,
                       height: 56,
                       alignment: Alignment.center,
-                      child: widget.isLoading
+                      child: _isLoading
                           ? const CircularProgressIndicator(
                               color: Colors.white,
                               strokeWidth: 3,
