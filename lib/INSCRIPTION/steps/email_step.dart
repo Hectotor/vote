@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class EmailStep extends StatefulWidget {
   final TextEditingController emailController;
@@ -6,6 +7,7 @@ class EmailStep extends StatefulWidget {
   final bool isLoading;
   final VoidCallback? onNextStep;
   final bool Function() isStepValid;
+  final String? errorText;
 
   const EmailStep({
     Key? key,
@@ -14,6 +16,7 @@ class EmailStep extends StatefulWidget {
     required this.isLoading,
     required this.isStepValid,
     this.onNextStep,
+    this.errorText,
   }) : super(key: key);
 
   @override
@@ -21,6 +24,86 @@ class EmailStep extends StatefulWidget {
 }
 
 class _EmailStepState extends State<EmailStep> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String? _errorText;
+
+  Future<void> _handleNextStep() async {
+    try {
+      // Désactiver le bouton pendant le traitement
+      if (mounted) {
+        setState(() {
+          _errorText = null; // Réinitialiser l'erreur
+        });
+      }
+
+      // Créer le compte avec Firebase Auth
+      final email = widget.emailController.text.trim();
+      try {
+        // Vérifier d'abord si l'email existe déjà
+        final List<String> existingEmails = await _auth.fetchSignInMethodsForEmail(email);
+        if (existingEmails.isNotEmpty) {
+          if (mounted) {
+            setState(() {
+              _errorText = 'Cette adresse email est déjà utilisée';
+            });
+          }
+          return;
+        }
+
+        // Créer le compte si l'email n'existe pas
+        final credential = await _auth.createUserWithEmailAndPassword(
+          email: email,
+          password: 'temp_password', // Mot de passe temporaire qui sera changé plus tard
+        );
+
+        // Envoyer l'email de vérification
+        await credential.user?.sendEmailVerification();
+
+        // Vérifier si l'email est vérifié
+        if (credential.user?.emailVerified ?? false) {
+          // L'email est vérifié, on peut passer à l'étape suivante
+          if (mounted) {
+            setState(() {
+              widget.onNextStep?.call(); // Appeler le callback pour passer à l'étape suivante
+            });
+          }
+        } else {
+          // L'email n'est pas encore vérifié
+          if (mounted) {
+            setState(() {
+              _errorText = 'Veuillez vérifier votre email avant de continuer. Nous avons envoyé un lien de vérification à $email';
+            });
+          }
+        }
+      } on FirebaseAuthException catch (e) {
+        // Gérer les erreurs Firebase
+        if (mounted) {
+          setState(() {
+            if (e.code == 'email-already-in-use') {
+              _errorText = 'Cette adresse email est déjà utilisée';
+            } else {
+              _errorText = 'Erreur: ${e.message}';
+            }
+          });
+        }
+      } catch (e) {
+        // Gérer d'autres erreurs
+        if (mounted) {
+          setState(() {
+            _errorText = 'Une erreur est survenue: $e';
+          });
+        }
+      }
+    } catch (e) {
+      // Gérer d'autres erreurs
+      if (mounted) {
+        setState(() {
+          _errorText = 'Une erreur est survenue: $e';
+        });
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +139,10 @@ class _EmailStepState extends State<EmailStep> {
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: widget.isLoading || !widget.isStepValid() ? null : widget.onNextStep,
+                  onPressed: () async {
+                    if (widget.isLoading || !widget.isStepValid()) return;
+                    await _handleNextStep();
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     foregroundColor: Colors.white,
@@ -111,73 +197,89 @@ class _EmailStepState extends State<EmailStep> {
   }
 
   Widget _buildTextField() {
-    return TextFormField(
-      controller: widget.emailController,
-      focusNode: widget.emailFocusNode,
-      keyboardType: TextInputType.emailAddress,
-      textInputAction: TextInputAction.next,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.grey[900],
-        labelText: 'Adresse e-mail',
-        hintText: 'exemple@email.com',
-        hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
-        labelStyle: TextStyle(
-          color: Colors.grey[400],
-          fontSize: 16,
-        ),
-        prefixIcon: Icon(
-          Icons.email_outlined,
-          color: Colors.grey[400],
-          size: 22,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.grey[800]!,
-            width: 1,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextFormField(
+          controller: widget.emailController,
+          focusNode: widget.emailFocusNode,
+          keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.grey[900],
+            labelText: 'Adresse e-mail',
+            hintText: 'exemple@email.com',
+            hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
+            labelStyle: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 16,
+            ),
+            prefixIcon: Icon(
+              Icons.email_outlined,
+              color: Colors.grey[400],
+              size: 22,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: Colors.grey[800]!,
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Colors.white,
+                width: 1,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: Colors.red[400]!,
+                width: 1,
+              ),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: Colors.red[400]!,
+                width: 1.5,
+              ),
+            ),
+            errorStyle: TextStyle(
+              color: Colors.red[400],
+            ),
           ),
+          onChanged: (value) {
+            // Convertir l'email en minuscules
+            String lowercase = value.toLowerCase();
+            if (value != lowercase) {
+              widget.emailController.value = widget.emailController.value.copyWith(
+                text: lowercase,
+                selection: TextSelection.collapsed(offset: lowercase.length),
+              );
+            }
+          },
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(
-            color: Colors.white,
-            width: 1,
+        if (_errorText != null)
+          Padding(
+            padding: EdgeInsets.only(top: 8.0),
+            child: Text(
+              _errorText!,
+              style: TextStyle(
+                color: Colors.red[400],
+                fontSize: 12,
+              ),
+            ),
           ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.red[400]!,
-            width: 1,
-          ),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.red[400]!,
-            width: 1.5,
-          ),
-        ),
-        errorStyle: TextStyle(
-          color: Colors.red[400],
-        ),
-      ),
-      onChanged: (value) {
-        // Convertir l'email en minuscules
-        final lowercase = value.toLowerCase();
-        if (value != lowercase) {
-          widget.emailController.value = widget.emailController.value.copyWith(
-            text: lowercase,
-            selection: TextSelection.collapsed(offset: lowercase.length),
-          );
-        }
-      },
+      ],
     );
   }
 }
