@@ -84,15 +84,6 @@ class _PasswordStepState extends State<PasswordStep> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-              if (_isEmailSent)
-                Text(
-                  '📩 Mail envoyé à ${widget.userEmail}. Clique sur le lien pour activer ton compte ✅',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.green,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
               if (_confirmationText != null)
                 Text(
                   _confirmationText!,
@@ -108,46 +99,31 @@ class _PasswordStepState extends State<PasswordStep> {
                 height: 56,
                 child: ElevatedButton(
                   onPressed: widget.isLoading || !widget.isStepValid() ? null : () async {
-                    final user = FirebaseAuth.instance.currentUser;
-                    if (user != null) {
-                      // Vérifier si l'utilisateur est déjà authentifié
-                      await user.reload();
-                      if (user.emailVerified) {
-                        // Si l'email est vérifié, rediriger vers NavBar
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => const NavBar()),
-                          (route) => false,
-                        );
-                        return;
-                      }
-                      
-                      // Si l'email n'est pas vérifié, ne rien faire (ne pas renvoyer d'email)
-                      if (!_isEmailSent) {
-                        // Envoyer l'email seulement la première fois
-                        try {
-                          setState(() {
-                            _isEmailSent = true;
-                            _confirmationText = null;
-                          });
-                          await user.sendEmailVerification();
-                        } catch (e) {
-                          // Gérer l'erreur 'too-many-requests'
-                          if (e is FirebaseAuthException && e.code == 'too-many-requests') {
-                            setState(() {
-                              _isEmailSent = true; // Garder l'état d'envoi
-                              _confirmationText = 'Trop de tentatives. Attends quelques minutes avant de réessayer.';
-                            });
-                          } else {
-                            setState(() {
-                              _isEmailSent = false;
-                              _confirmationText = 'Erreur lors de l\'envoi du mail : ${e.toString()}';
-                            });
-                          }
-                        }
-                      }
-                    } else {
+                    // Comme l'utilisateur est déconnecté après l'inscription, nous devons simplement
+                    // afficher le message de vérification d'email et ne pas essayer de vérifier
+                    // l'état de l'email
+                    
+                    // Si c'est la première fois qu'on appuie sur le bouton
+                    if (!_isEmailSent) {
+                      setState(() {
+                        _isEmailSent = true;
+                        _confirmationText = '📩 Mail envoyé à ${widget.userEmail}. Clique sur le lien pour activer ton compte ✅';
+                      });
+                      // Appeler onNextStep pour passer à l'étape suivante (si nécessaire)
                       widget.onNextStep?.call();
+                    } else {
+                      // Si on a déjà envoyé un email, rappeler à l'utilisateur de vérifier sa boîte mail
+                      setState(() {
+                        _confirmationText = 'Vérifie ta boîte mail pour activer ton compte';
+                      });
+                      
+                      // Permettre à l'utilisateur de se connecter avec l'email vérifié
+                      // en l'envoyant vers l'écran de connexion
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => const NavBar()),
+                        (route) => false,
+                      );
                     }
                   },
                   style: ElevatedButton.styleFrom(
