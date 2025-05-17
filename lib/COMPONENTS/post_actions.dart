@@ -91,16 +91,16 @@ class _PostActionsState extends State<PostActions> {
               final postData = postSnapshot.data?.data() as Map<String, dynamic>?;
               final likeCount = postData?['likesCount'] ?? 0;
               final user = FirebaseAuth.instance.currentUser;
-              if (user == null) return SizedBox();
               return StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
+                stream: user != null ? FirebaseFirestore.instance
                     .collection('likes')
                     .where('postId', isEqualTo: widget.postId)
                     .where('userId', isEqualTo: user.uid)
                     .limit(1)
-                    .snapshots(),
+                    .snapshots() : null,
                 builder: (context, likeSnapshot) {
-                  final isLiked = (likeSnapshot.data?.docs.isNotEmpty ?? false);
+                  // Si l'utilisateur n'est pas authentifié, on considère que le post n'est pas liké
+                  final isLiked = user != null ? (likeSnapshot.data?.docs.isNotEmpty ?? false) : false;
                   return Row(
                     children: [
                       HeartAnimationPostAction(
