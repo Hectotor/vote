@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class HeartAnimation extends StatefulWidget {
+class HeartAnimationPostAction extends StatefulWidget {
   final bool animate;
   final bool isLiked;
   final VoidCallback? onTap;
   final double size;
   final Duration duration;
 
-  const HeartAnimation({
+  const HeartAnimationPostAction({
     Key? key,
     required this.animate,
     required this.isLiked,
@@ -17,10 +17,10 @@ class HeartAnimation extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<HeartAnimation> createState() => _HeartAnimationState();
+  State<HeartAnimationPostAction> createState() => _HeartAnimationPostActionState();
 }
 
-class _HeartAnimationState extends State<HeartAnimation>
+class _HeartAnimationPostActionState extends State<HeartAnimationPostAction>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _scaleAnim;
@@ -48,7 +48,7 @@ class _HeartAnimationState extends State<HeartAnimation>
   }
 
   @override
-  void didUpdateWidget(covariant HeartAnimation oldWidget) {
+  void didUpdateWidget(covariant HeartAnimationPostAction oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.animate && !oldWidget.animate) {
       _controller.forward(from: 0.0);

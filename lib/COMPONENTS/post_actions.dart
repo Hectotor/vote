@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'Post/post_like_service.dart';
 import 'package:toplyke/COMPONENTS/Post/post_save_service.dart';
 import 'dart:async';
-import 'ANIMATION/heart_animation.dart';
+import 'ANIMATION/heart_animation_post_action.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class PostActions extends StatefulWidget {
@@ -103,7 +103,7 @@ class _PostActionsState extends State<PostActions> {
                   final isLiked = (likeSnapshot.data?.docs.isNotEmpty ?? false);
                   return Row(
                     children: [
-                      HeartAnimation(
+                      HeartAnimationPostAction(
                         animate: _likeLoading || (isLiked != _lastIsLiked),
                         isLiked: isLiked,
                         onTap: _likeLoading
