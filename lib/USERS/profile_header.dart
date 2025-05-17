@@ -164,10 +164,10 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 25),
                 ],
-              ),
+              ),  
               if (widget.isOwner)
+              const SizedBox(height: 25),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
