@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../SERVICES/auth_redirect_service.dart';
 
 class CommentInput extends StatefulWidget {
@@ -70,6 +71,23 @@ class _CommentInputState extends State<CommentInput> {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    
+    if (user == null) {
+      // Si l'utilisateur n'est pas authentifié, afficher un message
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(
+          'Connectez-vous pour commenter',
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 14,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
