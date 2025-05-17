@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import '../COMPONENTS/avatar.dart';
-import 'bio_field.dart';
 import '../ADD/addoption.dart';
 
 class ProfileHeader extends StatefulWidget {
@@ -202,13 +201,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: BioField(
-            userData: widget.userData,
-            controller: _bioController,
-          ),
-        ),
+
       ],
     );
   }
