@@ -98,21 +98,70 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
               children: [
                 Container(
                   margin: const EdgeInsets.only(bottom: 20),
-                  child: TextField(
+                  child: TextFormField(
                     controller: emailController,
                     focusNode: emailFocusNode,
+                    keyboardType: TextInputType.emailAddress,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      labelText: 'Entrez votre adresse e-mail',
+                      filled: true,
+                      fillColor: Colors.grey[900],
+                      hintText: 'Entrez votre adresse e-mail',
+                      hintStyle: TextStyle(color: Colors.grey[600], fontSize: 18),
                       errorText: _errorMessage,
+                      suffixIcon: _isLoading
+                          ? const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                                ),
+                              ),
+                            )
+                          : null,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
                       ),
-                      focusedBorder: OutlineInputBorder(
+                      enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey[400] ?? Colors.grey),
+                        borderSide: BorderSide(
+                          color: Colors.grey[800]!,
+                          width: 1,
+                        ),
                       ),
-                      prefixIcon: Icon(Icons.email_outlined),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: Colors.red[400]!,
+                          width: 1,
+                        ),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: Colors.red[400]!,
+                          width: 1.5,
+                        ),
+                      ),
+                      errorStyle: TextStyle(
+                        color: Colors.red[400],
+                      ),
                     ),
+                    onChanged: (value) {
+                      setState(() {
+                        _errorMessage = null;
+                      });
+                    },
+                    onFieldSubmitted: (_) {
+                      if (!_isLoading) {
+                        _sendResetEmail(context);
+                      }
+                    },
                   ),
                 ),
                 SizedBox(height: 20),
