@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../popup_email_confirmation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PasswordStep extends StatefulWidget {
   final TextEditingController passwordController;
@@ -65,7 +67,23 @@ class _PasswordStepState extends State<PasswordStep> {
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: widget.isLoading || !widget.isStepValid() ? null : widget.onNextStep,
+                  onPressed: widget.isLoading || !widget.isStepValid() ? null : () {
+                    // Afficher le popup de vérification d'email
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user != null) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => EmailConfirmationPopup(
+                          email: user.email!,
+                        ),
+                      );
+                    } else {
+                      widget.onNextStep?.call();
+                    }
+                    
+                    // Appeler onNextStep après avoir affiché le popup
+                    widget.onNextStep?.call();
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     foregroundColor: Colors.white,
