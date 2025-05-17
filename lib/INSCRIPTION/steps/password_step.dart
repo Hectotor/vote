@@ -26,7 +26,7 @@ class PasswordStep extends StatefulWidget {
 class _PasswordStepState extends State<PasswordStep> {
   bool _obscureText = true;
   bool _isEmailSent = false;
-  String? _errorText;
+  String? _confirmationText;
 
   @override
   void initState() {
@@ -34,6 +34,21 @@ class _PasswordStepState extends State<PasswordStep> {
     // Set focus to the password field when the step is first shown
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(widget.passwordFocusNode);
+    });
+    
+    // Ajouter un listener pour mettre u00e0 jour l'UI quand le texte change
+    widget.passwordController.addListener(_onPasswordChanged);
+  }
+  
+  @override
+  void dispose() {
+    widget.passwordController.removeListener(_onPasswordChanged);
+    super.dispose();
+  }
+  
+  void _onPasswordChanged() {
+    setState(() {
+      // Forcer la mise u00e0 jour de l'UI quand le texte change
     });
   }
 
@@ -59,19 +74,9 @@ class _PasswordStepState extends State<PasswordStep> {
             children: [
               _buildPasswordField(),
               const SizedBox(height: 5),
-              if (widget.passwordController.text.isNotEmpty &&
-                  widget.passwordController.text.length < 6)
+              if (widget.passwordController.text.isNotEmpty && widget.passwordController.text.length < 6)
                 Text(
                   '6 caractères minimum',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 12,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              if (_errorText != null)
-                Text(
-                  _errorText!,
                   style: TextStyle(
                     color: Colors.red[400],
                     fontSize: 14,
@@ -79,45 +84,25 @@ class _PasswordStepState extends State<PasswordStep> {
                   textAlign: TextAlign.center,
                 ),
               if (_isEmailSent)
-                Column(
-                  children: [
-                    Text(
-                      '📩 Mail envoyé à ${widget.userEmail}. Clique sur le lien pour activer ton compte ✅',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.green,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: () async {
-                        try {
-                          final user = FirebaseAuth.instance.currentUser;
-                          if (user != null) {
-                            await user.sendEmailVerification();
-                            setState(() {
-                              _errorText = 'Un nouveau lien de vérification a été envoyé à votre email.';
-                            });
-                          }
-                        } catch (e) {
-                          setState(() {
-                            _errorText = 'Erreur lors de l\'envoi du nouveau lien : ${e.toString()}';
-                          });
-                        }
-                      },
-                      child: Text(
-                        'Renvoyer le lien de vérification',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ],
+                Text(
+                  '📩 Mail envoyé à ${widget.userEmail}. Clique sur le lien pour activer ton compte ✅',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.green,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              const SizedBox(height: 24),
+              if (_confirmationText != null)
+                Text(
+                  _confirmationText!,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: _confirmationText!.contains('Erreur') ? Colors.red[400] : Colors.green,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               // Bouton Terminer
+              const SizedBox(height: 24),
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
@@ -127,18 +112,18 @@ class _PasswordStepState extends State<PasswordStep> {
                       try {
                         setState(() {
                           _isEmailSent = true;
+                          _confirmationText = null;
                         });
                         await user.sendEmailVerification();
                       } catch (e) {
-                        // En cas d'erreur, on affiche le message d'erreur
                         setState(() {
-                          _errorText = 'Erreur lors de l\'envoi du mail : ${e.toString()}';
+                          _isEmailSent = false;
+                          _confirmationText = 'Erreur lors de l\'envoi du mail : ${e.toString()}';
                         });
                       }
                     } else {
                       widget.onNextStep?.call();
                     }
-                    widget.onNextStep?.call();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
@@ -196,6 +181,32 @@ class _PasswordStepState extends State<PasswordStep> {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              if (_isEmailSent)
+                TextButton(
+                  onPressed: () async {
+                    try {
+                      final user = FirebaseAuth.instance.currentUser;
+                      if (user != null) {
+                        await user.sendEmailVerification();
+                        setState(() {
+                          _confirmationText = '📨 Nouveau lien envoyé';
+                        });
+                      }
+                    } catch (e) {
+                      setState(() {
+                        _confirmationText = 'Erreur lors de l\'envoi du nouveau lien : ${e.toString()}';
+                      });
+                    }
+                  },
+                  child: Text(
+                    'Renvoyer le lien de vérification',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
