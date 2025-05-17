@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PasswordStep extends StatefulWidget {
   final TextEditingController passwordController;
@@ -6,6 +7,7 @@ class PasswordStep extends StatefulWidget {
   final bool isLoading;
   final VoidCallback? onNextStep;
   final bool Function() isStepValid;
+  final String userEmail;
 
   const PasswordStep({
     Key? key,
@@ -13,6 +15,7 @@ class PasswordStep extends StatefulWidget {
     required this.passwordFocusNode,
     required this.isLoading,
     required this.isStepValid,
+    required this.userEmail,
     this.onNextStep,
   }) : super(key: key);
 
@@ -22,6 +25,8 @@ class PasswordStep extends StatefulWidget {
 
 class _PasswordStepState extends State<PasswordStep> {
   bool _obscureText = true;
+  bool _isEmailSent = false;
+  String? _errorText;
 
   @override
   void initState() {
@@ -64,15 +69,75 @@ class _PasswordStepState extends State<PasswordStep> {
                   ),
                   textAlign: TextAlign.center,
                 ),
+              if (_errorText != null)
+                Text(
+                  _errorText!,
+                  style: TextStyle(
+                    color: Colors.red[400],
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              if (_isEmailSent)
+                Column(
+                  children: [
+                    Text(
+                      '📩 Mail envoyé à ${widget.userEmail}. Clique sur le lien pour activer ton compte ✅',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.green,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () async {
+                        try {
+                          final user = FirebaseAuth.instance.currentUser;
+                          if (user != null) {
+                            await user.sendEmailVerification();
+                            setState(() {
+                              _errorText = 'Un nouveau lien de vérification a été envoyé à votre email.';
+                            });
+                          }
+                        } catch (e) {
+                          setState(() {
+                            _errorText = 'Erreur lors de l\'envoi du nouveau lien : ${e.toString()}';
+                          });
+                        }
+                      },
+                      child: Text(
+                        'Renvoyer le lien de vérification',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               const SizedBox(height: 24),
               // Bouton Terminer
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: widget.isLoading || !widget.isStepValid() ? null : () {
-                    widget.onNextStep?.call();
-                    
-                    // Appeler onNextStep après avoir affiché le popup
+                  onPressed: widget.isLoading || !widget.isStepValid() ? null : () async {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user != null) {
+                      try {
+                        setState(() {
+                          _isEmailSent = true;
+                        });
+                        await user.sendEmailVerification();
+                      } catch (e) {
+                        // En cas d'erreur, on affiche le message d'erreur
+                        setState(() {
+                          _errorText = 'Erreur lors de l\'envoi du mail : ${e.toString()}';
+                        });
+                      }
+                    } else {
+                      widget.onNextStep?.call();
+                    }
                     widget.onNextStep?.call();
                   },
                   style: ElevatedButton.styleFrom(

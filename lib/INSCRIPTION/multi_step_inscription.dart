@@ -255,7 +255,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
         'dateNaissance': _dateNaissanceController.text.trim(),
         'profilePhotoUrl': '',
         'bio': '',
-        'emailVerified': false,
+        'emailVerified': userCredential.user!.emailVerified,
         'createdAt': FieldValue.serverTimestamp(),
         'lastSeen': FieldValue.serverTimestamp(),
         'followersCount': 0,
@@ -400,6 +400,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
       passwordFocusNode: _passwordFocusNode,
       isLoading: _isLoading,
       isStepValid: _isStepValid,
+      userEmail: _emailController.text.trim(),
       onNextStep: _nextStep,
     );
   }
