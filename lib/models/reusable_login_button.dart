@@ -5,19 +5,22 @@ import '../INSCRIPTION/connexion_screen.dart';
 class ReusableLoginButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String buttonText;
+  final bool showLoginButton;
 
   const ReusableLoginButton({
     super.key,
     this.onPressed,
     this.buttonText = 'Se connecter',
+    this.showLoginButton = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+    if (showLoginButton) {
+      return StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
           return Center(
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -41,5 +44,8 @@ class ReusableLoginButton extends StatelessWidget {
         return const SizedBox.shrink();
       },
     );
+    } else {
+      return const SizedBox.shrink();
+    }
   }
 }

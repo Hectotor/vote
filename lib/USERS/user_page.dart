@@ -6,7 +6,14 @@ import 'user_content_view.dart';
 import '../models/reusable_login_button.dart';
 
 class UserPage extends StatefulWidget {
-  const UserPage({super.key});
+  final String? userId;
+  final bool showLoginButton;
+
+  const UserPage({
+    super.key,
+    this.userId,
+    this.showLoginButton = true,
+  });
 
   @override
   _UserPageState createState() => _UserPageState();
@@ -21,22 +28,21 @@ class _UserPageState extends State<UserPage> {
   @override
   void initState() {
     super.initState();
-    _loadUserId();
+    _userId = widget.userId;
+    _loadUserData();
   }
 
-  Future<void> _loadUserId() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
+  Future<void> _loadUserData() async {
+    if (_userId != null) {
       final doc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(user.uid)
+          .doc(_userId)
           .get();
       
-      // Récupérer toutes les données utilisateur en une seule fois
+      // Récupérer toutes les données utilisateur
       final data = doc.data() ?? {};
       
       setState(() {
-        _userId = user.uid;
         _pseudo = data['pseudo'];
         _userData = data;
       });
@@ -47,8 +53,8 @@ class _UserPageState extends State<UserPage> {
   Widget build(BuildContext context) {
     // Vu00e9rifier si l'utilisateur est authentifiu00e9
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      // Afficher le bouton de connexion si l'utilisateur n'est pas authentifiu00e9
+    if (user == null && widget.showLoginButton) {
+      // Afficher le bouton de connexion si l'utilisateur n'est pas authentifiu00e9 et que showLoginButton est true
       return Scaffold(
         appBar: AppBar(
           title: const Text('Profil'),

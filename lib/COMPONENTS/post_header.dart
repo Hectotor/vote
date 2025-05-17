@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toplyke/COMPONENTS/date_formatter.dart';
 import 'package:toplyke/COMPONENTS/post_menu.dart';
 import 'package:toplyke/COMPONENTS/avatar.dart';
+import 'package:toplyke/USERS/user_page.dart';
 
 class PostHeader extends StatelessWidget {
   final String pseudo;
@@ -37,11 +38,24 @@ class PostHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  pseudo,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserPage(
+                          userId: userId,
+                          showLoginButton: false,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    pseudo,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 Text(
