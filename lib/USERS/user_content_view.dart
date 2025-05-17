@@ -174,18 +174,18 @@ class _UserContentViewState extends State<UserContentView> {
             userId: data['userId'] ?? '',
           ),
           
-          // Grille d'images du post
-          if (data['blocs'] != null && data['blocs'] is List && (data['blocs'] as List).isNotEmpty)
-            PollGridHomeModern(
-              blocs: (data['blocs'] as List).cast<Map<String, dynamic>>(),
-              postId: postId,
-            ),
-          
           // Description du post
           if (data['description'] != null && data['description'].toString().isNotEmpty)
             PostDescription(
               pseudo: data['pseudo'] ?? '',
               description: data['description'],
+            ),
+
+          // Grille d'images du post
+          if (data['blocs'] != null && data['blocs'] is List && (data['blocs'] as List).isNotEmpty)
+            PollGridHomeModern(
+              blocs: (data['blocs'] as List).cast<Map<String, dynamic>>(),
+              postId: postId,
             ),
           
           // Actions du post (like, commentaire, etc.)
