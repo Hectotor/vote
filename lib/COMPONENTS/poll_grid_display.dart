@@ -57,11 +57,17 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
 
   // Méthode pour voter
   Future<void> _handleVote(int index) async {
-    // Mettre à jour l'interface immédiatement (optimiste)
+    // Mettre à jour l'interface et les données immédiatement (optimiste)
     setState(() {
       _tappedIndex = index;
-      _hasVoted = true; // Marquer comme ayant voté immédiatement
-      _votedBlocId = index.toString(); // Enregistrer le bloc voté immédiatement
+      _hasVoted = true;
+      _votedBlocId = index.toString();
+      
+      // Mettre à jour le voteCount du bloc local immédiatement
+      if (widget.blocs[index] is Map) {
+        final bloc = widget.blocs[index] as Map<String, dynamic>;
+        bloc['voteCount'] = (bloc['voteCount'] as int? ?? 0) + 1;
+      }
     });
     
     // Utiliser la méthode statique qui gère la redirection vers la page de connexion
@@ -76,6 +82,11 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
       setState(() {
         _hasVoted = false;
         _votedBlocId = null;
+        // Rétablir le voteCount précédent
+        if (widget.blocs[index] is Map) {
+          final bloc = widget.blocs[index] as Map<String, dynamic>;
+          bloc['voteCount'] = (bloc['voteCount'] as int? ?? 0) - 1;
+        }
       });
     }
     

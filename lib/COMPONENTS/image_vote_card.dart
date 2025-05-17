@@ -63,8 +63,6 @@ class ImageVoteCard extends StatelessWidget {
             // Animation des cœurs
             HeartAnimation(
               showHeart: showHeart,
-              heartCount: heartCount,
-              color: Colors.red,
             ),
             
             // Texte
