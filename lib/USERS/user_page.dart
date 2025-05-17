@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'profile_header.dart';
 import 'user_content_view.dart';
+import '../COMPONENTS/reusable_login_button.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key});
@@ -44,6 +45,21 @@ class _UserPageState extends State<UserPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Vu00e9rifier si l'utilisateur est authentifiu00e9
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      // Afficher le bouton de connexion si l'utilisateur n'est pas authentifiu00e9
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Profil'),
+        ),
+        body: const Center(
+          child: ReusableLoginButton(),
+        ),
+      );
+    }
+    
+    // Afficher un indicateur de chargement pendant le chargement des donnu00e9es
     if (_userId == null || _userData == null) {
       return const Scaffold(
         body: Center(
@@ -52,8 +68,6 @@ class _UserPageState extends State<UserPage> {
       );
     }
     
-
-
     return Scaffold(
       appBar: AppBar(
         title: Align(

@@ -48,22 +48,6 @@ class _NavBarState extends State<NavBar> {
       return;
     }
     
-    // Pour les autres onglets
-    if (index == 4) { // Page utilisateur
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation1, animation2) => const ConnexionPage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
-        );
-        return;
-      }
-    }
-    
     setState(() {
       _selectedIndex = index;
     });
