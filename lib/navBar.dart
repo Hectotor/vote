@@ -5,7 +5,7 @@ import 'home/home_page.dart';
 import 'search/search_page.dart';
 import 'add/add_page.dart';
 import 'notification/notifications_page.dart';
-import 'users/user_page.dart';
+import 'USERS/user_page.dart';  // Corriger la casse du dossier
 import 'INSCRIPTION/connexion_screen.dart';
 
 class NavBar extends StatefulWidget {
@@ -57,12 +57,17 @@ class _NavBarState extends State<NavBar> {
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
+    
+    // Récupérer l'ID de l'utilisateur connecté
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final userId = currentUser?.uid;
+    
     _pages = [
       const HomePage(),
       const SearchPage(),
       const AddPage(),
       const NotificationsPage(),
-      const UserPage(),
+      UserPage(userId: userId, showLoginButton: false),  // Passer l'ID de l'utilisateur connecté
     ];
   }
 
