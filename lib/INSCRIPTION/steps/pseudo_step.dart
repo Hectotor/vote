@@ -53,7 +53,7 @@ class _PseudoStepState extends State<PseudoStep> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildPseudoField(),
-              const SizedBox(height: 8),
+              const SizedBox(height: 5),
               if (widget.pseudoErrorMessage != null)
                 Text(
                   widget.pseudoErrorMessage!,

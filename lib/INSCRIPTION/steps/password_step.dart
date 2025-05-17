@@ -55,12 +55,16 @@ class _PasswordStepState extends State<PasswordStep> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildPasswordField(),
-              const SizedBox(height: 16),
+              const SizedBox(height: 5),
               if (widget.passwordController.text.isNotEmpty &&
                   widget.passwordController.text.length < 6)
-                const Text(
-                  'Le mot de passe doit contenir au moins 6 caractères',
-                  style: TextStyle(color: Colors.red),
+                Text(
+                  '6 caractères minimum',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               const SizedBox(height: 24),
               // Bouton Terminer
@@ -154,21 +158,16 @@ class _PasswordStepState extends State<PasswordStep> {
       focusNode: widget.passwordFocusNode,
       obscureText: _obscureText,
       textInputAction: TextInputAction.done,
+      textAlign: TextAlign.center,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.grey[900],
-        labelText: 'Mot de passe',
         hintText: 'Au moins 6 caractères',
         hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
         labelStyle: TextStyle(
           color: Colors.grey[400],
           fontSize: 16,
-        ),
-        prefixIcon: Icon(
-          Icons.lock_outline,
-          color: Colors.grey[400],
-          size: 22,
         ),
         suffixIcon: IconButton(
           icon: Icon(
@@ -189,13 +188,6 @@ class _PasswordStepState extends State<PasswordStep> {
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(
             color: Colors.grey[800]!,
-            width: 1,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(
-            color: Colors.white,
             width: 1,
           ),
         ),

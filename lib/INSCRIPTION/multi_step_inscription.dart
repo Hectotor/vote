@@ -369,7 +369,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
       pseudoFocusNode: _pseudoFocusNode,
       isCheckingPseudo: _isCheckingPseudo,
       pseudoErrorMessage: _pseudoController.text.isNotEmpty && _pseudoController.text.length < 3
-          ? 'Le pseudo doit contenir au moins 3 caractères'
+          ? '3 caractères minimum'
           : _pseudoErrorMessage,
       onPseudoChanged: (value) {
         if (value.length >= 3) {

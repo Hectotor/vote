@@ -264,11 +264,13 @@ class _EmailStepState extends State<EmailStep> {
         if (_errorText != null)
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
-            child: Text(
-              _errorText!,
-              style: TextStyle(
-                color: Colors.red[400],
-                fontSize: 12,
+            child: Center(
+              child: Text(
+                _errorText!,
+                style: TextStyle(
+                  color: Colors.red[400],
+                  fontSize: 12,
+                ),
               ),
             ),
           ),
