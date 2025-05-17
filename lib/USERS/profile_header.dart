@@ -170,23 +170,31 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Expanded(
-                    child: _buildTabButton(
-                      label: 'Posts',
-                      isSelected: _showPosts,
-                      onTap: () {
-                        setState(() => _showPosts = true);
-                        widget.onTabChanged?.call(true);
-                      },
+                    flex: 1,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      child: _buildTabButton(
+                        label: 'Posts',
+                        isSelected: _showPosts,
+                        onTap: () {
+                          setState(() => _showPosts = true);
+                          widget.onTabChanged?.call(true);
+                        },
+                      ),
                     ),
                   ),
                   Expanded(
-                    child: _buildTabButton(
-                      label: 'Sauvegardés',
-                      isSelected: !_showPosts,
-                      onTap: () {
-                        setState(() => _showPosts = false);
-                        widget.onTabChanged?.call(false);
-                      },
+                    flex: 1,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      child: _buildTabButton(
+                        label: 'Sauvegardés',
+                        isSelected: !_showPosts,
+                        onTap: () {
+                          setState(() => _showPosts = false);
+                          widget.onTabChanged?.call(false);
+                        },
+                      ),
                     ),
                   ),
                 ],
