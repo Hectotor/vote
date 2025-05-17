@@ -78,7 +78,7 @@ class _CommentInputState extends State<CommentInput> {
       return Padding(
         padding: const EdgeInsets.all(16.0),
         child: Text(
-          'Connectez-vous pour commenter',
+          'Connecte toi pour commenter',
           style: TextStyle(
             color: Colors.grey[600],
             fontSize: 14,

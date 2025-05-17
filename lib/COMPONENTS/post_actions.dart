@@ -134,7 +134,7 @@ class _PostActionsState extends State<PostActions> {
               );
             },
           ),
-          const SizedBox(width: 16),
+          //const SizedBox(width: 10),
           StreamBuilder<DocumentSnapshot>(
             stream: _firestore.collection('posts').doc(widget.postId).snapshots(),
             builder: (context, snapshot) {
