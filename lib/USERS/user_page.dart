@@ -103,23 +103,24 @@ class _UserPageState extends State<UserPage> {
           const SizedBox(width: 16),
         ],
       ),
-      body: Column(
-        children: [
-          // En-tête du profil avec les données utilisateur déjà chargées et gestion des onglets
-          ProfileHeader(
-            userId: _userId!,
-            userData: _userData!,
-            showPosts: _showPosts,
-            onTabChanged: (showPosts) {
-              setState(() {
-                _showPosts = showPosts;
-              });
-            },
-          ),
-          
-          // Contenu avec IndexedStack pour u00e9viter le rechargement complet
-          Expanded(
-            child: IndexedStack(
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // En-tête du profil avec les données utilisateur déjà chargées et gestion des onglets
+            ProfileHeader(
+              userId: _userId!,
+              userData: _userData!,
+              showPosts: _showPosts,
+              onTabChanged: (showPosts) {
+                setState(() {
+                  _showPosts = showPosts;
+                });
+              },
+            ),
+            
+            // Contenu avec IndexedStack pour éviter le rechargement complet
+            IndexedStack(
               index: _showPosts ? 0 : 1,
               children: [
                 // Page des posts de l'utilisateur (index 0)
@@ -140,8 +141,8 @@ class _UserPageState extends State<UserPage> {
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

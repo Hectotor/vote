@@ -89,9 +89,8 @@ class _UserContentViewState extends State<UserContentView> {
             );
           }
 
-          return ListView.builder(
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
+          return Column(
+            children: List.generate(docs.length, (index) {
               final doc = docs[index];
               final data = doc.data() as Map<String, dynamic>;
               
@@ -125,7 +124,7 @@ class _UserContentViewState extends State<UserContentView> {
               
               // Sinon, on affiche directement le post
               return _buildPostItem(data, doc.id);
-            },
+            }),
           );
         },
       ),
