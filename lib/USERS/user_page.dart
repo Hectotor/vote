@@ -109,14 +109,15 @@ class _UserPageState extends State<UserPage> {
           children: [
             // En-tête du profil avec les données utilisateur déjà chargées et gestion des onglets
             ProfileHeader(
-              userId: _userId!,
-              userData: _userData!,
+              userId: _userId ?? '',
+              userData: _userData ?? {},
               showPosts: _showPosts,
               onTabChanged: (showPosts) {
                 setState(() {
                   _showPosts = showPosts;
                 });
               },
+              isOwner: _userId == FirebaseAuth.instance.currentUser?.uid,
             ),
             
             // Contenu avec IndexedStack pour éviter le rechargement complet

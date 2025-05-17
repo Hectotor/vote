@@ -12,6 +12,7 @@ class ProfileHeader extends StatefulWidget {
   final Map<String, dynamic> userData;
   final bool showPosts;
   final Function(bool)? onTabChanged;
+  final bool isOwner;
 
   const ProfileHeader({
     Key? key,
@@ -19,6 +20,7 @@ class ProfileHeader extends StatefulWidget {
     required this.userData,
     this.showPosts = true,
     this.onTabChanged,
+    required this.isOwner,
   }) : super(key: key);
 
   @override
@@ -162,37 +164,38 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 25),
                 ],
               ),
-              const SizedBox(height: 25),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      child: _buildTabButton(
-                        label: 'Posts',
-                        isSelected: _showPosts,
-                        onTap: () {
-                          setState(() => _showPosts = true);
-                          widget.onTabChanged?.call(true);
-                        },
+              if (widget.isOwner)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        child: _buildTabButton(
+                          label: 'Posts',
+                          isSelected: _showPosts,
+                          onTap: () {
+                            setState(() => _showPosts = true);
+                            widget.onTabChanged?.call(true);
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      child: _buildTabButton(
-                        label: 'Sauvegardés',
-                        isSelected: !_showPosts,
-                        onTap: () {
-                          setState(() => _showPosts = false);
-                          widget.onTabChanged?.call(false);
-                        },
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        child: _buildTabButton(
+                          label: 'Sauvegardés',
+                          isSelected: !_showPosts,
+                          onTap: () {
+                            setState(() => _showPosts = false);
+                            widget.onTabChanged?.call(false);
+                          },
                       ),
                     ),
                   ),
