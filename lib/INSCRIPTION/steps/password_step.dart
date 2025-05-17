@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:toplyke/navBar.dart';
 
 class PasswordStep extends StatefulWidget {
   final TextEditingController passwordController;
@@ -116,14 +115,6 @@ class _PasswordStepState extends State<PasswordStep> {
                       setState(() {
                         _confirmationText = 'Vérifie ta boîte mail pour activer ton compte';
                       });
-                      
-                      // Permettre à l'utilisateur de se connecter avec l'email vérifié
-                      // en l'envoyant vers l'écran de connexion
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (context) => const NavBar()),
-                        (route) => false,
-                      );
                     }
                   },
                   style: ElevatedButton.styleFrom(
