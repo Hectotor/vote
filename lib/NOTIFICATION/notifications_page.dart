@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../COMPONENTS/reusable_login_button.dart';
+import '../models/reusable_login_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class NotificationsPage extends StatelessWidget {

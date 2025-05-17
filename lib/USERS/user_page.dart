@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'profile_header.dart';
 import 'user_content_view.dart';
-import '../COMPONENTS/reusable_login_button.dart';
+import '../models/reusable_login_button.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key});
