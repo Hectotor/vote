@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../COMPONENTS/reusable_login_button.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key});
@@ -9,8 +11,18 @@ class NotificationsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Notifications'),
       ),
-      body: const Center(
-        child: Text('Notifications Page'),
+      body: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(
+              child: ReusableLoginButton(),
+            );
+          }
+          return const Center(
+            child: Text('Notifications Page'),
+          );
+        },
       ),
     );
   }
