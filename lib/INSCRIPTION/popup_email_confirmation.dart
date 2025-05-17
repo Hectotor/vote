@@ -1,12 +1,56 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../navBar.dart';
 
-class EmailConfirmationPopup extends StatelessWidget {
+class EmailConfirmationPopup extends StatefulWidget {
   final String email;
 
   const EmailConfirmationPopup({
     Key? key,
     required this.email,
   }) : super(key: key);
+
+  @override
+  State<EmailConfirmationPopup> createState() => _EmailConfirmationPopupState();
+}
+
+class _EmailConfirmationPopupState extends State<EmailConfirmationPopup> {
+  bool _showOptions = false;
+  final PageController _pageController = PageController();
+  bool _isEmailVerified = false;
+  bool _isChecking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startEmailVerificationCheck();
+  }
+
+  @override
+  void dispose() {
+    _emailVerificationSubscription?.cancel();
+    super.dispose();
+  }
+
+  StreamSubscription? _emailVerificationSubscription;
+
+  void _startEmailVerificationCheck() {
+    _emailVerificationSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        setState(() {
+          _isEmailVerified = user.emailVerified;
+        });
+        if (_isEmailVerified) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const NavBar()),
+            (route) => false,
+          );
+        }
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,13 +76,47 @@ class EmailConfirmationPopup extends StatelessWidget {
               letterSpacing: 0.5,
             ),
           ),
+          if (_isChecking)
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.blue,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Vérification en cours...',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
       actions: [
         Center(
           child: TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
+            onPressed: () async {
+              final user = FirebaseAuth.instance.currentUser;
+              if (user != null && user.emailVerified) {
+                // Si l'email est vérifié, rediriger vers la navigation
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NavBar()),
+                  (route) => false,
+                );
+              } else {
+                // Sinon, afficher les options en dessous du bouton
+                setState(() {
+                  _showOptions = true;
+                });
+              }
             },
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
@@ -63,7 +141,7 @@ class EmailConfirmationPopup extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  'OK',
+                  'Vérifier',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -75,6 +153,73 @@ class EmailConfirmationPopup extends StatelessWidget {
             ),
           ),
         ),
+        if (_showOptions)
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: Column(
+              children: [
+                TextButton(
+                  onPressed: () async {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user == null) return;
+                    
+                    try {
+                      await user.sendEmailVerification();
+                      setState(() {
+                        _showOptions = false;
+                      });
+                      Navigator.pop(context);
+                    } catch (e) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Erreur'),
+                          content: Text('Erreur: ${e.toString()}'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    'Renvoyer l\'email',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.popUntil(context, ModalRoute.withName('/inscription'));
+                    // Rediriger vers l'étape 4 (email)
+                    _pageController.jumpToPage(3);
+                  },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    'Modifier l\'adresse mail',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }

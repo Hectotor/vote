@@ -59,7 +59,7 @@ class _PseudoStepState extends State<PseudoStep> {
                   widget.pseudoErrorMessage!,
                   style: TextStyle(
                     color: Colors.red[400],
-                    fontSize: 14,
+                    fontSize: 12,
                   ),
                 ),
               const SizedBox(height: 24),
@@ -125,22 +125,15 @@ class _PseudoStepState extends State<PseudoStep> {
       controller: widget.pseudoController,
       focusNode: widget.pseudoFocusNode,
       textCapitalization: TextCapitalization.words,
+      textAlign: TextAlign.center,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.grey[900],
-        labelText: 'Pseudo',
+
         hintText: 'Entre ton pseudo',
-        hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
-        labelStyle: TextStyle(
-          color: Colors.grey[400],
-          fontSize: 16,
-        ),
-        prefixIcon: Icon(
-          Icons.person_outline,
-          color: Colors.grey[400],
-          size: 22,
-        ),
+        hintStyle: TextStyle(color: Colors.grey[600], fontSize: 18),
+
         suffixIcon: widget.isCheckingPseudo
             ? const Padding(
                 padding: EdgeInsets.all(12.0),
@@ -165,13 +158,6 @@ class _PseudoStepState extends State<PseudoStep> {
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(
             color: Colors.grey[800]!,
-            width: 1,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(
-            color: Colors.white,
             width: 1,
           ),
         ),

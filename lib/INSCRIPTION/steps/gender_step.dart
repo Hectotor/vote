@@ -57,7 +57,7 @@ class _GenderStepState extends State<GenderStep> {
                     widget.genderController.text.isEmpty
                         ? 'Choisis ton genre'
                         : widget.genderController.text,
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
               ),

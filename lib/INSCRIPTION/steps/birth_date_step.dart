@@ -65,7 +65,7 @@ class _BirthDateStepState extends State<BirthDateStep> {
                     widget.dateNaissanceController.text.isEmpty
                         ? 'Sélectionne une date'
                         : widget.dateNaissanceController.text,
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
               ),

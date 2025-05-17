@@ -213,40 +213,18 @@ class _EmailStepState extends State<EmailStep> {
           focusNode: widget.emailFocusNode,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
+          textAlign: TextAlign.center,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.grey[900],
-            labelText: 'Adresse e-mail',
-            //hintText: 'exemple@email.com',
-            hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
-            labelStyle: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 16,
-            ),
-            prefixIcon: Icon(
-              Icons.email_outlined,
-              color: Colors.grey[400],
-              size: 22,
-            ),
+            hintText: 'Entre ton email',
+            hintStyle: TextStyle(color: Colors.grey[600], fontSize: 18),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none,
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: Colors.grey[800]!,
-                width: 1,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                color: Colors.white,
-                width: 1,
-              ),
-            ),
+
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(
