@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../COMPONENTS/post_header.dart';
-import '../COMPONENTS/post_description.dart';
-import '../COMPONENTS/post_actions.dart';
-import '../HOME/poll_grid_home_modern_new.dart';
+import '../COMPONENTS/post.dart';
 
 /// Widget qui affiche soit les posts de l'utilisateur, soit les posts sauvegardés
 class UserContentView extends StatefulWidget {
@@ -160,38 +157,9 @@ class _UserContentViewState extends State<UserContentView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // En-tête du post
-          PostHeader(
-            pseudo: data['pseudo'] ?? '',
-            profilePhotoUrl: data['profilePhotoUrl'],
-            filterColor: data['filterColor'] != null ? 
-              (data['filterColor'] is String ? 
-                int.parse(data['filterColor']) : 
-                data['filterColor'] as int) : 
-              null,
-            createdAt: data['createdAt'] ?? Timestamp.now(),
+          Post(
+            data: data,
             postId: postId,
-            userId: data['userId'] ?? '',
-          ),
-          
-          // Description du post
-          if (data['description'] != null && data['description'].toString().isNotEmpty)
-            PostDescription(
-              pseudo: data['pseudo'] ?? '',
-              description: data['description'],
-            ),
-
-          // Grille d'images du post
-          if (data['blocs'] != null && data['blocs'] is List && (data['blocs'] as List).isNotEmpty)
-            PollGridHomeModern(
-              blocs: (data['blocs'] as List).cast<Map<String, dynamic>>(),
-              postId: postId,
-            ),
-          
-          // Actions du post (like, commentaire, etc.)
-          PostActions(
-            postId: postId,
-            userId: data['userId'] ?? '',
           ),
         ],
       ),
