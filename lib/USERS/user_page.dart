@@ -105,55 +105,16 @@ class _UserPageState extends State<UserPage> {
       ),
       body: Column(
         children: [
-          // En-tête du profil avec les données utilisateur déjà chargées
+          // En-tête du profil avec les données utilisateur déjà chargées et gestion des onglets
           ProfileHeader(
             userId: _userId!,
             userData: _userData!,
-          ),
-          
-          // Bannière de navigation
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF151019),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                )
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // Bouton Posts
-                  _buildNavButton(
-                    label: 'Posts',
-                    icon: Icons.grid_on,
-                    isSelected: _showPosts,
-                    onTap: () {
-                      setState(() {
-                        _showPosts = true;
-                      });
-                    },
-                  ),
-                  
-                  // Bouton Sauvegardés
-                  _buildNavButton(
-                    label: 'Sauvegardés',
-                    icon: Icons.bookmark,
-                    isSelected: !_showPosts,
-                    onTap: () {
-                      setState(() {
-                        _showPosts = false;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
+            showPosts: _showPosts,
+            onTabChanged: (showPosts) {
+              setState(() {
+                _showPosts = showPosts;
+              });
+            },
           ),
           
           // Contenu avec IndexedStack pour u00e9viter le rechargement complet
@@ -179,44 +140,6 @@ class _UserPageState extends State<UserPage> {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  
-  // Méthode helper pour construire les boutons de navigation
-  Widget _buildNavButton({
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isSelected ? Colors.blue : Colors.grey,
-            size: 24,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.blue : Colors.grey,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Container(
-            height: 2,
-            width: 40,
-            color: isSelected ? Colors.blue : Colors.transparent,
           ),
         ],
       ),

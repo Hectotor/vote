@@ -10,11 +10,15 @@ import '../ADD/addoption.dart';
 class ProfileHeader extends StatefulWidget {
   final String userId;
   final Map<String, dynamic> userData;
+  final bool showPosts;
+  final Function(bool)? onTabChanged;
 
   const ProfileHeader({
     Key? key,
     required this.userId,
     required this.userData,
+    this.showPosts = true,
+    this.onTabChanged,
   }) : super(key: key);
 
   @override
@@ -27,6 +31,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
   String? _profileImageUrl;
   bool _isLoading = false;
   final TextEditingController _bioController = TextEditingController();
+  bool _showPosts = true; // true pour Posts, false pour Sauvegardés
 
   Future<void> _showAddOptionBottomSheet() async {
     if (!mounted) return;
@@ -121,6 +126,36 @@ class _ProfileHeaderState extends State<ProfileHeader> {
     }
     // Initialiser l'URL de l'image de profil
     _profileImageUrl = widget.userData['profilePhotoUrl'];
+    // Initialiser l'état des onglets
+    _showPosts = widget.showPosts;
+  }
+
+  Widget _buildTabButton({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue[800] : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.blue[800]! : Colors.grey[800]!,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey[300],
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -130,70 +165,112 @@ class _ProfileHeaderState extends State<ProfileHeader> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Container principal (sans bio)
-              Container(
-                padding: const EdgeInsets.only(top: 10, bottom: 10, left: 16, right: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D3748),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.grey[800]!,
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    // Avatar
-                    _isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : Avatar(
-                            userId: widget.userId,
-                            radius: 35,
-                            onTap: _showAddOptionBottomSheet,
-                          ),
-                    const SizedBox(width: 20),
-                    // Stats
-                    Expanded(
-                      child: Row(
-                        children: [
-                          // Espacement avant le premier stat
-                          const SizedBox(width: 16),
-                          _buildStatColumn(
-                            count: widget.userData['posts']?.length ?? 0,
-                            label: 'Posts',
-                            color: Colors.blue,
-                          ),
-                          // Espacement entre les stats
-                          const SizedBox(width: 32),
-                          _buildStatColumn(
-                            count: widget.userData['followers']?.length ?? 0,
-                            label: 'Followers',
-                            color: Colors.purple,
-                          ),
-                          // Espacement entre les stats
-                          const SizedBox(width: 32),
-                          _buildStatColumn(
-                            count: widget.userData['following']?.length ?? 0,
-                            label: 'Following',
-                            color: Colors.orange,
-                          ),
-                          // Espacement après le dernier stat
-                          //const SizedBox(width: 16),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              //const SizedBox(height: 16),
-              // Bio en dehors du container
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                child: BioField(
-                  userData: widget.userData,
-                  controller: _bioController,
-                ),
-              ),
+               // Container principal (sans bio)
+               Container(
+                 padding: const EdgeInsets.only(top: 10, bottom: 10, left: 16, right: 16),
+                 decoration: BoxDecoration(
+                   color: const Color(0xFF2D3748),
+                   borderRadius: BorderRadius.circular(12),
+                   border: Border.all(
+                     color: Colors.grey[800]!,
+                     width: 1,
+                   ),
+                 ),
+                 child: Column(
+                   children: [
+                     Row(
+                       children: [
+                         // Avatar
+                         _isLoading
+                             ? const Center(child: CircularProgressIndicator())
+                             : Avatar(
+                                 userId: widget.userId,
+                                 radius: 35,
+                                 onTap: _showAddOptionBottomSheet,
+                               ),
+                         const SizedBox(width: 20),
+                         // Stats
+                         Expanded(
+                           child: Row(
+                             children: [
+                               // Espacement avant le premier stat
+                               const SizedBox(width: 16),
+                               _buildStatColumn(
+                                 count: widget.userData['posts']?.length ?? 0,
+                                 label: 'Posts',
+                                 color: Colors.blue,
+                               ),
+                               // Espacement entre les stats
+                               const SizedBox(width: 32),
+                               _buildStatColumn(
+                                 count: widget.userData['followers']?.length ?? 0,
+                                 label: 'Followers',
+                                 color: Colors.purple,
+                               ),
+                               // Espacement entre les stats
+                               const SizedBox(width: 32),
+                               _buildStatColumn(
+                                 count: widget.userData['following']?.length ?? 0,
+                                 label: 'Following',
+                                 color: Colors.orange,
+                               ),
+                               // Espacement après le dernier stat
+                               //const SizedBox(width: 16),
+                             ],
+                           ),
+                         ),
+                       ],
+                     ),
+                     const SizedBox(height: 16),
+                     // Boutons Posts et Sauvegardés
+                     Row(
+                       mainAxisAlignment: MainAxisAlignment.center,
+                       children: [
+                         _buildTabButton(
+                           label: 'Posts',
+                           isSelected: _showPosts,
+                           onTap: () {
+                             setState(() {
+                               _showPosts = true;
+                             });
+                             // Notifier le parent du changement
+                             if (widget.onTabChanged != null) {
+                               widget.onTabChanged!(true);
+                             }
+                           },
+                         ),
+                         const SizedBox(width: 16),
+                         _buildTabButton(
+                           label: 'Sauvegardés',
+                           isSelected: !_showPosts,
+                           onTap: () {
+                             setState(() {
+                               _showPosts = false;
+                             });
+                             // Notifier le parent du changement
+                             if (widget.onTabChanged != null) {
+                               widget.onTabChanged!(false);
+                             }
+                           },
+                         ),
+                       ],
+                     ),
+                   ],
+                 ),
+               ),
+               //const SizedBox(height: 16),
+               // Bio en dehors du container
+               Container(
+                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                 child: BioField(
+                   userData: widget.userData,
+                   controller: _bioController,
+                 ),
+               ),
+               const SizedBox(height: 20),
+               // Contenu (Posts ou Sauvegardés)
+               // Nous n'utilisons pas Expanded ici car ProfileHeader est probablement dans un ScrollView
+               // Nous allons plutôt notifier le parent du changement via un callback
             ],
           ),
         );
