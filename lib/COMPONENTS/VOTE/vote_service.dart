@@ -75,6 +75,12 @@ class VoteService extends ChangeNotifier {
       }
     }
     await postRef.update({'totalVotesCount': totalVotesCount});
+    
+    // Mettre à jour le compteur de votes dans les données utilisateur
+    await _firestore.collection('users').doc(user.uid).update({
+      'votesCountUser': FieldValue.increment(1),
+    });
+    
     print('Vote enregistré, compteur mis à jour et totalVotesCount actualisé dans posts');
   }
 

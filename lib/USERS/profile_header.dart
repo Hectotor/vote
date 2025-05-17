@@ -159,8 +159,10 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildStatColumn(count: widget.userData['posts']?.length ?? 0, label: 'Posts', color: Colors.blue),
-                        _buildStatColumn(count: widget.userData['followers']?.length ?? 0, label: 'Followers', color: Colors.purple),
-                        _buildStatColumn(count: widget.userData['following']?.length ?? 0, label: 'Following', color: Colors.orange),
+                        _buildStatColumn(count: widget.userData['votesCountUser'] ?? 0, label: 'Votes', color: Colors.pink),
+                        //_buildStatColumn(count: widget.userData['followers']?.length ?? 0, label: 'Followers', color: Colors.purple),
+                        //_buildStatColumn(count: widget.userData['following']?.length ?? 0, label: 'Following', color: Colors.orange),
+
                       ],
                     ),
                   ),

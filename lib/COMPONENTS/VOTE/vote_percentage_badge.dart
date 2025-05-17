@@ -20,9 +20,9 @@ class VotePercentageBadge extends StatelessWidget {
   
   // Retourne une couleur basée sur le pourcentage
   Color _getColorByPercentage(double p) {
-    if (p >= 75) return Color(0xFF4CAF50); // Vert
-    if (p >= 50) return Color(0xFFFFA726); // Orange
-    return Color(0xFFEF5350);              // Rouge doux
+    if (p >= 75) return Color(0xFF81C784); // Vert
+    if (p >= 50) return Color(0xFFFFD180); // Orange
+    return Color(0xFFCE93D8);              // Rouge doux
   }
 
   @override
