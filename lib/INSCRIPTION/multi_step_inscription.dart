@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:toplyke/INSCRIPTION/custom_date_roller.dart';
 import 'package:toplyke/INSCRIPTION/custom_gender_roller.dart';
-import 'package:toplyke/INSCRIPTION/email_verification_popup.dart';
+import 'package:toplyke/navBar.dart';
 import 'package:toplyke/INSCRIPTION/steps/pseudo_step.dart';
 import 'package:toplyke/INSCRIPTION/steps/gender_step.dart';
 import 'package:toplyke/INSCRIPTION/steps/birth_date_step.dart';
@@ -269,13 +269,13 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
       // Déconnecter immédiatement l'utilisateur
       await FirebaseAuth.instance.signOut();
 
-      // Afficher le popup de vérification d'email
+      // Continuer directement après l'enregistrement
       if (mounted) {
-        await showDialog(
-          context: context,
-          builder: (context) => EmailVerificationPopup(
-            email: _emailController.text.trim(),
-          ),
+        // Rediriger vers la navigation
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const NavBar()),
+          (route) => false,
         );
       }
     } on FirebaseAuthException catch (e) {
