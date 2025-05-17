@@ -18,7 +18,7 @@ class PostDescription extends StatelessWidget {
         .trim(); // Supprime les espaces au début et à la fin
     
     return Padding(
-      padding: const EdgeInsets.only(left: 4, right: 16, bottom: 8, top: 4),
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -53,6 +53,8 @@ class MyApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.black,
           elevation: 0,
+          scrolledUnderElevation: 0,  // Empêche l'élévation lors du défilement
+          systemOverlayStyle: SystemUiOverlayStyle.light,  // Barre d'état claire
           iconTheme: IconThemeData(color: Colors.white),
           titleTextStyle: TextStyle(
             color: Colors.white,
