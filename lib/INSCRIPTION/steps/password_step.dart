@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:toplyke/navBar.dart';
 
 class PasswordStep extends StatefulWidget {
   final TextEditingController passwordController;
@@ -109,17 +110,41 @@ class _PasswordStepState extends State<PasswordStep> {
                   onPressed: widget.isLoading || !widget.isStepValid() ? null : () async {
                     final user = FirebaseAuth.instance.currentUser;
                     if (user != null) {
-                      try {
-                        setState(() {
-                          _isEmailSent = true;
-                          _confirmationText = null;
-                        });
-                        await user.sendEmailVerification();
-                      } catch (e) {
-                        setState(() {
-                          _isEmailSent = false;
-                          _confirmationText = 'Erreur lors de l\'envoi du mail : ${e.toString()}';
-                        });
+                      // Vérifier si l'utilisateur est déjà authentifié
+                      await user.reload();
+                      if (user.emailVerified) {
+                        // Si l'email est vérifié, rediriger vers NavBar
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => const NavBar()),
+                          (route) => false,
+                        );
+                        return;
+                      }
+                      
+                      // Si l'email n'est pas vérifié, ne rien faire (ne pas renvoyer d'email)
+                      if (!_isEmailSent) {
+                        // Envoyer l'email seulement la première fois
+                        try {
+                          setState(() {
+                            _isEmailSent = true;
+                            _confirmationText = null;
+                          });
+                          await user.sendEmailVerification();
+                        } catch (e) {
+                          // Gérer l'erreur 'too-many-requests'
+                          if (e is FirebaseAuthException && e.code == 'too-many-requests') {
+                            setState(() {
+                              _isEmailSent = true; // Garder l'état d'envoi
+                              _confirmationText = 'Trop de tentatives. Attends quelques minutes avant de réessayer.';
+                            });
+                          } else {
+                            setState(() {
+                              _isEmailSent = false;
+                              _confirmationText = 'Erreur lors de l\'envoi du mail : ${e.toString()}';
+                            });
+                          }
+                        }
                       }
                     } else {
                       widget.onNextStep?.call();

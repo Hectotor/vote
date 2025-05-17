@@ -61,6 +61,7 @@ class _PseudoStepState extends State<PseudoStep> {
                     color: Colors.red[400],
                     fontSize: 12,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               const SizedBox(height: 24),
               // Bouton Suivant
