@@ -206,19 +206,24 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
           }
           
           // Layout par défaut pour les autres types
-          return GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: widget.blocs.length <= 2 ? 2 : 
-                             widget.blocs.length == 3 ? 2 : 
-                             widget.blocs.length == 4 ? 2 : 3,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: 1.0,
+          return Container(
+            // Supprime le padding inférieur pour éviter l'espace après la dernière ligne
+            margin: const EdgeInsets.only(bottom: 0),
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: widget.blocs.length <= 2 ? 2 : 
+                               widget.blocs.length == 3 ? 2 : 
+                               widget.blocs.length == 4 ? 2 : 3,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 1.0,
+              ),
+              padding: EdgeInsets.zero, // Supprime le padding par défaut
+              itemCount: widget.blocs.length,
+              itemBuilder: (context, index) => createVoteCard(index),
             ),
-            itemCount: widget.blocs.length,
-            itemBuilder: (context, index) => createVoteCard(index),
           );
         },
       );

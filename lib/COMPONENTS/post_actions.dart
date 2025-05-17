@@ -78,7 +78,7 @@ class _PostActionsState extends State<PostActions> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, right: 4, bottom: 4),
+      padding: const EdgeInsets.only(left: 4, right: 4, bottom: 10),
       child: Row(
         children: [
           // StreamBuilder pour le like
