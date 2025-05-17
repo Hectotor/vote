@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toplyke/navBar.dart';
 
 class PasswordStep extends StatefulWidget {
@@ -124,6 +125,26 @@ class _PasswordStepState extends State<PasswordStep> {
                                   email: widget.userEmail.trim(),
                                   password: widget.passwordController.text.trim(),
                                 );
+                                
+                                // Sauvegarder les informations utilisateur dans Firestore
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(userCredential.user!.uid)
+                                    .set({
+                                  'userId': userCredential.user!.uid,
+                                  'pseudo': widget.userEmail.split('@')[0].toLowerCase(), // Utiliser la partie avant @ comme pseudo par défaut
+                                  'email': widget.userEmail.toLowerCase(),
+                                  'profilePhotoUrl': '',
+                                  'bio': '',
+                                  'gender': '',  // Champ vide car non renseigné dans cette version simplifiée
+                                  'dateNaissance': '',  // Champ vide car non renseigné dans cette version simplifiée
+                                  'emailVerified': false,
+                                  'createdAt': Timestamp.now(),
+                                  'lastSeen': Timestamp.now(),
+                                  'followersCount': 0,
+                                  'followingCount': 0,
+                                  'postsCount': 0,
+                                });
                                 
                                 // Envoyer l'email de vérification
                                 await userCredential.user!.sendEmailVerification();
