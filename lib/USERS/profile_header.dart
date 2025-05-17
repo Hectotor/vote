@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
@@ -31,7 +32,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
   String? _profileImageUrl;
   bool _isLoading = false;
   final TextEditingController _bioController = TextEditingController();
-  bool _showPosts = true; // true pour Posts, false pour Sauvegardés
+  bool _showPosts = true;
 
   Future<void> _showAddOptionBottomSheet() async {
     if (!mounted) return;
@@ -54,18 +55,13 @@ class _ProfileHeaderState extends State<ProfileHeader> {
         hasImage: _profileImageUrl != null,
         onRemoveImage: () async {
           if (!mounted) return;
-          
           try {
-            // Supprimer l'image de Firebase Storage
             final Reference ref = _storage.ref().child('users/${widget.userId}/profilePhotoUrl');
             await ref.delete();
-            
-            // Mettre à jour Firestore
             await _firestore.collection('users').doc(widget.userId).update({
               'profilePhotoUrl': null,
               'filterColor': null,
             });
-            
             setState(() {
               _profileImageUrl = null;
             });
@@ -78,67 +74,42 @@ class _ProfileHeaderState extends State<ProfileHeader> {
   }
 
   Future<void> _uploadProfileImage(XFile image, Color filterColor) async {
-    setState(() {
-      _isLoading = true;
-    });
-    
+    setState(() => _isLoading = true);
     try {
-      // Uploader l'image vers Firebase Storage
       final Reference ref = _storage.ref().child('users/${widget.userId}/profilePhotoUrl');
       await ref.putFile(File(image.path));
-      
-      // Obtenir l'URL de l'image
       final String downloadUrl = await ref.getDownloadURL();
-      
-      // Vérifier que l'URL est valide
-      if (downloadUrl.isEmpty) {
-        throw Exception('URL de téléchargement invalide');
-      }
-      
-      // Mettre à jour l'URL et le filtre dans Firestore
+      if (downloadUrl.isEmpty) throw Exception('URL de téléchargement invalide');
       await _firestore.collection('users').doc(widget.userId).update({
         'profilePhotoUrl': downloadUrl,
         'filterColor': filterColor.value,
       });
-      
-      setState(() {
-        _profileImageUrl = downloadUrl;
-      });
+      setState(() => _profileImageUrl = downloadUrl);
     } catch (e) {
       print('Erreur lors de l\'upload de l\'image: $e');
-      // Réinitialiser l'URL si l'upload échoue
-      setState(() {
-        _profileImageUrl = null;
-      });
+      setState(() => _profileImageUrl = null);
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   void initState() {
     super.initState();
-    // Initialiser le contrôleur de bio avec la valeur existante
     if (widget.userData['bio'] != null) {
       _bioController.text = widget.userData['bio'];
     }
-    // Initialiser l'URL de l'image de profil
     _profileImageUrl = widget.userData['profilePhotoUrl'];
-    // Initialiser l'état des onglets
     _showPosts = widget.showPosts;
   }
 
-  Widget _buildTabButton({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildTabButton({required String label, required bool isSelected, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue[800] : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
@@ -160,127 +131,81 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(top: 0, bottom: 0, left: 16, right: 16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1E2C),
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-               // Container principal (sans bio)
-               Container(
-                 padding: const EdgeInsets.only(top: 10, bottom: 10, left: 16, right: 16),
-                 decoration: BoxDecoration(
-                   color: const Color(0xFF2D3748),
-                   borderRadius: BorderRadius.circular(12),
-                   border: Border.all(
-                     color: Colors.grey[800]!,
-                     width: 1,
-                   ),
-                 ),
-                 child: Column(
-                   children: [
-                     Row(
-                       children: [
-                         // Avatar
-                         _isLoading
-                             ? const Center(child: CircularProgressIndicator())
-                             : Avatar(
-                                 userId: widget.userId,
-                                 radius: 35,
-                                 onTap: _showAddOptionBottomSheet,
-                               ),
-                         const SizedBox(width: 20),
-                         // Stats
-                         Expanded(
-                           child: Row(
-                             children: [
-                               // Espacement avant le premier stat
-                               const SizedBox(width: 16),
-                               _buildStatColumn(
-                                 count: widget.userData['posts']?.length ?? 0,
-                                 label: 'Posts',
-                                 color: Colors.blue,
-                               ),
-                               // Espacement entre les stats
-                               const SizedBox(width: 32),
-                               _buildStatColumn(
-                                 count: widget.userData['followers']?.length ?? 0,
-                                 label: 'Followers',
-                                 color: Colors.purple,
-                               ),
-                               // Espacement entre les stats
-                               const SizedBox(width: 32),
-                               _buildStatColumn(
-                                 count: widget.userData['following']?.length ?? 0,
-                                 label: 'Following',
-                                 color: Colors.orange,
-                               ),
-                               // Espacement après le dernier stat
-                               //const SizedBox(width: 16),
-                             ],
-                           ),
-                         ),
-                       ],
-                     ),
-                     const SizedBox(height: 16),
-                     // Boutons Posts et Sauvegardés
-                     Row(
-                       mainAxisAlignment: MainAxisAlignment.center,
-                       children: [
-                         _buildTabButton(
-                           label: 'Posts',
-                           isSelected: _showPosts,
-                           onTap: () {
-                             setState(() {
-                               _showPosts = true;
-                             });
-                             // Notifier le parent du changement
-                             if (widget.onTabChanged != null) {
-                               widget.onTabChanged!(true);
-                             }
-                           },
-                         ),
-                         const SizedBox(width: 16),
-                         _buildTabButton(
-                           label: 'Sauvegardés',
-                           isSelected: !_showPosts,
-                           onTap: () {
-                             setState(() {
-                               _showPosts = false;
-                             });
-                             // Notifier le parent du changement
-                             if (widget.onTabChanged != null) {
-                               widget.onTabChanged!(false);
-                             }
-                           },
-                         ),
-                       ],
-                     ),
-                   ],
-                 ),
-               ),
-               //const SizedBox(height: 16),
-               // Bio en dehors du container
-               Container(
-                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                 child: BioField(
-                   userData: widget.userData,
-                   controller: _bioController,
-                 ),
-               ),
-               const SizedBox(height: 20),
-               // Contenu (Posts ou Sauvegardés)
-               // Nous n'utilisons pas Expanded ici car ProfileHeader est probablement dans un ScrollView
-               // Nous allons plutôt notifier le parent du changement via un callback
+              Row(
+                children: [
+                  _isLoading
+                      ? const CircularProgressIndicator()
+                      : Avatar(
+                          userId: widget.userId,
+                          radius: 35,
+                          onTap: _showAddOptionBottomSheet,
+                        ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildStatColumn(count: widget.userData['posts']?.length ?? 0, label: 'Posts', color: Colors.blue),
+                        _buildStatColumn(count: widget.userData['followers']?.length ?? 0, label: 'Followers', color: Colors.purple),
+                        _buildStatColumn(count: widget.userData['following']?.length ?? 0, label: 'Following', color: Colors.orange),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 25),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: _buildTabButton(
+                      label: 'Posts',
+                      isSelected: _showPosts,
+                      onTap: () {
+                        setState(() => _showPosts = true);
+                        widget.onTabChanged?.call(true);
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: _buildTabButton(
+                      label: 'Sauvegardés',
+                      isSelected: !_showPosts,
+                      onTap: () {
+                        setState(() => _showPosts = false);
+                        widget.onTabChanged?.call(false);
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
-        );
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: BioField(
+            userData: widget.userData,
+            controller: _bioController,
+          ),
+        ),
+      ],
+    );
   }
 
-  Widget _buildStatColumn({
-    required int count,
-    required String label,
-    required Color color,
-  }) {
+  Widget _buildStatColumn({required int count, required String label, required Color color}) {
     return Column(
       children: [
         Text(
@@ -291,7 +216,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
             color: color,
           ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
         Text(
           label,
           style: TextStyle(
