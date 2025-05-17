@@ -69,7 +69,6 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mot de passe oublié'),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
@@ -79,92 +78,109 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
           },
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [ 
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(bottom: 20),
-              child: TextField(
-                controller: emailController,
-                focusNode: emailFocusNode,
-                decoration: InputDecoration(
-                  labelText: 'Entrez votre adresse e-mail',
-                  errorText: _errorMessage,
-                  border: OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey[400] ?? Colors.grey),
-                  ),
-                  prefixIcon: Icon(Icons.email_outlined),
-                ),
-              ),
+      body: Column(
+        children: [
+          const SizedBox(height: 40),
+          const Text(
+            'Réinitialisation du mot de passe',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
-            SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : () => _sendResetEmail(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: EdgeInsets.zero,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.blue[600]!, 
-                        Colors.blue[900]!
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  child: TextField(
+                    controller: emailController,
+                    focusNode: emailFocusNode,
+                    decoration: InputDecoration(
+                      labelText: 'Entrez votre adresse e-mail',
+                      errorText: _errorMessage,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Colors.grey[400] ?? Colors.grey),
+                      ),
+                      prefixIcon: Icon(Icons.email_outlined),
                     ),
                   ),
-                  curve: Curves.easeInOut,
-                  child: Container(
-                    width: double.infinity,
-                    height: 56,
-                    alignment: Alignment.center,
-                    child: _isLoading
-                        ? const CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 3,
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Réinitialiser',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              const Icon(
-                                Icons.send,
+                ),
+                SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : () => _sendResetEmail(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.blue[600]!, 
+                            Colors.blue[900]!
+                          ],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                      ),
+                      curve: Curves.easeInOut,
+                      child: Container(
+                        width: double.infinity,
+                        height: 56,
+                        alignment: Alignment.center,
+                        child: _isLoading
+                            ? const CircularProgressIndicator(
                                 color: Colors.white,
-                                size: 24,
+                                strokeWidth: 3,
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Réinitialiser',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Icon(
+                                    Icons.send,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
