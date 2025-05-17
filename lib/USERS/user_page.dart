@@ -28,7 +28,8 @@ class _UserPageState extends State<UserPage> {
   @override
   void initState() {
     super.initState();
-    _userId = widget.userId;
+    // Utiliser l'ID passé ou l'ID de l'utilisateur connecté
+    _userId = widget.userId ?? FirebaseAuth.instance.currentUser?.uid;
     _loadUserData();
   }
 
