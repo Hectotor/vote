@@ -98,42 +98,96 @@ class _PasswordStepState extends State<PasswordStep> {
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: widget.isLoading || !widget.isStepValid() ? null : () async {
-                    final user = FirebaseAuth.instance.currentUser;
-
-                    if (!_isEmailSent) {
-                      // Première fois : envoyer le mail
-                      if (user != null) {
-                        try {
-                          await user.sendEmailVerification();
-                          setState(() {
-                            _isEmailSent = true;
-                            _confirmationText = '📩 Mail envoyé à ${widget.userEmail}. Clique sur le lien pour activer ton compte ✅';
-                          });
-                        } catch (e) {
-                          setState(() {
-                            _confirmationText = 'Erreur lors de l\'envoi du mail : ${e.toString()}';
-                          });
-                        }
-                      }
-                    } else {
-                      // Deuxième fois et suivantes : vérifier l’état de l’email
-                      if (user != null) {
-                        await user.reload();
-                        if (user.emailVerified) {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (context) => const NavBar()),
-                            (route) => false,
-                          );
+                  // Le bouton est actif si le mot de passe a au moins 6 caractères
+                  onPressed: widget.passwordController.text.length >= 6 
+                    ? () async {
+                        // Vérifier si c'est la première fois ou non
+                        if (!_isEmailSent) {
+                          // Première fois: envoyer l'email de vérification
+                          try {
+                            // Vérifier si un utilisateur est déjà connecté
+                            final currentUser = FirebaseAuth.instance.currentUser;
+                            
+                            if (currentUser != null) {
+                              // Envoyer l'email de vérification
+                              await currentUser.sendEmailVerification();
+                              setState(() {
+                                _isEmailSent = true;
+                                _confirmationText = '📩 Email envoyé à ${widget.userEmail}';
+                              });
+                            } else {
+                              // Créer un nouvel utilisateur
+                              try {
+                                // Créer l'utilisateur avec Firebase Auth
+                                final userCredential = await FirebaseAuth.instance
+                                    .createUserWithEmailAndPassword(
+                                  email: widget.userEmail.trim(),
+                                  password: widget.passwordController.text.trim(),
+                                );
+                                
+                                // Envoyer l'email de vérification
+                                await userCredential.user!.sendEmailVerification();
+                                
+                                setState(() {
+                                  _isEmailSent = true;
+                                  _confirmationText = '📩 Email envoyé à ${widget.userEmail}';
+                                });
+                              } catch (e) {
+                                setState(() {
+                                  _confirmationText = 'Erreur d\'inscription: ${e.toString()}';
+                                });
+                              }
+                            }
+                          } catch (e) {
+                            setState(() {
+                              _confirmationText = 'Erreur: ${e.toString()}';
+                            });
+                          }
                         } else {
+                          // Deuxième fois: vérifier si l'email a été confirmé
                           setState(() {
-                            _confirmationText = 'Vérifie ta boîte mail pour activer ton compte';
+                            _confirmationText = 'Vérification en cours...';
                           });
+                          
+                          try {
+                            // Essayer de se connecter avec les identifiants
+                            final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+                              email: widget.userEmail.trim(),
+                              password: widget.passwordController.text.trim(),
+                            );
+                            
+                            final user = userCredential.user;
+                            
+                            if (user != null) {
+                              // Recharger les données utilisateur
+                              await user.reload();
+                              
+                              if (user.emailVerified) {
+                                // Email vérifié - rediriger vers l'application
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const NavBar()),
+                                  (route) => false,
+                                );
+                              } else {
+                                // Email non vérifié
+                                setState(() {
+                                  _confirmationText = 'Email non vérifié. Vérifie ta boîte mail.';
+                                });
+                              }
+                            } else {
+                              setState(() {
+                                _confirmationText = 'Erreur: Utilisateur non trouvé';
+                              });
+                            }
+                          } catch (e) {
+                            setState(() {
+                              _confirmationText = 'Erreur de connexion: ${e.toString()}';
+                            });
+                          }
                         }
-                      }
-                    }
-                  },
+                      } 
+                    : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     foregroundColor: Colors.white,
