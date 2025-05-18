@@ -56,80 +56,74 @@ class _UserContentViewState extends State<UserContentView> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        setState(() {
-          _initContentStream();
-        });
-      },
-      child: StreamBuilder<QuerySnapshot>(
-        stream: _contentStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white)));
-          }
+    return StreamBuilder<QuerySnapshot>(
+      stream: _contentStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white)));
+        }
 
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            );
-          }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          );
+        }
 
-          final docs = snapshot.data?.docs ?? [];
-          if (docs.isEmpty) {
-            return Center(
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                child: Text(
-                  widget.showPosts ? 'Aucun post' : 'Aucun post sauvegardé',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
+        final docs = snapshot.data?.docs ?? [];
+        if (docs.isEmpty) {
+          return Center(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                widget.showPosts ? 'Aucun post' : 'Aucun post sauvegardé',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            );
-          }
+            ),
+          );
+        }
 
-          return Column(
-            children: List.generate(docs.length, (index) {
-              final doc = docs[index];
-              final data = doc.data() as Map<String, dynamic>;
-              
-              // Si c'est un post sauvegardé, on utilise le postId pour récupérer le post complet
-              if (!widget.showPosts) {
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Colors.grey[800]!,
-                        width: 0.5,
-                      ),
+        // Utiliser Column au lieu de ListView pour fonctionner dans un SingleChildScrollView
+        return Column(
+          children: List.generate(docs.length, (index) {
+            final doc = docs[index];
+            final data = doc.data() as Map<String, dynamic>;
+            
+            // Si c'est un post sauvegardé, on utilise le postId pour récupérer le post complet
+            if (!widget.showPosts) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.grey[800]!,
+                      width: 0.5,
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Post(
-                        data: data,
-                        postId: data['postId'],
-                        isSavedPost: true,
-                      ),
-                    ],
-                  ),
-                );
-              }
-              
-              // Sinon, on affiche directement le post
-              return _buildPostItem(data, doc.id);
-            }),
-          );
-        },
-      ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Post(
+                      data: data,
+                      postId: data['postId'],
+                      isSavedPost: true,
+                    ),
+                  ],
+                ),
+              );
+            }
+            
+            // Sinon, on affiche directement le post
+            return _buildPostItem(data, doc.id);
+          }),
+        );
+      },
     );
   }
   

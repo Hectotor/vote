@@ -104,48 +104,79 @@ class _UserPageState extends State<UserPage> {
             const SizedBox(width: 16),
           ],
         ),
-        body: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        body: IndexedStack(
+          index: _showPosts ? 0 : 1,
           children: [
-            // En-tête du profil avec les données utilisateur déjà chargées et gestion des onglets
-            ProfileHeader(
-              userId: _userId ?? '',
-              userData: _userData ?? {},
-              showPosts: _showPosts,
-              onTabChanged: (showPosts) {
-                setState(() {
-                  _showPosts = showPosts;
-                });
-              },
-              isOwner: _userId == FirebaseAuth.instance.currentUser?.uid,
+            // Page des posts de l'utilisateur (index 0)
+            Container(
+              color: Colors.black,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // En-tête du profil avec les données utilisateur déjà chargées et gestion des onglets
+                    ProfileHeader(
+                      userId: _userId ?? '',
+                      userData: _userData ?? {},
+                      showPosts: true,
+                      onTabChanged: (showPosts) {
+                        setState(() {
+                          _showPosts = showPosts;
+                        });
+                      },
+                      isOwner: _userId == FirebaseAuth.instance.currentUser?.uid,
+                    ),
+                    
+                    // Contenu des posts
+                    Container(
+                      constraints: BoxConstraints(
+                        // Définir une hauteur minimale pour permettre le défilement même avec peu de contenu
+                        minHeight: MediaQuery.of(context).size.height - 200,
+                      ),
+                      child: UserContentView(
+                        userId: _userId!,
+                        showPosts: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            
-            // Contenu avec IndexedStack pour éviter le rechargement complet
-            IndexedStack(
-              index: _showPosts ? 0 : 1,
-              children: [
-                // Page des posts de l'utilisateur (index 0)
-                Container(
-                  color: Colors.black,
-                  child: UserContentView(
-                    userId: _userId!,
-                    showPosts: true,
-                  ),
+            // Page des posts sauvegardés (index 1)
+            Container(
+              color: Colors.black,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // En-tête du profil avec les données utilisateur déjà chargées et gestion des onglets
+                    ProfileHeader(
+                      userId: _userId ?? '',
+                      userData: _userData ?? {},
+                      showPosts: false,
+                      onTabChanged: (showPosts) {
+                        setState(() {
+                          _showPosts = showPosts;
+                        });
+                      },
+                      isOwner: _userId == FirebaseAuth.instance.currentUser?.uid,
+                    ),
+                    
+                    // Contenu des posts sauvegardés
+                    Container(
+                      constraints: BoxConstraints(
+                        // Définir une hauteur minimale pour permettre le défilement même avec peu de contenu
+                        minHeight: MediaQuery.of(context).size.height - 200,
+                      ),
+                      child: UserContentView(
+                        userId: _userId!,
+                        showPosts: false,
+                      ),
+                    ),
+                  ],
                 ),
-                // Page des posts sauvegardés (index 1)
-                Container(
-                  color: Colors.black,
-                  child: UserContentView(
-                    userId: _userId!,
-                    showPosts: false,
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),
-      ),
     );
   }
 }
