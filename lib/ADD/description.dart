@@ -167,7 +167,7 @@ class _DescriptionFieldState extends State<DescriptionField> {
           hintText: 'Ajoute une description...',
           hintStyle: TextStyle(
             color: Colors.white.withOpacity(0.7),
-            fontSize: 14,
+            fontSize: 18,
             fontStyle: FontStyle.italic,
           ),
           border: InputBorder.none,
@@ -175,7 +175,7 @@ class _DescriptionFieldState extends State<DescriptionField> {
         ),
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 14,
+          fontSize: 18,
         ),
         cursorColor: Colors.white,
         maxLines: null,

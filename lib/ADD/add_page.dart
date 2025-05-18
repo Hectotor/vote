@@ -270,7 +270,7 @@ class _AddPageState extends State<AddPage> {
               SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  padding: const EdgeInsets.only(left: 2, right: 2, bottom: 8),
                   child: Container(
                     alignment: Alignment.center,
                     color: Colors.transparent,
@@ -286,7 +286,7 @@ class _AddPageState extends State<AddPage> {
                             });
                           },
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
                         PollGrid(
                           images: _images,
                           imageFilters: _imageFilters,

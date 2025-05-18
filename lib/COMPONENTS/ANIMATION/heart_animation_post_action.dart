@@ -66,13 +66,13 @@ class _HeartAnimationPostActionState extends State<HeartAnimationPostAction>
     return AnimatedBuilder(
       animation: _scaleAnim,
       builder: (context, child) {
-        final bool showRed = _scaleAnim.value > 1.05 || widget.isLiked;
+        // Afficher immédiatement le cœur rouge si isLiked est true
         return Transform.scale(
           scale: _scaleAnim.value,
           child: IconButton(
             icon: Icon(
-              showRed ? Icons.favorite : Icons.favorite_border,
-              color: showRed ? Colors.red : Colors.white,
+              widget.isLiked ? Icons.favorite : Icons.favorite_border,
+              color: widget.isLiked ? Colors.red : Colors.white,
               size: widget.size,
             ),
             onPressed: widget.onTap,
