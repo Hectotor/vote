@@ -7,7 +7,7 @@ import 'package:toplyke/COMPONENTS/Comment/comment_popup.dart';
 import 'package:toplyke/HOME/poll_grid_home_modern_new.dart';
 import 'package:toplyke/COMPONENTS/Comment/comment_input.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../page_wrapper.dart';
+
 // import 'package:toplyke/COMPONENTS/Post/comment_service.dart'; // Non utilisu00e9 car nous utilisons la mu00e9thode de CommentPopup
 
 class PostPage extends StatefulWidget {
@@ -65,14 +65,7 @@ class _PostPageState extends State<PostPage> {
     final _mainScrollController = ScrollController();
     final _commentScrollController = ScrollController();
     
-    return PageWrapper(
-      showNavBar: true,
-      currentIndex: 0, // Home
-      bottomWidget: CommentInput(
-        controller: _commentController,
-        onSend: _addComment,
-      ),
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
           backgroundColor: Colors.black,
@@ -161,6 +154,9 @@ class _PostPageState extends State<PostPage> {
           );
         },
       ),
+      bottomNavigationBar: CommentInput(
+        controller: _commentController,
+        onSend: _addComment,
       ),
     );
   }
