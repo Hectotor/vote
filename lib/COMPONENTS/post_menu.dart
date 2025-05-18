@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:toplyke/COMPONENTS/menu_delete.dart';
 import 'package:toplyke/COMPONENTS/Post/post_report_service.dart';
+import 'package:toplyke/COMPONENTS/Post/post_save_service.dart';
 
 class PostMenu extends StatefulWidget {
   final String postId;
@@ -19,13 +20,16 @@ class PostMenu extends StatefulWidget {
 
 class _PostMenuState extends State<PostMenu> {
   bool _isReported = false;
+  bool _isSaved = false;
   final MenuDelete _deleteService = MenuDelete();
   final PostReportService _reportService = PostReportService();
+  final PostSaveService _saveService = PostSaveService();
 
   @override
   void initState() {
     super.initState();
     _checkIfReported();
+    _checkIfSaved();
   }
 
   Future<void> _checkIfReported() async {
@@ -38,6 +42,19 @@ class _PostMenuState extends State<PostMenu> {
       }
     } catch (e) {
       print('Erreur lors de la vérification du signalement: $e');
+    }
+  }
+
+  Future<void> _checkIfSaved() async {
+    try {
+      final isSaved = await _saveService.isPostSaved(widget.postId);
+      if (mounted) {
+        setState(() {
+          _isSaved = isSaved;
+        });
+      }
+    } catch (e) {
+      print('Erreur lors de la vérification de la sauvegarde: $e');
     }
   }
 
@@ -69,6 +86,34 @@ class _PostMenuState extends State<PostMenu> {
     }
   }
 
+  Future<void> _savePost(BuildContext context) async {
+    try {
+      // Utiliser la méthode statique qui gère la redirection vers la page de connexion
+      final success = await PostSaveService.saveWithAuthCheck(
+        context,
+        widget.postId
+      );
+      
+      if (!mounted) return;
+      
+      // Mettre à jour l'état local
+      if (success) {
+        await _checkIfSaved(); // Vérifier le nouvel état après le toggle
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Erreur lors de la sauvegarde: $e',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -81,11 +126,36 @@ class _PostMenuState extends State<PostMenu> {
           _reportPost(context);
         } else if (value == 'delete') {
           _deleteService.deletePost(widget.postId, widget.userId, context);
+        } else if (value == 'save') {
+          _savePost(context);
         }
       },
       itemBuilder: (BuildContext context) {
         final items = <PopupMenuEntry<String>>[];
         
+        // Option de sauvegarde
+        items.add(
+          PopupMenuItem<String>(
+            value: 'save',
+            child: Row(
+              children: [
+                Icon(
+                  _isSaved ? Icons.bookmark : Icons.bookmark_border,
+                  color: _isSaved ? Colors.blue : const Color(0xFF212121),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _isSaved ? 'Retirer des sauvegardes' : 'Sauvegarder',
+                  style: TextStyle(
+                    color: _isSaved ? Colors.blue : const Color(0xFF212121),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+
         // Toujours afficher l'option de signalement
         items.add(
           PopupMenuItem<String>(

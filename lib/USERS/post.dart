@@ -80,7 +80,6 @@ class Post extends StatelessWidget {
         PostActions(
           postId: postId,
           userId: postData['userId'] ?? '',
-          isSaved: isSavedPost, // Indiquer que le post est déjà sauvegardé
         ),
       ],
     );

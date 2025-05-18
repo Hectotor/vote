@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:toplyke/HOME/post_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'Post/post_like_service.dart';
-import 'package:toplyke/COMPONENTS/Post/post_save_service.dart';
-import 'dart:async';
 import 'ANIMATION/heart_animation_post_action.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -11,14 +9,12 @@ class PostActions extends StatefulWidget {
   final String postId;
   final String userId;
   final bool isCommentPage;
-  final bool isSaved;
 
   const PostActions({
     Key? key,
     required this.postId,
     required this.userId,
     this.isCommentPage = false,
-    this.isSaved = false,
   }) : super(key: key);
 
   @override
@@ -26,23 +22,13 @@ class PostActions extends StatefulWidget {
 }
 
 class _PostActionsState extends State<PostActions> {
-  bool _isPostSaved = false;
   bool _likeLoading = false;
   bool _lastIsLiked = false;
-  final PostSaveService _postSaveService = PostSaveService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void initState() {
     super.initState();
-    // Si le post est déjà marqué comme sauvegardé, on utilise cette valeur
-    if (widget.isSaved) {
-      setState(() {
-        _isPostSaved = true;
-      });
-    } else {
-      _checkSavedStatus();
-    }
   }
 
   @override
@@ -50,36 +36,7 @@ class _PostActionsState extends State<PostActions> {
     super.dispose();
   }
 
-  Future<void> _checkSavedStatus() async {
-    if (!mounted) return;
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-      
-      // Vérifier si le post est sauvegardé, même si l'utilisateur est le propriétaire
-      final isSaved = await _postSaveService.isPostSaved(widget.postId);
-      if (!mounted) return;
-      setState(() {
-        _isPostSaved = isSaved;
-      });
-    } catch (e) {
-      debugPrint('Error checking save status: $e');
-    }
-  }
-
-  Future<void> _toggleSave() async {
-    if (!mounted) return;
-    
-    // Utiliser la méthode statique qui gère la redirection vers la page de connexion
-    final success = await PostSaveService.saveWithAuthCheck(context, widget.postId);
-    
-    // Si l'action a réussi, mettre à jour l'interface
-    if (success && mounted) {
-      setState(() {
-        _isPostSaved = !_isPostSaved;
-      });
-    }
-  }
+  // Méthodes de sauvegarde supprimées car déplacées vers post_menu.dart
 
   @override
   Widget build(BuildContext context) {
@@ -190,14 +147,6 @@ class _PostActionsState extends State<PostActions> {
             },
           ),
           const Spacer(),
-          IconButton(
-            icon: Icon(
-              _isPostSaved ? Icons.bookmark : Icons.bookmark_border,
-              color: _isPostSaved ? Colors.amber : Colors.white,
-              size: 24,
-            ),
-            onPressed: _toggleSave,
-          ),
         ],
       ),
     );
