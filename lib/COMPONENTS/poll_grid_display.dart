@@ -197,7 +197,7 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(
-                        width: MediaQuery.of(context).size.width / 2,
+                        width: MediaQuery.of(context).size.width / 2.3, //taille du container bas 3
                         child: createVoteCard(2),
                       ),
                     ],
