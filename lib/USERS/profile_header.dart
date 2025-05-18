@@ -168,11 +168,11 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                   ),
                 ],
               ),  
-              if (widget.isOwner)
               const SizedBox(height: 25),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  if (widget.isOwner) ...[
                     Expanded(
                       flex: 1,
                       child: Container(
@@ -198,9 +198,22 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                             setState(() => _showPosts = false);
                             widget.onTabChanged?.call(false);
                           },
+                        ),
                       ),
                     ),
-                  ),
+                  ] else ...[
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        child: _buildTabButton(
+                          label: 'Posts',
+                          isSelected: true,
+                          onTap: () {},
+                        ),
+                      ),
+                    ),
+                  ]
                 ],
               ),
             ],

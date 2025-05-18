@@ -79,9 +79,17 @@ class _UserContentViewState extends State<UserContentView> {
           final docs = snapshot.data?.docs ?? [];
           if (docs.isEmpty) {
             return Center(
-              child: Text(
-                widget.showPosts ? 'Aucun post à afficher' : 'Aucun post sauvegardé',
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                child: Text(
+                  widget.showPosts ? 'Aucun post' : 'Aucun post sauvegardé',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             );
           }
