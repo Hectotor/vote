@@ -11,12 +11,14 @@ class PostActions extends StatefulWidget {
   final String postId;
   final String userId;
   final bool isCommentPage;
+  final bool isSaved;
 
   const PostActions({
     Key? key,
     required this.postId,
     required this.userId,
     this.isCommentPage = false,
+    this.isSaved = false,
   }) : super(key: key);
 
   @override
@@ -33,7 +35,14 @@ class _PostActionsState extends State<PostActions> {
   @override
   void initState() {
     super.initState();
-    _checkSavedStatus();
+    // Si le post est déjà marqué comme sauvegardé, on utilise cette valeur
+    if (widget.isSaved) {
+      setState(() {
+        _isPostSaved = true;
+      });
+    } else {
+      _checkSavedStatus();
+    }
   }
 
   @override

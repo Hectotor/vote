@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../COMPONENTS/post.dart';
+import 'post.dart';
 
 /// Widget qui affiche soit les posts de l'utilisateur, soit les posts sauvegardés
 class UserContentView extends StatefulWidget {
@@ -98,28 +98,26 @@ class _UserContentViewState extends State<UserContentView> {
               final doc = docs[index];
               final data = doc.data() as Map<String, dynamic>;
               
-              // Si c'est un post sauvegardé, on doit récupérer le post complet
+              // Si c'est un post sauvegardé, on utilise le postId pour récupérer le post complet
               if (!widget.showPosts) {
-                // Ici, on pourrait faire une requête pour obtenir le post complet
-                // Pour l'instant, on affiche juste un placeholder
                 return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2D3748),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.blue.withOpacity(0.5),
-                      width: 1,
+                    color: Colors.black,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.grey[800]!,
+                        width: 0.5,
+                      ),
                     ),
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.bookmark, color: Colors.blue, size: 16),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Post sauvegardé le ${_formatDate(data['savedAt'])}',
-                        style: const TextStyle(color: Colors.white),
+                      Post(
+                        data: data,
+                        postId: data['postId'],
+                        isSavedPost: true,
                       ),
                     ],
                   ),
@@ -135,19 +133,7 @@ class _UserContentViewState extends State<UserContentView> {
     );
   }
   
-  String _formatDate(dynamic timestamp) {
-    if (timestamp == null) return '';
-    
-    DateTime date;
-    if (timestamp is Timestamp) {
-      date = timestamp.toDate();
-    } else {
-      // Fallback si ce n'est pas un Timestamp
-      return '';
-    }
-    
-    return '${date.day}/${date.month}/${date.year}';
-  }
+
   
   Widget _buildPostItem(Map<String, dynamic> data, String postId) {
     return Container(
