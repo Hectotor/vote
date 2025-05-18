@@ -47,9 +47,8 @@ class _UserContentViewState extends State<UserContentView> {
     } else {
       // Stream pour les posts sauvegardés
       _contentStream = _firestore
-          .collection('users')
-          .doc(widget.userId)
           .collection('savedPosts')
+          .where('userId', isEqualTo: widget.userId)
           .orderBy('savedAt', descending: true)
           .snapshots();
     }
