@@ -94,13 +94,13 @@ class _PostMenuState extends State<PostMenu> {
               children: [
                 Icon(
                   Icons.flag,
-                  color: _isReported ? Colors.red : Colors.white,
+                  color: _isReported ? Colors.red : const Color(0xFF212121),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   _isReported ? 'Annuler le signalement' : 'Signaler',
                   style: TextStyle(
-                    color: _isReported ? Colors.red : Colors.white,
+                    color: _isReported ? Colors.red : const Color(0xFF212121),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
