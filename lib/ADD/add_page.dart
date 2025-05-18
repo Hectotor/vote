@@ -257,71 +257,59 @@ class _AddPageState extends State<AddPage> {
               ],
             );
           },
-          child: Stack(
-            children: [
-              // Arrière-plan flou
-              BackdropFilter(
-                filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                child: Container(
-                  color: Colors.black.withOpacity(0.1),
-                ),
-              ),
-              // Contenu principal
-              SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 2, right: 2, bottom: 8),
-                  child: Container(
-                    alignment: Alignment.center,
-                    color: Colors.transparent,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        DescriptionField(
-                          controller: _descriptionController,
-                          onTagsChanged: (hashtags, mentions) {
-                            setState(() {
-                              _hashtags = hashtags;
-                              _mentions = mentions;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        PollGrid(
-                          images: _images,
-                          imageFilters: _imageFilters,
-                          numberOfBlocs: textControllers.length,
-                          textControllers: textControllers,
-                          onImageChange: (index) {
-                            _updateImageState(index);
-                          },
-                          onBlocRemoved: (index) {
-                            setState(() {
-                              // Supprimer uniquement le bloc à l'index spécifié
-                              if (index >= 2 && index < textControllers.length) {
-                                // Supprimer les éléments associés
-                                textControllers.removeAt(index);
-                                _images.removeAt(index);
-                                _imageFilters.removeAt(index);
-                              }
-                            });
-                          },
-                          onStateUpdate: () {
-                            setState(() {});
-                          },
-                        ),
-                        const SizedBox(height: 26),
-                        BottomAddBloc(
-                          showPoll: true,
-                          numberOfPollBlocs: textControllers.length,
-                          onPressed: _isLoading.value ? () {} : _addBloc,
-                        ),
-                      ],
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 2, right: 2, bottom: 8),
+              child: Container(
+                alignment: Alignment.center,
+                color: Colors.transparent,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    DescriptionField(
+                      controller: _descriptionController,
+                      onTagsChanged: (hashtags, mentions) {
+                        setState(() {
+                          _hashtags = hashtags;
+                          _mentions = mentions;
+                        });
+                      },
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    PollGrid(
+                      images: _images,
+                      imageFilters: _imageFilters,
+                      numberOfBlocs: textControllers.length,
+                      textControllers: textControllers,
+                      onImageChange: (index) {
+                        _updateImageState(index);
+                      },
+                      onBlocRemoved: (index) {
+                        setState(() {
+                          // Supprimer uniquement le bloc à l'index spécifié
+                          if (index >= 2 && index < textControllers.length) {
+                            // Supprimer les éléments associés
+                            textControllers.removeAt(index);
+                            _images.removeAt(index);
+                            _imageFilters.removeAt(index);
+                          }
+                        });
+                      },
+                      onStateUpdate: () {
+                        setState(() {});
+                      },
+                    ),
+                    const SizedBox(height: 26),
+                    BottomAddBloc(
+                      showPoll: true,
+                      numberOfPollBlocs: textControllers.length,
+                      onPressed: _isLoading.value ? () {} : _addBloc,
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),

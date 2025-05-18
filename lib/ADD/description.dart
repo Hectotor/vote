@@ -166,9 +166,10 @@ class _DescriptionFieldState extends State<DescriptionField> {
         decoration: InputDecoration(
           hintText: 'Ajoute une description...',
           hintStyle: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: const Color.fromRGBO(255, 255, 255, 1).withOpacity(0.7),
             fontSize: 18,
             fontStyle: FontStyle.italic,
+            fontWeight: FontWeight.w500,
           ),
           border: InputBorder.none,
           contentPadding: EdgeInsets.zero,
@@ -179,6 +180,7 @@ class _DescriptionFieldState extends State<DescriptionField> {
         ),
         cursorColor: Colors.white,
         maxLines: null,
+        maxLength: 350,
         keyboardType: TextInputType.multiline,
         buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
       ),
