@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../USERS/post.dart';
 
-class FilteredPostsPage extends StatefulWidget {
-  final String hashtag;
-  const FilteredPostsPage({super.key, required this.hashtag});
+class FilteredMentionsPage extends StatefulWidget {
+  final String mention;
+  const FilteredMentionsPage({super.key, required this.mention});
 
   @override
-  State<FilteredPostsPage> createState() => _FilteredPostsPageState();
+  State<FilteredMentionsPage> createState() => _FilteredMentionsPageState();
 }
 
-class _FilteredPostsPageState extends State<FilteredPostsPage> {
+class _FilteredMentionsPageState extends State<FilteredMentionsPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Stream<QuerySnapshot>? _postsStream;
 
@@ -22,7 +23,7 @@ class _FilteredPostsPageState extends State<FilteredPostsPage> {
   void _initPostsStream() {
     _postsStream = _firestore
         .collection('posts')
-        .where('hashtags', arrayContains: widget.hashtag)
+        .where('mentions', arrayContains: widget.mention)
         .snapshots();
   }
 
@@ -33,7 +34,7 @@ class _FilteredPostsPageState extends State<FilteredPostsPage> {
         backgroundColor: Colors.black,
         elevation: 0,
         title: Text(
-          '#${widget.hashtag}',
+          '@${widget.mention}',
           style: const TextStyle(color: Colors.white),
         ),
       ),
@@ -71,7 +72,7 @@ class _FilteredPostsPageState extends State<FilteredPostsPage> {
           if (posts.isEmpty) {
             return const Center(
               child: Text(
-                'Aucun post trouvé avec ce hashtag',
+                'Aucun post trouvé avec cette mention',
                 style: TextStyle(color: Colors.white70),
               ),
             );
@@ -92,60 +93,9 @@ class _FilteredPostsPageState extends State<FilteredPostsPage> {
                     ),
                   ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header du post
-                    ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(post['profilePhotoUrl'] ?? ''),
-                      ),
-                      title: Text(
-                        post['pseudo'],
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      subtitle: Text(
-                        post['createdAt'].toDate().toString(),
-                        style: TextStyle(color: Colors.grey[400]),
-                      ),
-                    ),
-
-                    // Description
-                    if (post['description'].isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          post['description'],
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-
-                    // Grid de photos
-                    if (post['blocs'].isNotEmpty)
-                      Container(
-                        height: 300,
-                        color: Colors.grey[800],
-                        child: Center(
-                          child: Text(
-                            'Images du post',
-                            style: TextStyle(color: Colors.grey[400]),
-                          ),
-                        ),
-                      ),
-
-                    // Actions du post
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Icon(Icons.favorite_border, color: Colors.white),
-                          Icon(Icons.chat_bubble_outline, color: Colors.white),
-                          Icon(Icons.share, color: Colors.white),
-                        ],
-                      ),
-                    ),
-                  ],
+                child: Post(
+                  data: post,
+                  postId: post['postId'],
                 ),
               );
             },
