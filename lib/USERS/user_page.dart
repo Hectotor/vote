@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'profile_header.dart';
 import 'user_content_view.dart';
 import '../models/reusable_login_button.dart';
+import '../page_wrapper.dart';
 
 class UserPage extends StatefulWidget {
   final String? userId;
@@ -52,59 +53,70 @@ class _UserPageState extends State<UserPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Vu00e9rifier si l'utilisateur est authentifiu00e9
+    // Vérifier si l'utilisateur est authentifié
     final user = FirebaseAuth.instance.currentUser;
     if (user == null && widget.showLoginButton) {
-      // Afficher le bouton de connexion si l'utilisateur n'est pas authentifiu00e9 et que showLoginButton est true
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Profil'),
-        ),
-        body: const Center(
-          child: ReusableLoginButton(),
+      // Afficher le bouton de connexion si l'utilisateur n'est pas authentifié et que showLoginButton est true
+      return PageWrapper(
+        showNavBar: true,
+        currentIndex: 4, // Profil
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Profil'),
+          ),
+          body: const Center(
+            child: ReusableLoginButton(),
+          ),
         ),
       );
     }
     
-    // Afficher un indicateur de chargement pendant le chargement des donnu00e9es
+    // Afficher un indicateur de chargement pendant le chargement des données
     if (_userId == null || _userData == null) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
+      return PageWrapper(
+        showNavBar: true,
+        currentIndex: 4, // Profil
+        child: const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
         ),
       );
     }
     
-    return Scaffold(
-      appBar: AppBar(
-        title: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            _pseudo ?? 'Utilisateur',
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+    return PageWrapper(
+      showNavBar: true,
+      currentIndex: 4, // Profil
+      child: Scaffold(
+        appBar: AppBar(
+          title: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              _pseudo ?? 'Utilisateur',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
+          centerTitle: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                // Action de recherche
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                // Action du menu
+              },
+            ),
+            const SizedBox(width: 16),
+          ],
         ),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Action de recherche
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              // Action du menu
-            },
-          ),
-          const SizedBox(width: 16),
-        ],
-      ),
-      body: SingleChildScrollView(
+        body: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -145,6 +157,7 @@ class _UserPageState extends State<UserPage> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

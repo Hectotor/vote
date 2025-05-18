@@ -7,6 +7,7 @@ import 'package:toplyke/COMPONENTS/Comment/comment_popup.dart';
 import 'package:toplyke/HOME/poll_grid_home_modern_new.dart';
 import 'package:toplyke/COMPONENTS/Comment/comment_input.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../page_wrapper.dart';
 // import 'package:toplyke/COMPONENTS/Post/comment_service.dart'; // Non utilisu00e9 car nous utilisons la mu00e9thode de CommentPopup
 
 class PostPage extends StatefulWidget {
@@ -64,18 +65,25 @@ class _PostPageState extends State<PostPage> {
     final _mainScrollController = ScrollController();
     final _commentScrollController = ScrollController();
     
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+    return PageWrapper(
+      showNavBar: true,
+      currentIndex: 0, // Home
+      bottomWidget: CommentInput(
+        controller: _commentController,
+        onSend: _addComment,
       ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: _firestore.collection('posts').doc(widget.postId).snapshots(),
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: StreamBuilder<DocumentSnapshot>(
+          stream: _firestore.collection('posts').doc(widget.postId).snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator(color: Colors.white));
@@ -153,9 +161,6 @@ class _PostPageState extends State<PostPage> {
           );
         },
       ),
-      bottomNavigationBar: CommentInput(
-        controller: _commentController,
-        onSend: _addComment,
       ),
     );
   }
