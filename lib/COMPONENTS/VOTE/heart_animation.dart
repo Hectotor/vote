@@ -30,10 +30,10 @@ class _HeartAnimationState extends State<HeartAnimation>
     HapticFeedback.mediumImpact();
     setState(() {
       _visible = true;
-      _scale = 1.4;
+      _scale = 1.6;
     });
 
-    Future.delayed(const Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 150), () {
       if (mounted) {
         setState(() {
           _scale = 1.0;
@@ -41,7 +41,7 @@ class _HeartAnimationState extends State<HeartAnimation>
       }
     });
 
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) {
         setState(() {
           _visible = false;
@@ -54,11 +54,11 @@ class _HeartAnimationState extends State<HeartAnimation>
   Widget build(BuildContext context) {
     return Center(
       child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 600),
         opacity: _visible ? 1.0 : 0.0,
         child: TweenAnimationBuilder<double>(
           tween: Tween<double>(begin: 0.0, end: _scale),
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 400),
           curve: Curves.easeOutBack,
           builder: (context, value, child) {
             return Transform.scale(
@@ -67,26 +67,26 @@ class _HeartAnimationState extends State<HeartAnimation>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [
-                    if (_visible)
-                      BoxShadow(
-                        color: Colors.pinkAccent.withOpacity(0.6),
-                        blurRadius: 5,
-                        spreadRadius: 5,
-                      ),
+                    BoxShadow(
+                      color: Colors.red.withOpacity(0.4),
+                      blurRadius: 25,
+                      spreadRadius: 2,
+                    ),
                   ],
                 ),
                 child: ShaderMask(
                   shaderCallback: (Rect bounds) {
                     return const LinearGradient(
-                      colors: [Colors.pink, Colors.red],
+                      colors: [Colors.pinkAccent, Colors.redAccent],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ).createShader(bounds);
                   },
+                  blendMode: BlendMode.srcIn,
                   child: const Icon(
                     Icons.favorite,
+                    size: 100,
                     color: Colors.white,
-                    size: 80,
                   ),
                 ),
               ),
