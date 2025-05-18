@@ -11,21 +11,8 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
-  bool _showHistory = false;
 
   List<Map<String, dynamic>> _combinedResults = [];
-  List<String> _searchHistory = [];
-
-  void _addToHistory(String query) {
-    if (query.isNotEmpty && !_searchHistory.contains(query)) {
-      setState(() {
-        _searchHistory.insert(0, query);
-        if (_searchHistory.length > 10) {
-          _searchHistory.removeLast();
-        }
-      });
-    }
-  }
 
   void _performSearch(String rawQuery) async {
     final query = rawQuery.trim().replaceAll(RegExp(r'^[@#]'), ''); // Supprimer # ou @
@@ -40,8 +27,6 @@ class _SearchPageState extends State<SearchPage> {
     setState(() {
       _isSearching = true;
       _combinedResults = [];
-      _showHistory = false;
-      _addToHistory(query);
     });
 
     // Profils (pseudo)
@@ -110,58 +95,17 @@ appBar: AppBar(
       ),
     ),
   ),
-  actions: [
-    IconButton(
-      icon: Icon(Icons.history, color: Colors.white54),
-      onPressed: () {
-        setState(() {
-          _showHistory = !_showHistory;
-          _isSearching = false;
-        });
-      },
-    ),
-  ],
 ),
 
-      body: _showHistory
-          ? ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _searchHistory.length,
-              itemBuilder: (context, index) {
-                final query = _searchHistory[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Card(
-                    color: Colors.grey[900],
-                    child: ListTile(
-                      leading: const Icon(Icons.history, color: Colors.white70),
-                      title: Text(query, style: const TextStyle(color: Colors.white)),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.red),
-                        onPressed: () {
-                          setState(() {
-                            _searchHistory.removeAt(index);
-                          });
-                        },
-                      ),
-                      onTap: () {
-                        _searchController.text = query;
-                        _performSearch(query);
-                      },
-                    ),
-                  ),
-                );
-              },
-            )
-          : _isSearching
-              ? _combinedResults.isEmpty
-                  ? const Center(
-                      child: Text("Aucun résultat", style: TextStyle(color: Colors.white70)),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _combinedResults.length,
-                      itemBuilder: (context, index) {
+      body: _isSearching
+          ? _combinedResults.isEmpty
+              ? const Center(
+                  child: Text("Aucun résultat", style: TextStyle(color: Colors.white70)),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _combinedResults.length,
+                  itemBuilder: (context, index) {
                     final item = _combinedResults[index];
                     final type = item['type'];
                     final data = item['data'];
