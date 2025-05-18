@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'profile_header.dart';
 import 'user_content_view.dart';
 import '../models/reusable_login_button.dart';
-import '../page_wrapper.dart';
 
 class UserPage extends StatefulWidget {
   final String? userId;
@@ -57,37 +56,26 @@ class _UserPageState extends State<UserPage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null && widget.showLoginButton) {
       // Afficher le bouton de connexion si l'utilisateur n'est pas authentifié et que showLoginButton est true
-      return PageWrapper(
-        showNavBar: true,
-        currentIndex: 4, // Profil
-        child: Scaffold(
-          appBar: AppBar(
-            title: const Text('Profil'),
-          ),
-          body: const Center(
-            child: ReusableLoginButton(),
-          ),
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Profil'),
+        ),
+        body: const Center(
+          child: ReusableLoginButton(),
         ),
       );
     }
     
     // Afficher un indicateur de chargement pendant le chargement des données
     if (_userId == null || _userData == null) {
-      return PageWrapper(
-        showNavBar: true,
-        currentIndex: 4, // Profil
-        child: const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
         ),
       );
     }
     
-    return PageWrapper(
-      showNavBar: true,
-      currentIndex: 4, // Profil
-      child: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: Align(
             alignment: Alignment.centerLeft,
@@ -157,7 +145,6 @@ class _UserPageState extends State<UserPage> {
             ),
           ],
         ),
-      ),
       ),
     );
   }
