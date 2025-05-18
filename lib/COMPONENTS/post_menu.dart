@@ -75,7 +75,7 @@ class _PostMenuState extends State<PostMenu> {
     final isOwner = currentUser?.uid == widget.userId;
     
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert, color: Colors.white),
+      icon: const Icon(Icons.more_vert),
       onSelected: (String value) {
         if (value == 'report') {
           _reportPost(context);

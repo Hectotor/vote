@@ -18,14 +18,14 @@ class PostDescription extends StatelessWidget {
         .trim(); // Supprime les espaces au début et à la fin
     
     return Padding(
-      padding: const EdgeInsets.only(left: 2, right: 2, bottom: 8),
+      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             cleanedDescription,
             style: const TextStyle(
-              color: Colors.white,
+              //color: Colors.white,
               fontSize: 18,
 
             ),

@@ -39,7 +39,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      //backgroundColor: Colors.black,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _refreshPosts,
@@ -102,18 +102,17 @@ class _HomePageState extends State<HomePage> {
                     }).toList() ?? [];
 
                     return ListView.builder(
-                      padding: const EdgeInsets.only(),
+                      padding: const EdgeInsets.only(left: 10, right: 10),
                       itemCount: posts.length,
                       itemBuilder: (context, index) {
                         final post = posts[index];
                         return Container(
                           decoration: BoxDecoration(
-                            color: Colors.black,
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Colors.grey[800]!,
-                                width: 0.5,
-                              ),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: const Color(0xFFF5F5F5),
+                              width: 10,
                             ),
                           ),
                           child: Column(

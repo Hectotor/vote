@@ -26,7 +26,7 @@ class PostHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 10, left: 4, right: 4, bottom: 8),
+      padding: const EdgeInsets.only(top: 10, left: 10, right: 4, bottom: 8),
       child: Row(
         children: [
           Avatar(
@@ -54,14 +54,14 @@ class PostHeader extends StatelessWidget {
                     pseudo,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      //color: Colors.white,
                     ),
                   ),
                 ),
                 Text(
                   'Publié ${DateFormatter.formatDate(createdAt)}',
                   style: const TextStyle(
-                    color: Colors.grey,
+                    //color: Colors.grey,
                     fontSize: 12,
                   ),
                 ),

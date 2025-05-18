@@ -109,8 +109,8 @@ class _NavBarState extends State<NavBar> {
                   ),
                 ],
                 currentIndex: _selectedIndex,
-                selectedItemColor: Colors.white,
-                unselectedItemColor: Colors.grey[600],
+                selectedItemColor: Color(0xFF1E88E5),
+                unselectedItemColor: Color(0x9E9E9E9E),
                 onTap: _onItemTapped,
                 type: BottomNavigationBarType.fixed,
                 showSelectedLabels: false,
@@ -137,10 +137,13 @@ class _NavBarState extends State<NavBar> {
 
   BottomNavigationBarItem _buildAddButton() {
     return BottomNavigationBarItem(
-      icon: Icon(
-        Icons.add,
-        size: 38, // Taille augmentée
-        color: Colors.grey[600],
+      icon: SizedBox(
+        width: 40,
+        height: 40,
+        child: Image.asset(
+          'assets/logo/icon.png',
+          fit: BoxFit.contain,
+        ),
       ),
       label: '',
     );

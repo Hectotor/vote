@@ -130,7 +130,7 @@ class _PostActionsState extends State<PostActions> {
                       Text(
                         '$likeCount',
                         style: TextStyle(
-                          color: Colors.white70,
+                          //color: Colors.white70,
                           fontSize: 12,
                         ),
                       ),
@@ -150,7 +150,7 @@ class _PostActionsState extends State<PostActions> {
                   IconButton(
                     icon: Icon(
                       Icons.chat_bubble_outline,
-                      color: Colors.white,
+                      //color: Colors.white,
                       size: 24,
                     ),
                     onPressed: widget.isCommentPage
@@ -171,7 +171,7 @@ class _PostActionsState extends State<PostActions> {
                   if (snapshot.hasData) Text(
                     '$commentCount',
                     style: TextStyle(
-                      color: Colors.white70,
+                      //color: Colors.white70,
                       fontSize: 12,
                     ),
                   ),
@@ -182,7 +182,7 @@ class _PostActionsState extends State<PostActions> {
           IconButton(
             icon: Icon(
               Icons.send_outlined,
-              color: Colors.white,
+              //color: Colors.white,
               size: 24,
             ),
             onPressed: () {
