@@ -179,7 +179,7 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
           // Affichage spécifique pour le type 'triple'
           if (widget.type == 'triple' && widget.blocs.length >= 3) {
             return Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 10),
               child: Column(
               children: [
                 // Ligne du haut avec 2 blocs
@@ -192,7 +192,7 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
                 ),
                 // Bloc du bas centré
                 Padding(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.only(top: 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -223,7 +223,7 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
                 mainAxisSpacing: 8,
                 childAspectRatio: 1.0,
               ),
-              padding: EdgeInsets.all(10), // Supprime le padding par défaut
+                            padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 10), // Supprime le padding par défaut
               itemCount: widget.blocs.length,
               itemBuilder: (context, index) => createVoteCard(index),
             ),
