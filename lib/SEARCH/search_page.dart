@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../USERS/user_page.dart';
+import './filtered_posts_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -146,7 +147,14 @@ appBar: AppBar(
                                   ),
                                 ),
                               );
-                            } else {
+                            } else if (type == 'hashtag') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => FilteredPostsPage(hashtag: data['name']),
+                                ),
+                              );
+                            } else if (type == 'mention') {
                               Navigator.pushNamed(context, '/post', arguments: data['postId']);
                             }
                           },
