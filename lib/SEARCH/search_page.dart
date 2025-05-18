@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../USERS/user_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -136,7 +137,15 @@ appBar: AppBar(
                           title: Text(title, style: const TextStyle(color: Colors.white)),
                           onTap: () {
                             if (type == 'profile') {
-                              Navigator.pushNamed(context, '/user', arguments: data['userId']);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => UserPage(
+                                    userId: data['userId'],
+                                    showLoginButton: false,
+                                  ),
+                                ),
+                              );
                             } else {
                               Navigator.pushNamed(context, '/post', arguments: data['postId']);
                             }
