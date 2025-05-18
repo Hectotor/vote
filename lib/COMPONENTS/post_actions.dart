@@ -54,12 +54,9 @@ class _PostActionsState extends State<PostActions> {
     if (!mounted) return;
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user != null && user.uid == widget.userId) {
-        setState(() {
-          _isPostSaved = false;
-        });
-        return;
-      }
+      if (user == null) return;
+      
+      // Vérifier si le post est sauvegardé, même si l'utilisateur est le propriétaire
       final isSaved = await _postSaveService.isPostSaved(widget.postId);
       if (!mounted) return;
       setState(() {
