@@ -53,47 +53,24 @@ class _HeartAnimationState extends State<HeartAnimation>
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 600),
-        opacity: _visible ? 1.0 : 0.0,
-        child: TweenAnimationBuilder<double>(
-          tween: Tween<double>(begin: 0.0, end: _scale),
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeOutBack,
-          builder: (context, value, child) {
-            return Transform.scale(
-              scale: value,
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.red.withOpacity(0.4),
-                      blurRadius: 25,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: ShaderMask(
-                  shaderCallback: (Rect bounds) {
-                    return const LinearGradient(
-                      colors: [Colors.pinkAccent, Colors.redAccent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ).createShader(bounds);
-                  },
-                  blendMode: BlendMode.srcIn,
-                  child: const Icon(
-                    Icons.favorite,
-                    size: 100,
-                    color: Colors.white,
+      child: _visible
+          ? TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0.0, end: _scale),
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeOutBack,
+              builder: (context, value, child) {
+                return Transform.scale(
+                  scale: value,
+                  child: Image.asset(
+                    'assets/logo/icon.png',
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.contain,
                   ),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+                );
+              },
+            )
+          : const SizedBox.shrink(),
     );
   }
 }

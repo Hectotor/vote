@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../USERS/user_page.dart';
 import 'filtered_hashtag_page.dart';
 import './filtered_mentions_page.dart';
+import 'search_history_service.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -138,7 +139,18 @@ appBar: AppBar(
                           leading: Icon(icon, color: iconColor),
                           title: Text(title, style: const TextStyle(color: Colors.white)),
                           onTap: () {
+                            // Sauvegarder la recherche dans l'historique
+                            final String query = _searchController.text.trim();
+                            
                             if (type == 'profile') {
+                              // Sauvegarder la recherche de profil
+                              SearchHistoryService.saveSearch(
+                                query,
+                                'profile',
+                                data['userId'] ?? '',
+                                data['pseudo'] ?? 'Utilisateur',
+                              );
+                              
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -149,6 +161,14 @@ appBar: AppBar(
                                 ),
                               );
                             } else if (type == 'hashtag') {
+                              // Sauvegarder la recherche de hashtag
+                              SearchHistoryService.saveSearch(
+                                query,
+                                'hashtag',
+                                data['name'] ?? '',
+                                '#${data['name'] ?? ''}',
+                              );
+                              
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -156,6 +176,14 @@ appBar: AppBar(
                                 ),
                               );
                             } else if (type == 'mention') {
+                              // Sauvegarder la recherche de mention
+                              SearchHistoryService.saveSearch(
+                                query,
+                                'mention',
+                                data['name'] ?? '',
+                                '@${data['name'] ?? ''}',
+                              );
+                              
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
