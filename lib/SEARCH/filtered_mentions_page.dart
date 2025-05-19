@@ -31,11 +31,10 @@ class _FilteredMentionsPageState extends State<FilteredMentionsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
         elevation: 0,
         title: Text(
           '@${widget.mention}',
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Color(0xFF212121)),
         ),
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -79,19 +78,27 @@ class _FilteredMentionsPageState extends State<FilteredMentionsPage> {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.only(),
+            padding: const EdgeInsets.only(left: 15, right: 15),
             itemCount: posts.length,
             itemBuilder: (context, index) {
               final post = posts[index];
               return Container(
+                margin: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
-                  color: Colors.black,
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey[800]!,
-                      width: 0.5,
-                    ),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 5,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Post(
                   data: post,

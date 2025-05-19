@@ -74,31 +74,48 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
 appBar: AppBar(
-  backgroundColor: Colors.black,
   elevation: 0,
   toolbarHeight: 70,
+  backgroundColor: Colors.white,
   title: Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 16),
     decoration: BoxDecoration(
-      color: Colors.grey[850],
-      borderRadius: BorderRadius.circular(30),
+      color: Colors.grey[200],
+      borderRadius: BorderRadius.circular(25),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.1),
+          spreadRadius: 1,
+          blurRadius: 5,
+          offset: const Offset(0, 2),
+        ),
+      ],
     ),
     child: TextField(
       controller: _searchController,
       onChanged: _performSearch,
-      style: const TextStyle(color: Colors.white),
-      cursorColor: Colors.white70,
-      decoration: const InputDecoration(
+      style: const TextStyle(color: Color(0xFF212121)),
+      cursorColor: Colors.blue[800],
+      decoration: InputDecoration(
         hintText: 'Rechercher un pseudo, # ou @',
-        hintStyle: TextStyle(color: Colors.white54),
+        hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
         border: InputBorder.none,
-        prefixIcon: Icon(Icons.search, color: Colors.white54),
-        contentPadding: EdgeInsets.symmetric(vertical: 15),
+        prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+        contentPadding: const EdgeInsets.symmetric(vertical: 15),
+        suffixIcon: _searchController.text.isNotEmpty
+          ? IconButton(
+              icon: const Icon(Icons.clear, color: Colors.grey),
+              onPressed: () {
+                _searchController.clear();
+                _performSearch('');
+              },
+            )
+          : null,
       ),
     ),
   ),
+
 ),
 
       body: _isSearching
@@ -137,7 +154,7 @@ appBar: AppBar(
                       child: Card(
                         child: ListTile(
                           leading: Icon(icon, color: iconColor),
-                          title: Text(title, style: const TextStyle(color: Colors.white)),
+                          title: Text(title, style: const TextStyle(color: Color(0xFF212121))),
                           onTap: () {
                             // Sauvegarder la recherche dans l'historique
                             final String query = _searchController.text.trim();
