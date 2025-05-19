@@ -91,17 +91,17 @@ class _CommentInputState extends State<CommentInput> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.1),
+
         border: Border(
           top: BorderSide(
             color: Colors.grey[850]!,
-            width: 0.5,
+            width: 0.1,
           ),
         ),
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.grey[900],
+          color: Colors.white,
           borderRadius: BorderRadius.circular(20),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -113,13 +113,11 @@ class _CommentInputState extends State<CommentInput> {
                 child: TextField(
                   controller: widget.controller,
                   style: const TextStyle(
-                    color: Colors.white,
                     fontSize: 15,
                   ),
                   decoration: const InputDecoration(
                     hintText: 'Ajouter un commentaire...',
                     hintStyle: TextStyle(
-                      color: Colors.white70,
                       fontSize: 15,
                     ),
                     border: InputBorder.none,
@@ -152,7 +150,7 @@ class _CommentInputState extends State<CommentInput> {
             ),
             IconButton(
               icon: Icon(Icons.send, 
-                color: _isTextEmpty ? Colors.grey : Colors.blue,
+                color: _isTextEmpty ? Color(0xFF212121) : Colors.blue,
               ),
               onPressed: _isTextEmpty
                   ? null

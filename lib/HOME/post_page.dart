@@ -7,8 +7,9 @@ import 'package:toplyke/COMPONENTS/Comment/comment_popup.dart';
 import 'package:toplyke/HOME/poll_grid_home_modern_new.dart';
 import 'package:toplyke/COMPONENTS/Comment/comment_input.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:toplyke/HOME/home_page.dart';
 
-// import 'package:toplyke/COMPONENTS/Post/comment_service.dart'; // Non utilisu00e9 car nous utilisons la mu00e9thode de CommentPopup
+// import 'package:toplyke/COMPONENTS/Post/comment_service.dart'; // Non utilisé car nous utilisons la méthode de CommentPopup
 
 class PostPage extends StatefulWidget {
   final String postId;
@@ -25,6 +26,40 @@ class PostPage extends StatefulWidget {
 class _PostPageState extends State<PostPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _commentController = TextEditingController();
+  
+  // Méthode pour convertir les blocs de données en objets BlocData
+  List<BlocData> _convertToBlocs(dynamic blocsData) {
+    if (blocsData == null) return [];
+    
+    if (blocsData is List) {
+      return (blocsData as List<dynamic>).map((bloc) {
+        return BlocData(
+          postImageUrl: bloc['postImageUrl'] as String?,
+          text: bloc['text'] as String?,
+          filterColor: bloc['filterColor'] != null && bloc['filterColor'].toString() != '0'
+              ? Color(bloc['filterColor'] is String ? int.parse(bloc['filterColor']) : bloc['filterColor'] as int)
+              : null,
+          voteCount: bloc['voteCount'] as int?,
+          votes: bloc['votes'] as List<dynamic>?,
+        );
+      }).toList();
+    } else if (blocsData is Map) {
+      return (blocsData as Map<String, dynamic>).entries.map((entry) {
+        final bloc = entry.value as Map<String, dynamic>;
+        return BlocData(
+          postImageUrl: bloc['postImageUrl'] as String?,
+          text: bloc['text'] as String?,
+          filterColor: bloc['filterColor'] != null && bloc['filterColor'].toString() != '0'
+              ? Color(bloc['filterColor'] is String ? int.parse(bloc['filterColor']) : bloc['filterColor'] as int)
+              : null,
+          voteCount: bloc['voteCount'] as int?,
+          votes: bloc['votes'] as List<dynamic>?,
+        );
+      }).toList();
+    }
+    
+    return [];
+  }
 
   Future<void> _addComment() async {
     final text = _commentController.text.trim();
@@ -66,12 +101,10 @@ class _PostPageState extends State<PostPage> {
     final _commentScrollController = ScrollController();
     
     return Scaffold(
-        backgroundColor: Colors.black,
         appBar: AppBar(
-          backgroundColor: Colors.black,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -86,8 +119,22 @@ class _PostPageState extends State<PostPage> {
             return const Center(child: Text('Post non trouvé', style: TextStyle(color: Colors.white)));
           }
 
-          final post = snapshot.data!;
-          final data = post.data() as Map<String, dynamic>;
+          final doc = snapshot.data!;
+          final data = doc.data() as Map<String, dynamic>;
+          
+          // Utiliser la classe PostData de home_page.dart
+          final post = PostData(
+            postId: widget.postId,
+            userId: data['userId'],
+            pseudo: data['pseudo'],
+            profilePhotoUrl: data['profilePhotoUrl'],
+            filterColor: data['filterColor'] != null ? (data['filterColor'] is String ? int.parse(data['filterColor']) : data['filterColor'] as int) : null,
+            description: data['description'] ?? '',
+            hashtags: List<String>.from(data['hashtags'] ?? []),
+            mentions: List<String>.from(data['mentions'] ?? []),
+            blocs: _convertToBlocs(data['blocs']),
+            createdAt: data['createdAt'] != null ? data['createdAt'] as Timestamp : Timestamp.now(),
+          );
 
           return LayoutBuilder(
             builder: (context, constraints) {
@@ -102,31 +149,35 @@ class _PostPageState extends State<PostPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       PostHeader(
-                        pseudo: data['pseudo'],
-                        profilePhotoUrl: data['profilePhotoUrl'],
-                        filterColor: data['filterColor'] != null ? (data['filterColor'] is String ? int.parse(data['filterColor']) : data['filterColor'] as int) : null,
-                        createdAt: data['createdAt'] != null ? data['createdAt'] as Timestamp : Timestamp.now(),
-                        postId: widget.postId,
-                        userId: data['userId'],
+                        pseudo: post.pseudo,
+                        profilePhotoUrl: post.profilePhotoUrl,
+                        filterColor: post.filterColor,
+                        createdAt: post.createdAt,
+                        postId: post.postId,
+                        userId: post.userId,
                       ),
-                      if (data['description'] != null && data['description'].isNotEmpty)
+                      if (post.description.isNotEmpty)
                         Column(
                           children: [
                             PostDescription(
-                              pseudo: data['pseudo'],
-                              description: data['description'],
+                              pseudo: post.pseudo,
+                              description: post.description,
                             ),
                           ],
                         ),
                       PollGridHomeModern(
-                        blocs: data['blocs'] is Map
-                          ? (data['blocs'] as Map<String, dynamic>).values.map<Map<String, dynamic>>((bloc) => Map<String, dynamic>.from(bloc)).toList()
-                          : (data['blocs'] as List<dynamic>).map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e)).toList(),
-                        postId: data['postId'],
+                        blocs: post.blocs.map((bloc) => {
+                          'postImageUrl': bloc.postImageUrl,
+                          'text': bloc.text,
+                          'filterColor': bloc.filterColor?.value.toString(),
+                          'voteCount': bloc.voteCount ?? 0,
+                          'votes': bloc.votes ?? [],
+                        }).toList(),
+                        postId: post.postId,
                       ),
                       PostActions(
-                        postId: widget.postId,
-                        userId: data['userId'],
+                        postId: post.postId,
+                        userId: post.userId,
                         isCommentPage: true,
                       ),
                       Container(
@@ -141,8 +192,8 @@ class _PostPageState extends State<PostPage> {
                         ),
                       ),
                       CommentPopup.withGlobalKey(
-                        postId: widget.postId,
-                        userId: data['userId'],
+                        postId: post.postId,
+                        userId: post.userId,
                         scrollController: _commentScrollController,
                       ),
                       SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 300 : 0),

@@ -55,9 +55,9 @@ class MyApp extends StatelessWidget {
           elevation: 0,
           scrolledUnderElevation: 0,  // Empêche l'élévation lors du défilement
           systemOverlayStyle: SystemUiOverlayStyle.light,  // Barre d'état claire
-          iconTheme: IconThemeData(color: Colors.white),
+          iconTheme: IconThemeData(color: Color(0xFF212121)),
           titleTextStyle: TextStyle(
-            color: Colors.white,
+            color: Color(0xFF212121),
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
