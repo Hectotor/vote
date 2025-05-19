@@ -113,7 +113,14 @@ class _FollowersPageState extends State<FollowersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        elevation: 0,
+        toolbarHeight: 70,
+        backgroundColor: Colors.white,
+        title: Text(
+          widget.title,
+          style: const TextStyle(color: Color(0xFF212121)),
+        ),
+        iconTheme: const IconThemeData(color: Color(0xFF212121)),
       ),
       body: Column(
         children: [
@@ -160,8 +167,14 @@ class _FollowersPageState extends State<FollowersPage> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredUsers.isEmpty
-                    ? const Center(child: Text('Aucun utilisateur trouvé'))
+                    ? const Center(
+                        child: Text(
+                          'Aucun utilisateur trouvé',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      )
                     : ListView.builder(
+                        padding: const EdgeInsets.all(16),
                         itemCount: _filteredUsers.length,
                         itemBuilder: (context, index) {
                           return FutureBuilder<DocumentSnapshot>(
@@ -188,20 +201,28 @@ class _FollowersPageState extends State<FollowersPage> {
                               final userData = snapshot.data!.data() as Map<String, dynamic>;
                               final userId = snapshot.data!.id;
 
-                              return ListTile(
-                                leading: Avatar(
-                                  userId: userId,
-                                  radius: 20,
-                                ),
-                                title: Text(userData['pseudo'] ?? 'Utilisateur'),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => UserPage(userId: userId),
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Card(
+                                  child: ListTile(
+                                    leading: Avatar(
+                                      userId: userId,
+                                      radius: 20,
                                     ),
-                                  );
-                                },
+                                    title: Text(
+                                      userData['pseudo'] ?? 'Utilisateur',
+                                      style: const TextStyle(color: Color(0xFF212121)),
+                                    ),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => UserPage(userId: userId),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
                               );
                             },
                           );
