@@ -59,7 +59,7 @@ class MyApp extends StatelessWidget {
           titleTextStyle: TextStyle(
             color: Color(0xFF212121),
             fontSize: 20,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
           ),
         ),
         colorScheme: const ColorScheme.light(

@@ -29,7 +29,7 @@ class AddOption extends StatelessWidget {
         bottom: MediaQuery.of(context).padding.bottom + 16,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF000000),
+        color: const Color(0xFF1B202A),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         border: Border.all(
           color: Colors.white.withOpacity(0.1),

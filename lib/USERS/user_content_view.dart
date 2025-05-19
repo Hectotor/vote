@@ -133,7 +133,7 @@ class _UserContentViewState extends State<UserContentView> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.black,
+        color: Colors.transparent,
         border: Border(
           bottom: BorderSide(
             color: Colors.grey[800]!,

@@ -109,7 +109,7 @@ class _UserPageState extends State<UserPage> {
           children: [
             // Page des posts de l'utilisateur (index 0)
             Container(
-              color: Colors.black,
+              color: Colors.transparent,
               child: SingleChildScrollView(
                 child: Column(
                   children: [
@@ -143,7 +143,7 @@ class _UserPageState extends State<UserPage> {
             ),
             // Page des posts sauvegardés (index 1)
             Container(
-              color: Colors.black,
+              color: Colors.transparent,
               child: SingleChildScrollView(
                 child: Column(
                   children: [

@@ -179,26 +179,25 @@ class _AddPageState extends State<AddPage> {
         return !_isLoading.value;
       },
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+
         appBar: AppBar(
-          toolbarHeight: 50,
-          backgroundColor: Colors.transparent,
+
+
           elevation: 0,
           scrolledUnderElevation: 0,
-          surfaceTintColor: Colors.transparent,
+
           centerTitle: true,
           title: const Text(
             'Crée ton vote',
             style: TextStyle(
-              color: Colors.white,
               fontSize: 18,
-              fontWeight: FontWeight.w500,
+
             ),
           ),
           leading: IconButton(
             icon: const Icon(
               Icons.arrow_back,
-              color: Colors.white,
+
             ),
             onPressed: _isLoading.value ? null : _cancel,
           ),
@@ -206,7 +205,7 @@ class _AddPageState extends State<AddPage> {
             TextButton(
               onPressed: _isLoading.value || !_canPublish() ? null : _publishContent,
               style: TextButton.styleFrom(
-                foregroundColor: _canPublish() ? const Color(0xFF3498DB) : Colors.white70,
+                foregroundColor: _canPublish() ? const Color(0xFF3498DB) : const Color(0xFF212121),
                 padding: EdgeInsets.zero,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -217,7 +216,7 @@ class _AddPageState extends State<AddPage> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: _isLoading.value ? Colors.grey : null,
+                  color: _isLoading.value ? const Color(0xFF212121) : null,
                 ),
               ),
             ),
@@ -246,7 +245,7 @@ class _AddPageState extends State<AddPage> {
                             width: 30,
                             height: 30,
                             child: CircularProgressIndicator(
-                              color: Colors.white,
+
                               strokeWidth: 3,
                             ),
                           ),
@@ -260,7 +259,7 @@ class _AddPageState extends State<AddPage> {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.only(left: 2, right: 2, bottom: 8),
+              padding: const EdgeInsets.only(left: 10, right: 10, bottom: 8),
               child: Container(
                 alignment: Alignment.center,
                 color: Colors.transparent,
