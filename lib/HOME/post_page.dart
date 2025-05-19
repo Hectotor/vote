@@ -148,7 +148,7 @@ class _PostPageState extends State<PostPage> {
                   return SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),

@@ -110,7 +110,7 @@ class _UserContentViewState extends State<UserContentView> {
         return ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(left: 5, right: 5),
+          padding: const EdgeInsets.only(left: 15, right: 15),
           itemCount: docs.length,
           itemBuilder: (context, index) {
             final doc = docs[index];

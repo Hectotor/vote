@@ -136,11 +136,23 @@ class _ProfileHeaderState extends State<ProfileHeader> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white,
+              width: 5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.2),
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Column(
             children: [

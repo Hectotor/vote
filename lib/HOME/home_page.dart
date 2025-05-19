@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
                       itemBuilder: (context, index) {
                         final post = posts[index];
                         return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 16),
+                          margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 10,),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
