@@ -120,7 +120,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
     _profileImageUrl = widget.userData['profilePhotoUrl'];
     _showPosts = widget.showPosts;
   }
-
+  
   Widget _buildTabButton({required String label, required bool isSelected, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
@@ -132,14 +132,14 @@ class _ProfileHeaderState extends State<ProfileHeader> {
           color: isSelected ? Colors.blue[800] : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? Colors.blue[800]! : Colors.grey[800]!,
-            width: 1,
+            color: isSelected ? Colors.blue[800]! :  Color(0xFF212121)
+
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey[300],
+            color: isSelected ? Colors.white :  Color(0xFF212121),
             fontWeight: FontWeight.bold,
           ),
         ),

@@ -140,30 +140,29 @@ class _UserPageState extends State<UserPage> {
             const SizedBox(width: 16),
           ],
         ),
-        body: IndexedStack(
-          index: _showPosts ? 0 : 1,
+        body: Column(
           children: [
-            // Page des posts de l'utilisateur (index 0)
-            Container(
-              color: Colors.transparent,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // En-tête du profil avec les données utilisateur déjà chargées et gestion des onglets
-                    ProfileHeader(
-                      userId: _userId ?? '',
-                      userData: _userData ?? {},
-                      showPosts: true,
-                      onTabChanged: (showPosts) {
-                        setState(() {
-                          _showPosts = showPosts;
-                        });
-                      },
-                      isOwner: _userId == FirebaseAuth.instance.currentUser?.uid,
-                    ),
-                    
-                    // Contenu des posts
-                    Container(
+            // En-tête du profil avec les données utilisateur déjà chargées et gestion des onglets
+            ProfileHeader(
+              userId: _userId ?? '',
+              userData: _userData ?? {},
+              showPosts: _showPosts,
+              onTabChanged: (showPosts) {
+                setState(() {
+                  _showPosts = showPosts;
+                });
+              },
+              isOwner: _userId == FirebaseAuth.instance.currentUser?.uid,
+            ),
+            
+            // Contenu qui change selon l'onglet sélectionné
+            Expanded(
+              child: IndexedStack(
+                index: _showPosts ? 0 : 1,
+                children: [
+                  // Page des posts de l'utilisateur (index 0)
+                  SingleChildScrollView(
+                    child: Container(
                       constraints: BoxConstraints(
                         // Définir une hauteur minimale pour permettre le défilement même avec peu de contenu
                         minHeight: MediaQuery.of(context).size.height - 200,
@@ -173,31 +172,10 @@ class _UserPageState extends State<UserPage> {
                         showPosts: true,
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-            // Page des posts sauvegardés (index 1)
-            Container(
-              color: Colors.transparent,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // En-tête du profil avec les données utilisateur déjà chargées et gestion des onglets
-                    ProfileHeader(
-                      userId: _userId ?? '',
-                      userData: _userData ?? {},
-                      showPosts: false,
-                      onTabChanged: (showPosts) {
-                        setState(() {
-                          _showPosts = showPosts;
-                        });
-                      },
-                      isOwner: _userId == FirebaseAuth.instance.currentUser?.uid,
-                    ),
-                    
-                    // Contenu des posts sauvegardés
-                    Container(
+                  ),
+                  // Page des posts sauvegardés (index 1)
+                  SingleChildScrollView(
+                    child: Container(
                       constraints: BoxConstraints(
                         // Définir une hauteur minimale pour permettre le défilement même avec peu de contenu
                         minHeight: MediaQuery.of(context).size.height - 200,
@@ -207,8 +185,8 @@ class _UserPageState extends State<UserPage> {
                         showPosts: false,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
