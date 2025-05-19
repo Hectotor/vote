@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
         splashColor: Colors.transparent,
         brightness: Brightness.light,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFFF5F5F5),
+          backgroundColor: Colors.white,
           elevation: 0,
           scrolledUnderElevation: 0,  // Empêche l'élévation lors du défilement
           systemOverlayStyle: SystemUiOverlayStyle.light,  // Barre d'état claire
@@ -65,8 +65,8 @@ class MyApp extends StatelessWidget {
         colorScheme: const ColorScheme.light(
           primary: Colors.black,
           secondary: Colors.black,
-          surface: Color(0xFFF5F5F5),
-          background: Color(0xFFF5F5F5),
+          surface: Colors.white,
+          background: Colors.white,
           error: Colors.red,
           onPrimary: Colors.white,
           onSecondary: Colors.white,
@@ -75,7 +75,7 @@ class MyApp extends StatelessWidget {
           onError: Colors.white,
         ),
         cardTheme: const CardTheme(
-          color: Color(0xFFF5F5F5),
+          color: Colors.white,
           elevation: 4,
         ),
         textTheme: const TextTheme(
@@ -86,7 +86,7 @@ class MyApp extends StatelessWidget {
         iconTheme: const IconThemeData(
           color: Color(0xFF212121),
         ),
-        scaffoldBackgroundColor: Color(0xFFF5F5F5),
+        scaffoldBackgroundColor: Colors.white,
       ),
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: const [

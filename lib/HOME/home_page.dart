@@ -107,14 +107,22 @@ class _HomePageState extends State<HomePage> {
                       itemBuilder: (context, index) {
                         final post = posts[index];
                         return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: const Color(0xFFF5F5F5),
+                              color: Colors.white,
                               width: 5,
                             ),
-
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.2),
+                                spreadRadius: 2,
+                                blurRadius: 5,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
