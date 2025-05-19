@@ -90,17 +90,8 @@ class _UserContentViewState extends State<UserContentView> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  widget.showPosts 
-                    ? 'Créez votre premier post en cliquant sur le bouton +' 
-                    : 'Sauvegardez des posts pour les retrouver ici',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
-                  ),
-                ),
+                const SizedBox(height: 250),
+    
               ],
             ),
           );
