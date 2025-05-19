@@ -94,7 +94,8 @@ class _AvatarState extends State<Avatar> {
                       ),
                       errorWidget: (context, url, error) => const Icon(
                         Icons.person,
-                        color: Colors.white54,
+         
+                        size: 40,
                       ),
                     ),
                     if (_filterColor != null)

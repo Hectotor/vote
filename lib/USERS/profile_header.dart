@@ -210,10 +210,8 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                       children: [
                         _buildStatColumn(count: widget.userData['publishpostscount'] ?? 0, label: 'Posts', color: Colors.blue),
                         _buildStatColumn(count: widget.userData['votesCountUser'] ?? 0, label: 'Votes', color: Colors.pink),
-                        if (widget.userId != _auth.currentUser?.uid) ...[
-                          _buildStatColumn(count: _followersCount, label: 'Followers', color: Colors.purple),
-                          _buildStatColumn(count: _followingCount, label: 'Following', color: Colors.orange),
-                        ]
+                        _buildStatColumn(count: _followersCount, label: 'Followers', color: Colors.purple),
+                        _buildStatColumn(count: _followingCount, label: 'Following', color: Colors.orange),
                       ],
                     ),
                   ),

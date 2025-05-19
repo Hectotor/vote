@@ -129,12 +129,14 @@ class _UserPageState extends State<UserPage> {
                 onPressed: _toggleFollow,
               ),
             ],
-            IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                // Action du menu
-              },
-            ),
+            if (_userId == _auth.currentUser?.uid) ...[
+              IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  // Action du menu
+                },
+              ),
+            ],
             const SizedBox(width: 16),
           ],
         ),
