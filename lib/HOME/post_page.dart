@@ -154,7 +154,7 @@ class _PostPageState extends State<PostPage> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: const Color(0xFFF5F5F5),
-                          width: 0,
+                          width: 5,
                         ),
                       ),
                       child: Column(

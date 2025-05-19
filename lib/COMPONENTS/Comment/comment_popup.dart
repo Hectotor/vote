@@ -101,28 +101,100 @@ class _CommentPopupState extends State<CommentPopup> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: BorderRadius.circular(16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // En-tête de la section commentaires
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Row(
+            children: [
+              Text(
+                'Commentaires',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${_comments.length}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[800],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        padding: const EdgeInsets.all(12),
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _comments.isEmpty
-                ? const Center(child: Text('Aucun commentaire', style: TextStyle(color: Colors.white54)))
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: _comments.length,
-                    itemBuilder: (context, index) => CommentItem(
-                      comment: _comments[index],
-                      onDelete: (id) => _deleteComment(id, _comments[index]['postId']),
-                      currentUserId: _auth.currentUser?.uid,
+        
+        // Liste des commentaires
+        if (_isLoading)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: CircularProgressIndicator(),
+            ),
+          )
+        else if (_comments.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(30.0),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.chat_bubble_outline,
+                    size: 48,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Aucun commentaire',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-      ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Soyez le premier à commenter',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _comments.length,
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              thickness: 0.5,
+              color: Colors.grey[200],
+              indent: 68,
+            ),
+            itemBuilder: (context, index) => CommentItem(
+              comment: _comments[index],
+              onDelete: (id) => _deleteComment(id, _comments[index]['postId']),
+              currentUserId: _auth.currentUser?.uid,
+            ),
+          ),
+      ],
     );
   }
 
@@ -178,36 +250,100 @@ class _CommentItemState extends State<CommentItem> {
     final isCurrentUser = widget.comment['userId'] == widget.currentUserId;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Avatar(userId: widget.comment['userId'], radius: 20),
-          const SizedBox(width: 8),
+          // Avatar de l'utilisateur
+          Avatar(userId: widget.comment['userId'], radius: 24),
+          const SizedBox(width: 12),
+          
+          // Contenu du commentaire
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // En-tête: nom d'utilisateur et date
                 Row(
                   children: [
-                    Text(pseudo, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    const Spacer(),
-                    Text(_formatCommentDate(widget.comment['createdAt']), style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(
+                      pseudo,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '•', // Bullet point
+                      style: TextStyle(color: Colors.grey[500], fontSize: 10),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _formatCommentDate(widget.comment['createdAt']),
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                
+                // Texte du commentaire
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6.0),
+                  child: Text(
+                    widget.comment['text'],
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                ),
+                
+                // Actions: like et supprimer
                 Row(
                   children: [
-                    Expanded(child: Text(widget.comment['text'], style: const TextStyle(color: Colors.white))),
+                    // Bouton like
+                    _buildLikeRow(widget.comment),
+                    
+                    // Bouton répondre (pour une future fonctionnalité)
+                    const SizedBox(width: 16),
+                    GestureDetector(
+                      onTap: () {
+                        // Fonctionnalité à implémenter plus tard
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.reply, size: 14, color: Colors.grey[600]),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Répondre',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    // Bouton supprimer (seulement pour l'auteur)
+                    if (isCurrentUser) const Spacer(),
                     if (isCurrentUser)
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
-                        onPressed: () => widget.onDelete(widget.comment['id']),
+                      GestureDetector(
+                        onTap: () => widget.onDelete(widget.comment['id']),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete_outline, size: 14, color: Colors.grey[600]),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Supprimer',
+                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                _buildLikeRow(widget.comment),
               ],
             ),
           ),
@@ -237,12 +373,34 @@ class _CommentItemState extends State<CommentItem> {
             final isLiked = (snapshot.data?.docs.isNotEmpty ?? false);
             return GestureDetector(
               onTap: () async => await _commentService.toggleCommentLike(commentId, postId),
-              child: Row(
-                children: [
-                  Icon(isLiked ? Icons.favorite : Icons.favorite_border, color: isLiked ? Colors.red : Colors.grey, size: 16),
-                  const SizedBox(width: 4),
-                  Text('$likeCount', style: TextStyle(color: isLiked ? Colors.red : Colors.grey, fontSize: 12)),
-                ],
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      transitionBuilder: (Widget child, Animation<double> animation) {
+                        return ScaleTransition(scale: animation, child: child);
+                      },
+                      child: Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_outline,
+                        key: ValueKey<bool>(isLiked),
+                        color: isLiked ? Colors.red : Colors.grey[600],
+                        size: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      likeCount > 0 ? '$likeCount' : 'J\'aime',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isLiked ? Colors.red : Colors.grey[600],
+                        fontWeight: isLiked ? FontWeight.w500 : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
