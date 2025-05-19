@@ -119,7 +119,7 @@ class _UserContentViewState extends State<UserContentView> {
             // Si c'est un post sauvegardé, on utilise le postId pour récupérer le post complet
             if (!widget.showPosts) {
               return Container(
-                margin: const EdgeInsets.symmetric(vertical: 8),
+                margin: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -148,14 +148,22 @@ class _UserContentViewState extends State<UserContentView> {
   
   Widget _buildPostItem(Map<String, dynamic> data, String postId) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFFF5F5F5),
+          color: Colors.white,
           width: 5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Post(
         data: data,

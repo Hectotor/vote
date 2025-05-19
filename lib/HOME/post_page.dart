@@ -153,13 +153,22 @@ class _PostPageState extends State<PostPage> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: const Color(0xFFF5F5F5),
+                          color: Colors.white,
                           width: 5,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.2),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: 16),
                           // En-tête du post
                           PostHeader(
                             pseudo: post.pseudo,
