@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:vibration/vibration.dart';
 
 class HeartAnimation extends StatefulWidget {
   final bool showHeart;
@@ -19,6 +20,11 @@ class _HeartAnimationState extends State<HeartAnimation>
   bool _visible = false;
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   void didUpdateWidget(covariant HeartAnimation oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.showHeart && !oldWidget.showHeart) {
@@ -26,8 +32,23 @@ class _HeartAnimationState extends State<HeartAnimation>
     }
   }
 
-  void _showHeart() {
-    HapticFeedback.mediumImpact();
+  void _showHeart() async {
+    // Effet tactile amélioré
+    try {
+      // Essayer d'abord la vibration personnalisée
+      if (await Vibration.hasVibrator()) {
+        // Créer un effet de double vibration courte pour un meilleur ressenti
+        await Vibration.vibrate(pattern: [0, 30, 30, 60], intensities: [0, 150, 0, 200]);
+      } else {
+        // Utiliser HapticFeedback comme solution de repli
+        HapticFeedback.mediumImpact();
+        await Future.delayed(const Duration(milliseconds: 30));
+        HapticFeedback.lightImpact();
+      }
+    } catch (e) {
+      // En cas d'erreur, utiliser le feedback de base
+      HapticFeedback.mediumImpact();
+    }
     setState(() {
       _visible = true;
       _scale = 1.6;
