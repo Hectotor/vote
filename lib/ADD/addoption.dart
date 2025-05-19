@@ -23,7 +23,7 @@ class AddOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 240,
+      height: 350,
       padding: EdgeInsets.only(
         top: 14,
         bottom: MediaQuery.of(context).padding.bottom + 16,
