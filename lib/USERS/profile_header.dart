@@ -136,23 +136,45 @@ class _ProfileHeaderState extends State<ProfileHeader> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E1E2C),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             children: [
               Row(
                 children: [
-                  _isLoading
-                      ? const CircularProgressIndicator()
-                      : Avatar(
-                          userId: widget.userId,
-                          radius: 35,
-                          onTap: _showAddOptionBottomSheet,
+                  Stack(
+                    children: [
+                      _isLoading
+                        ? const CircularProgressIndicator()
+                        : Avatar(
+                            userId: widget.userId,
+                            radius: 35,
+                            onTap: widget.isOwner ? _showAddOptionBottomSheet : null,
+                          ),
+                      if (widget.isOwner && !_isLoading)
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                            child: const Icon(
+                              Icons.add_a_photo,
+                              color: Colors.white,
+                              size: 12,
+                            ),
+                          ),
                         ),
+                    ],
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Row(
