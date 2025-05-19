@@ -76,6 +76,11 @@ class PublishService {
       // Mettre à jour le document avec son propre ID (pour faciliter les références)
       await postRef.update({'postId': postRef.id});
 
+      // Mettre à jour le compteur de publications de l'utilisateur
+      await _firestore.collection('users').doc(user.uid).update({
+        'publishpostscount': FieldValue.increment(1)
+      });
+
       final postId = postRef.id;
       final List<Map<String, dynamic>> blocData = [];
 

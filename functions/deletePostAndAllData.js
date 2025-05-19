@@ -18,6 +18,11 @@ module.exports = async function deletePostAndAllData(postId, userId) {
   // Vérifier que l'utilisateur est bien le propriétaire
   if (postData.userId !== userId) throw new Error("Non autorisé");
 
+  // Décrémenter le compteur de publications de l'utilisateur
+  await admin.firestore().collection('users').doc(userId).update({
+    publishpostscount: admin.firestore.FieldValue.increment(-1)
+  });
+
   // Supprimer les sous-collections et documents liés
   const collectionsToDelete = [
     'commentLikes', 'commentsPosts', 'followers', 'hashtags',
