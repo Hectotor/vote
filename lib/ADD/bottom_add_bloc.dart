@@ -24,7 +24,7 @@ class BottomAddBloc extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.transparent,  // Couleur de fond violet sombre
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),  // Bordure subtile
+          border: Border.all( width: 1),  // Bordure subtile
         ),
         child: InkWell(
           onTap: onPressed,
@@ -32,16 +32,16 @@ class BottomAddBloc extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.add_circle_outline,
-                size: 20,
-                color: Colors.white70,  // Icône blanche légèrement transparente
+              Image.asset(
+                'assets/logo/icon.png',
+                width: 20,
+                height: 20,
               ),
               const SizedBox(width: 8),
               Text(
                 'Ajouter',
                 style: TextStyle(
-                  color: Colors.white70,  // Texte blanc légèrement transparent
+// Texte blanc légèrement transparent
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
