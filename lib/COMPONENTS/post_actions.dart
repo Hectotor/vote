@@ -89,7 +89,7 @@ class _PostActionsState extends State<PostActions> {
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF212121),
                     ),
-                  ),
+                  ),const SizedBox(width: 4),
                 ],
               ),
             );
@@ -145,7 +145,7 @@ class _PostActionsState extends State<PostActions> {
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF212121),
                 ),
-              ),
+              ),const SizedBox(width: 4),
             ],
           ),
         );
@@ -158,15 +158,13 @@ class _PostActionsState extends State<PostActions> {
       onTap: () {
         // TODO: Implémenter le partage
       },
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(
-            Icons.send_rounded,
-            color: Colors.deepPurple,
-            size: 22,
-          ),
-        ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: const Icon(
+          Icons.send_rounded,
+          color: Colors.deepPurple,
+          size: 24,
+        ),
       ),
     );
   }
@@ -174,9 +172,9 @@ class _PostActionsState extends State<PostActions> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -188,14 +186,21 @@ class _PostActionsState extends State<PostActions> {
             ),
           ],
         ),
-        child: Wrap(
-          spacing: 20,
-          runSpacing: 12,
-          alignment: WrapAlignment.spaceAround,
-          crossAxisAlignment: WrapCrossAlignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildLikeButton(),
+            Container(
+              height: 24,
+              width: 1,
+              color: Colors.grey.withOpacity(0.3),
+            ),
             _buildCommentButton(),
+            Container(
+              height: 24,
+              width: 1,
+              color: Colors.grey.withOpacity(0.3),
+            ),
             _buildShareButton(),
           ],
         ),
