@@ -60,68 +60,85 @@ class _UserContentViewState extends State<UserContentView> {
       stream: _contentStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white)));
+          return Center(child: Text('Error: ${snapshot.error}'));
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-            child: CircularProgressIndicator(color: Colors.white),
+            child: CircularProgressIndicator(),
           );
         }
 
         final docs = snapshot.data?.docs ?? [];
         if (docs.isEmpty) {
           return Center(
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              child: Text(
-                widget.showPosts ? 'Aucun post' : 'Aucun post sauvegardé',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  widget.showPosts ? Icons.post_add : Icons.bookmark,
+                  size: 64,
+                  color: Colors.grey[400],
                 ),
-              ),
+                const SizedBox(height: 16),
+                Text(
+                  widget.showPosts ? 'Aucun post' : 'Aucun post sauvegardé',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  widget.showPosts 
+                    ? 'Créez votre premier post en cliquant sur le bouton +' 
+                    : 'Sauvegardez des posts pour les retrouver ici',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
           );
         }
 
-        // Utiliser Column au lieu de ListView pour fonctionner dans un SingleChildScrollView
-        return Column(
-          children: List.generate(docs.length, (index) {
+        // Utiliser ListView.builder comme dans home_page.dart
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(left: 5, right: 5),
+          itemCount: docs.length,
+          itemBuilder: (context, index) {
             final doc = docs[index];
             final data = doc.data() as Map<String, dynamic>;
             
             // Si c'est un post sauvegardé, on utilise le postId pour récupérer le post complet
             if (!widget.showPosts) {
               return Container(
-                margin: const EdgeInsets.only(bottom: 16),
+                margin: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.black,
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey[800]!,
-                      width: 0.5,
-                    ),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFF5F5F5),
+                    width: 5,
                   ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Post(
-                      data: data,
-                      postId: data['postId'],
-                      isSavedPost: true,
-                    ),
-                  ],
+                child: Post(
+                  data: data,
+                  postId: data['postId'],
+                  isSavedPost: true,
                 ),
               );
             }
             
             // Sinon, on affiche directement le post
             return _buildPostItem(data, doc.id);
-          }),
+          },
         );
       },
     );
@@ -131,24 +148,18 @@ class _UserContentViewState extends State<UserContentView> {
   
   Widget _buildPostItem(Map<String, dynamic> data, String postId) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.transparent,
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey[800]!,
-            width: 0.5,
-          ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFF5F5F5),
+          width: 5,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Post(
-            data: data,
-            postId: postId,
-          ),
-        ],
+      child: Post(
+        data: data,
+        postId: postId,
       ),
     );
   }

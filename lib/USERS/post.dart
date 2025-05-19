@@ -49,9 +49,30 @@ class Post extends StatelessWidget {
   }
   
   Widget _buildPostContent(BuildContext context, Map<String, dynamic> postData) {
+    // Convertir les blocs en format attendu par PollGridHomeModern
+    List<Map<String, dynamic>> formattedBlocs = [];
+    if (postData['blocs'] != null) {
+      if (postData['blocs'] is List) {
+        formattedBlocs = (postData['blocs'] as List).map((bloc) {
+          if (bloc is Map) {
+            return Map<String, dynamic>.from(bloc);
+          }
+          return <String, dynamic>{};
+        }).toList();
+      } else if (postData['blocs'] is Map) {
+        formattedBlocs = (postData['blocs'] as Map).values.map((bloc) {
+          if (bloc is Map) {
+            return Map<String, dynamic>.from(bloc);
+          }
+          return <String, dynamic>{};
+        }).toList();
+      }
+    }
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // En-tête du post
         PostHeader(
           pseudo: postData['pseudo'] ?? '',
           profilePhotoUrl: postData['profilePhotoUrl'],
@@ -65,18 +86,27 @@ class Post extends StatelessWidget {
           userId: postData['userId'] ?? '',
         ),
         
+        // Description du post
         if (postData['description'] != null && postData['description'].toString().isNotEmpty)
           PostDescription(
             pseudo: postData['pseudo'] ?? '',
             description: postData['description'],
           ),
         
-        if (postData['blocs'] != null && postData['blocs'] is List && (postData['blocs'] as List).isNotEmpty)
-          PollGridHomeModern(
-            blocs: (postData['blocs'] as List).cast<Map<String, dynamic>>(),
-            postId: postId,
+        // Contenu du post (images/sondages)
+        if (formattedBlocs.isNotEmpty)
+          GestureDetector(
+            onTap: () {
+              // Navigation vers la page du post si on clique sur le contenu
+              Navigator.of(context).pushNamed('/post', arguments: postId);
+            },
+            child: PollGridHomeModern(
+              blocs: formattedBlocs,
+              postId: postId,
+            ),
           ),
         
+        // Actions du post (like, commentaire, etc.)
         PostActions(
           postId: postId,
           userId: postData['userId'] ?? '',
