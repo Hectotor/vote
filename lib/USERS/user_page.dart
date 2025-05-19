@@ -5,6 +5,8 @@ import 'profile_header.dart';
 import 'user_content_view.dart';
 import '../models/reusable_login_button.dart';
 
+import 'follow_service.dart';
+
 class UserPage extends StatefulWidget {
   final String? userId;
   final bool showLoginButton;
@@ -20,34 +22,63 @@ class UserPage extends StatefulWidget {
 }
 
 class _UserPageState extends State<UserPage> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FollowService _followService = FollowService();
   String? _userId;
   String? _pseudo;
   Map<String, dynamic>? _userData;
   bool _showPosts = true; // true pour Posts, false pour Sauvegardés
+  bool _isFollowing = false;
 
   @override
   void initState() {
     super.initState();
-    // Utiliser l'ID passé ou l'ID de l'utilisateur connecté
-    _userId = widget.userId ?? FirebaseAuth.instance.currentUser?.uid;
+    _userId = widget.userId ?? _auth.currentUser?.uid;
     _loadUserData();
   }
 
   Future<void> _loadUserData() async {
     if (_userId != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(_userId)
-          .get();
+      final doc = await _firestore.collection('users').doc(_userId).get();
       
       // Récupérer toutes les données utilisateur
       final data = doc.data() ?? {};
       
       setState(() {
-        _pseudo = data['pseudo'];
         _userData = data;
+        _pseudo = data['pseudo'];
       });
+      
+      // Vérifier l'état de suivi après avoir chargé les données utilisateur
+      await _checkFollowingStatus();
     }
+  }
+
+  Future<void> _checkFollowingStatus() async {
+    if (_auth.currentUser == null || _userId == null || _userId == _auth.currentUser?.uid) {
+      setState(() {
+        _isFollowing = false;
+      });
+      return;
+    }
+    
+    final isFollowing = await _followService.isFollowing(_userId!);
+    setState(() {
+      _isFollowing = isFollowing;
+    });
+  }
+
+  Future<void> _toggleFollow() async {
+    if (_auth.currentUser == null || _userId == null) return;
+    if (_isFollowing) {
+      await _followService.unfollowUser(_userId!);
+    } else {
+      await _followService.followUser(_userId!);
+    }
+    setState(() {
+      _isFollowing = !_isFollowing;
+    });
   }
 
   @override
@@ -89,12 +120,15 @@ class _UserPageState extends State<UserPage> {
           ),
           centerTitle: false,
           actions: [
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {
-                // Action de recherche
-              },
-            ),
+            if (_userId != _auth.currentUser?.uid) ...[
+              IconButton(
+                icon: Icon(
+                  _isFollowing ? Icons.person_remove : Icons.person_add,
+                  color: _isFollowing ? Colors.grey : Colors.blue,
+                ),
+                onPressed: _toggleFollow,
+              ),
+            ],
             IconButton(
               icon: const Icon(Icons.menu),
               onPressed: () {

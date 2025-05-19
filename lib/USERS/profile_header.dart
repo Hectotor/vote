@@ -6,6 +6,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import '../COMPONENTS/avatar.dart';
 import '../ADD/addoption.dart';
+import 'follow_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileHeader extends StatefulWidget {
   final String userId;
@@ -30,10 +32,23 @@ class ProfileHeader extends StatefulWidget {
 class _ProfileHeaderState extends State<ProfileHeader> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FollowService _followService = FollowService();
   String? _profileImageUrl;
   bool _isLoading = false;
   final TextEditingController _bioController = TextEditingController();
   bool _showPosts = true;
+  int _followersCount = 0;
+  int _followingCount = 0;
+
+  Future<void> _checkFollowingStatus() async {
+    if (_auth.currentUser == null) return;
+    await _followService.isFollowing(widget.userId);
+    setState(() {
+      _followersCount = widget.userData['followers']?.length ?? 0;
+      _followingCount = widget.userData['following']?.length ?? 0;
+    });
+  }
 
   Future<void> _showAddOptionBottomSheet() async {
     if (!mounted) return;
@@ -97,6 +112,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
   @override
   void initState() {
     super.initState();
+    _checkFollowingStatus();
     if (widget.userData['bio'] != null) {
       _bioController.text = widget.userData['bio'];
     }
@@ -192,11 +208,12 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildStatColumn(count: widget.userData['posts']?.length ?? 0, label: 'Posts', color: Colors.blue),
+                        _buildStatColumn(count: widget.userData['publishpostscount'] ?? 0, label: 'Posts', color: Colors.blue),
                         _buildStatColumn(count: widget.userData['votesCountUser'] ?? 0, label: 'Votes', color: Colors.pink),
-                        //_buildStatColumn(count: widget.userData['followers']?.length ?? 0, label: 'Followers', color: Colors.purple),
-                        //_buildStatColumn(count: widget.userData['following']?.length ?? 0, label: 'Following', color: Colors.orange),
-
+                        if (widget.userId != _auth.currentUser?.uid) ...[
+                          _buildStatColumn(count: _followersCount, label: 'Followers', color: Colors.purple),
+                          _buildStatColumn(count: _followingCount, label: 'Following', color: Colors.orange),
+                        ]
                       ],
                     ),
                   ),
