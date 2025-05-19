@@ -9,8 +9,6 @@ import 'package:toplyke/COMPONENTS/Comment/comment_input.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:toplyke/HOME/home_page.dart';
 
-// import 'package:toplyke/COMPONENTS/Post/comment_service.dart'; // Non utilisé car nous utilisons la méthode de CommentPopup
-
 class PostPage extends StatefulWidget {
   final String postId;
 
@@ -32,7 +30,7 @@ class _PostPageState extends State<PostPage> {
     if (blocsData == null) return [];
     
     if (blocsData is List) {
-      return (blocsData as List<dynamic>).map((bloc) {
+      return blocsData.map((bloc) {
         return BlocData(
           postImageUrl: bloc['postImageUrl'] as String?,
           text: bloc['text'] as String?,
@@ -97,113 +95,188 @@ class _PostPageState extends State<PostPage> {
 
   @override
   Widget build(BuildContext context) {
-    final _mainScrollController = ScrollController();
     final _commentScrollController = ScrollController();
     
     return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context),
-          ),
+      appBar: AppBar(
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
         ),
-        body: StreamBuilder<DocumentSnapshot>(
-          stream: _firestore.collection('posts').doc(widget.postId).snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: Colors.white));
-          }
+        title: const Text('Post'),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: StreamBuilder<DocumentSnapshot>(
+                stream: _firestore.collection('posts').doc(widget.postId).snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Erreur: ${snapshot.error}'));
+                  }
 
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: Text('Post non trouvé', style: TextStyle(color: Colors.white)));
-          }
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
 
-          final doc = snapshot.data!;
-          final data = doc.data() as Map<String, dynamic>;
-          
-          // Utiliser la classe PostData de home_page.dart
-          final post = PostData(
-            postId: widget.postId,
-            userId: data['userId'],
-            pseudo: data['pseudo'],
-            profilePhotoUrl: data['profilePhotoUrl'],
-            filterColor: data['filterColor'] != null ? (data['filterColor'] is String ? int.parse(data['filterColor']) : data['filterColor'] as int) : null,
-            description: data['description'] ?? '',
-            hashtags: List<String>.from(data['hashtags'] ?? []),
-            mentions: List<String>.from(data['mentions'] ?? []),
-            blocs: _convertToBlocs(data['blocs']),
-            createdAt: data['createdAt'] != null ? data['createdAt'] as Timestamp : Timestamp.now(),
-          );
+                  if (!snapshot.hasData || !snapshot.data!.exists) {
+                    return const Center(child: Text('Post non trouvé'));
+                  }
 
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                controller: _mainScrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      PostHeader(
-                        pseudo: post.pseudo,
-                        profilePhotoUrl: post.profilePhotoUrl,
-                        filterColor: post.filterColor,
-                        createdAt: post.createdAt,
-                        postId: post.postId,
-                        userId: post.userId,
+                  final doc = snapshot.data!;
+                  final data = doc.data() as Map<String, dynamic>;
+                  
+                  // Utiliser la classe PostData de home_page.dart
+                  final post = PostData(
+                    postId: widget.postId,
+                    userId: data['userId'],
+                    pseudo: data['pseudo'],
+                    profilePhotoUrl: data['profilePhotoUrl'],
+                    filterColor: data['filterColor'] != null ? (data['filterColor'] is String ? int.parse(data['filterColor']) : data['filterColor'] as int) : null,
+                    description: data['description'] ?? '',
+                    hashtags: List<String>.from(data['hashtags'] ?? []),
+                    mentions: List<String>.from(data['mentions'] ?? []),
+                    blocs: _convertToBlocs(data['blocs']),
+                    createdAt: data['createdAt'] != null ? data['createdAt'] as Timestamp : Timestamp.now(),
+                  );
+
+                  return SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFFF5F5F5),
+                          width: 0,
+                        ),
                       ),
-                      if (post.description.isNotEmpty)
-                        Column(
-                          children: [
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // En-tête du post
+                          PostHeader(
+                            pseudo: post.pseudo,
+                            profilePhotoUrl: post.profilePhotoUrl,
+                            filterColor: post.filterColor,
+                            createdAt: post.createdAt,
+                            postId: post.postId,
+                            userId: post.userId,
+                          ),
+                          
+                          // Description du post
+                          if (post.description.isNotEmpty)
                             PostDescription(
                               pseudo: post.pseudo,
                               description: post.description,
                             ),
-                          ],
-                        ),
-                      PollGridHomeModern(
-                        blocs: post.blocs.map((bloc) => {
-                          'postImageUrl': bloc.postImageUrl,
-                          'text': bloc.text,
-                          'filterColor': bloc.filterColor?.value.toString(),
-                          'voteCount': bloc.voteCount ?? 0,
-                          'votes': bloc.votes ?? [],
-                        }).toList(),
-                        postId: post.postId,
-                      ),
-                      PostActions(
-                        postId: post.postId,
-                        userId: post.userId,
-                        isCommentPage: true,
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Colors.grey[800]!,
-                              width: 0.5,
-                            ),
+                        
+                        // Contenu du post (images/sondages)
+                        GestureDetector(
+                          onTap: () async {
+                            final user = FirebaseAuth.instance.currentUser;
+                            if (user == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Connectez-vous pour voter')),
+                              );
+                              return;
+                            }
+                            
+                            try {
+                              final postRef = _firestore.collection('posts').doc(post.postId);
+                              final postDoc = await postRef.get();
+                              final postData = postDoc.data() as Map<String, dynamic>?;
+                              
+                              if (postData == null) return;
+                              
+                              final blocs = postData['blocs'] is List
+                                ? postData['blocs'] as List<dynamic>
+                                : (postData['blocs'] as Map<String, dynamic>).values.toList();
+                              
+                              // Vérifier si l'utilisateur a déjà voté
+                              bool hasVoted = false;
+                              for (final bloc in blocs) {
+                                final votes = bloc['votes'] as List<dynamic>? ?? [];
+                                if (votes.contains(user.uid)) {
+                                  hasVoted = true;
+                                  break;
+                                }
+                              }
+                              
+                              if (hasVoted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Vous avez déjà voté sur ce post')),
+                                );
+                                return;
+                              }
+                              
+                              // Mettre à jour le bloc
+                              final updatedBloc = {
+                                ...blocs[0],
+                                'voteCount': (blocs[0]['voteCount'] as int? ?? 0) + 1,
+                                'votes': [...(blocs[0]['votes'] as List<dynamic>? ?? []), user.uid],
+                              };
+                              
+                              // Mettre à jour le post
+                              final updatedBlocs = [...blocs];
+                              updatedBlocs[0] = updatedBloc;
+                              
+                              await postRef.update({
+                                'blocs': updatedBlocs,
+                              });
+                            } catch (e) {
+                              print('Erreur lors du vote: $e');
+                            }
+                          },
+                          child: PollGridHomeModern(
+                            blocs: post.blocs.map((bloc) => {
+                              'postImageUrl': bloc.postImageUrl,
+                              'text': bloc.text,
+                              'filterColor': bloc.filterColor?.value.toString(),
+                              'voteCount': bloc.voteCount ?? 0,
+                              'votes': bloc.votes ?? [],
+                            }).toList(),
+                            postId: post.postId,
                           ),
                         ),
-                      ),
-                      CommentPopup.withGlobalKey(
-                        postId: post.postId,
-                        userId: post.userId,
-                        scrollController: _commentScrollController,
-                      ),
-                      SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 300 : 0),
-                    ],
+                        
+                        // Actions du post (like, commentaire, etc.)
+                        PostActions(
+                          postId: post.postId,
+                          userId: post.userId,
+                          isCommentPage: true,
+                        ),
+                        
+                        // Séparateur léger
+                        Divider(height: 1, thickness: 0.5, color: Colors.grey[300]),
+                        
+                        // Section commentaires
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: CommentPopup.withGlobalKey(
+                            postId: post.postId,
+                            userId: post.userId,
+                            scrollController: _commentScrollController,
+                          ),
+                        ),
+                        
+                        // Espace pour le clavier
+                        SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 300 : 0),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          );
-        },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: CommentInput(
         controller: _commentController,

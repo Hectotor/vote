@@ -102,7 +102,7 @@ class _HomePageState extends State<HomePage> {
                     }).toList() ?? [];
 
                     return ListView.builder(
-                      padding: const EdgeInsets.only(left: 10, right: 10),
+                      padding: const EdgeInsets.only(left: 5, right: 5),
                       itemCount: posts.length,
                       itemBuilder: (context, index) {
                         final post = posts[index];
@@ -112,7 +112,7 @@ class _HomePageState extends State<HomePage> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: const Color(0xFFF5F5F5),
-                              width: 10,
+                              width: 5,
                             ),
 
                           ),
