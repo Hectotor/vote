@@ -209,10 +209,52 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildStatColumn(count: widget.userData['publishpostscount'] ?? 0, label: 'Posts', color: Colors.blue),
-                        _buildStatColumn(count: widget.userData['votesCountUser'] ?? 0, label: 'Votes', color: Colors.pink),
-                        _buildStatColumn(count: _followersCount, label: 'Followers', color: Colors.purple),
-                        _buildStatColumn(count: _followingCount, label: 'Following', color: Colors.orange),
+                        _buildStatColumn(
+                          count: widget.userData['publishpostscount'] ?? 0,
+                          label: 'Posts',
+                          color: Colors.blue,
+                          onTap: null,
+                        ),
+                        _buildStatColumn(
+                          count: widget.userData['votesCountUser'] ?? 0,
+                          label: 'Votes',
+                          color: Colors.pink,
+                          onTap: null,
+                        ),
+                        _buildStatColumn(
+                          count: _followersCount,
+                          label: 'Followers',
+                          color: Colors.purple,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FollowersPage(
+                                  userId: widget.userId,
+                                  type: 'followers',
+                                  title: 'Followers',
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildStatColumn(
+                          count: _followingCount,
+                          label: 'Following',
+                          color: Colors.orange,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FollowersPage(
+                                  userId: widget.userId,
+                                  type: 'following',
+                                  title: 'Following',
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -278,20 +320,10 @@ class _ProfileHeaderState extends State<ProfileHeader> {
     required int count,
     required String label,
     required Color color,
+    required VoidCallback? onTap,
   }) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => FollowersPage(
-              userId: widget.userId,
-              type: label.toLowerCase(),
-              title: label,
-            ),
-          ),
-        );
-      },
+    return GestureDetector(
+      onTap: onTap,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
