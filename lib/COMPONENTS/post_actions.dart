@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:toplyke/HOME/post_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'Post/post_like_service.dart';
 import 'ANIMATION/heart_animation_post_action.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class PostActions extends StatefulWidget {
   final String postId;
@@ -26,128 +26,179 @@ class _PostActionsState extends State<PostActions> {
   bool _lastIsLiked = false;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  @override
-  void initState() {
-    super.initState();
+  Widget _buildLikeButton() {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _firestore.collection('posts').doc(widget.postId).snapshots(),
+      builder: (context, postSnapshot) {
+        final postData = postSnapshot.data?.data() as Map<String, dynamic>?;
+        final likeCount = postData?['likesCount'] ?? 0;
+        final user = FirebaseAuth.instance.currentUser;
+
+        return StreamBuilder<QuerySnapshot>(
+          stream: user != null
+              ? _firestore
+                  .collection('likes')
+                  .where('postId', isEqualTo: widget.postId)
+                  .where('userId', isEqualTo: user.uid)
+                  .limit(1)
+                  .snapshots()
+              : null,
+          builder: (context, likeSnapshot) {
+            final isLiked = user != null
+                ? (likeSnapshot.data?.docs.isNotEmpty ?? false)
+                : false;
+
+            return InkWell(
+              onTap: _likeLoading
+                  ? null
+                  : () async {
+                      setState(() {
+                        _likeLoading = true;
+                        _lastIsLiked = isLiked;
+                      });
+                      await PostLikeService.likeWithAuthCheck(
+                          context, widget.postId);
+                      setState(() {
+                        _likeLoading = false;
+                        _lastIsLiked = !isLiked;
+                      });
+                    },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  HeartAnimationPostAction(
+                    animate: _likeLoading || (isLiked != _lastIsLiked),
+                    isLiked: isLiked,
+                    size: 26,
+                    onTap: null,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '$likeCount',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: Color(0xFF212121),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Text(
+                    "J'aime",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF212121),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
-  @override
-  void dispose() {
-    super.dispose();
+  Widget _buildCommentButton() {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _firestore.collection('posts').doc(widget.postId).snapshots(),
+      builder: (context, snapshot) {
+        final commentCount =
+            (snapshot.data?.data() as Map<String, dynamic>?)?['commentCount'] ??
+                0;
+        return InkWell(
+          onTap: widget.isCommentPage
+              ? null
+              : () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation1, animation2) =>
+                          PostPage(postId: widget.postId),
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+                    ),
+                  );
+                },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.mode_comment_outlined,
+                color: Colors.blueAccent,
+                size: 24,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '$commentCount',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: Color(0xFF212121),
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Text(
+                'Commentaires',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF212121),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
-  // Méthodes de sauvegarde supprimées car déplacées vers post_menu.dart
+  Widget _buildShareButton() {
+    return InkWell(
+      onTap: () {
+        // TODO: Implémenter le partage
+      },
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          Icon(
+            Icons.send_rounded,
+            color: Colors.deepPurple,
+            size: 22,
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, right: 4, bottom: 10),
-      child: Row(
-        children: [
-          // StreamBuilder pour le like
-          StreamBuilder<DocumentSnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('posts')
-                .doc(widget.postId)
-                .snapshots(),
-            builder: (context, postSnapshot) {
-              final postData = postSnapshot.data?.data() as Map<String, dynamic>?;
-              final likeCount = postData?['likesCount'] ?? 0;
-              final user = FirebaseAuth.instance.currentUser;
-              return StreamBuilder<QuerySnapshot>(
-                stream: user != null ? FirebaseFirestore.instance
-                    .collection('likes')
-                    .where('postId', isEqualTo: widget.postId)
-                    .where('userId', isEqualTo: user.uid)
-                    .limit(1)
-                    .snapshots() : null,
-                builder: (context, likeSnapshot) {
-                  // Si l'utilisateur n'est pas authentifié, on considère que le post n'est pas liké
-                  final isLiked = user != null ? (likeSnapshot.data?.docs.isNotEmpty ?? false) : false;
-                  return Row(
-                    children: [
-                      HeartAnimationPostAction(
-                        animate: _likeLoading || (isLiked != _lastIsLiked),
-                        isLiked: isLiked,
-                        onTap: _likeLoading
-                            ? null
-                            : () async {
-                                setState(() {
-                                  _likeLoading = true;
-                                  _lastIsLiked = isLiked;
-                                });
-                                await PostLikeService.likeWithAuthCheck(context, widget.postId);
-                                setState(() {
-                                  _likeLoading = false;
-                                  _lastIsLiked = !isLiked; // pour bien relancer l'anim si besoin
-                                });
-                              },
-                        size: 28,
-                      ),
-                      Text(
-                        '$likeCount',
-                        style: TextStyle(
-                          //color: Colors.white70,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-          //const SizedBox(width: 10),
-          StreamBuilder<DocumentSnapshot>(
-            stream: _firestore.collection('posts').doc(widget.postId).snapshots(),
-            builder: (context, snapshot) {
-              final commentCount = (snapshot.data?.data() as Map<String, dynamic>?)?['commentCount'] ?? 0;
-              return Row(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.chat_bubble_outline,
-                      //color: Colors.white,
-                      size: 24,
-                    ),
-                    onPressed: widget.isCommentPage
-                        ? null
-                        : () {
-                            Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder: (context, animation1, animation2) => PostPage(
-                                  postId: widget.postId,
-                                ),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero,
-                              ),
-                            );
-                          },
-                  ),
-                  if (snapshot.hasData) Text(
-                    '$commentCount',
-                    style: TextStyle(
-                      //color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.send_outlined,
-              //color: Colors.white,
-              size: 24,
+      padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            onPressed: () {
-              // TODO: Implement share functionality
-            },
-          ),
-          const Spacer(),
-        ],
+          ],
+        ),
+        child: Wrap(
+          spacing: 20,
+          runSpacing: 12,
+          alignment: WrapAlignment.spaceAround,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            _buildLikeButton(),
+            _buildCommentButton(),
+            _buildShareButton(),
+          ],
+        ),
       ),
     );
   }

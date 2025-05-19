@@ -71,8 +71,8 @@ class _HeartAnimationPostActionState extends State<HeartAnimationPostAction>
           scale: _scaleAnim.value,
           child: IconButton(
             icon: Icon(
-              widget.isLiked ? Icons.favorite : Icons.favorite_border,
-              color: widget.isLiked ? Colors.red : const Color(0xFF212121),
+              widget.isLiked ? Icons.thumb_up_sharp : Icons.thumb_up_outlined,
+              color: widget.isLiked ? Colors.green : Colors.green,
               size: widget.size,
             ),
             onPressed: widget.onTap,

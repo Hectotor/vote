@@ -114,6 +114,7 @@ class _HomePageState extends State<HomePage> {
                               color: const Color(0xFFF5F5F5),
                               width: 10,
                             ),
+
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
