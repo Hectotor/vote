@@ -37,10 +37,10 @@ class _PollGridState extends State<PollGrid> {
   List<bool> _isTextVisible = [];
 
   final List<Color> vibrantGradients = [
-    Color(0xFF2D3748),   // Deep Navy
-    Color(0xFF2D3748),   // Dark Midnight Blue
-    Color(0xFF2D3748),   // Rich Indigo
-    Color(0xFF2D3748)    // Bright Indigo
+    Color(0xFFFFFFFF),   // Deep Navy
+    Color(0xFFFFFFFF),   // Dark Midnight Blue
+    Color(0xFFFFFFFF),   // Rich Indigo
+    Color(0xFFFFFFFF)    // Bright Indigo
   ];
 
   List<Color> _getColors() {
@@ -187,11 +187,12 @@ class _PollGridState extends State<PollGrid> {
           gradient: gradient,
           borderRadius: BorderRadius.circular(15.0),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 10.0,
-              offset: Offset(0, 4),
-            ),
+                              BoxShadow(
+                                color: Colors.black12,
+                                spreadRadius: 1,
+                                blurRadius: 2,
+                                offset: const Offset(0, 1),
+                              ),
           ],
         ),
         child: Stack(
@@ -296,11 +297,11 @@ class _PollGridState extends State<PollGrid> {
                 Row(
                   children: [
                     Expanded(child: _buildBloc(0)),
-                    SizedBox(width: 8),
+                    SizedBox(width: 10),
                     Expanded(child: _buildBloc(1)),
                   ],
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 10),
                 // Deuxième rangée (blocs 3 et 4)
                 if (widget.textControllers.length == 3)
                   Row(
@@ -321,7 +322,7 @@ class _PollGridState extends State<PollGrid> {
                   Row(
                     children: [
                       Expanded(child: _buildBloc(2)),
-                      SizedBox(width: 8),
+                      SizedBox(width: 10),
                       Expanded(child: _buildBloc(3)),
                     ],
                   )

@@ -66,7 +66,7 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF151019),  
+      backgroundColor: const Color(0xFF1B202A),  
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -118,7 +118,7 @@ class _ImageFilterPageState extends State<ImageFilterPage> {
           ),
           Container(
             height: 120,
-            color: const Color(0xFF151019).withOpacity(0.8),  
+            //color: const Color(0xFF1B202A).withOpacity(0.8),  
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),

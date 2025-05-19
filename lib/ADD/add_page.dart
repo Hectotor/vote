@@ -259,7 +259,7 @@ class _AddPageState extends State<AddPage> {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.only(left: 10, right: 10, bottom: 8),
+              padding: const EdgeInsets.only(left: 15, right: 15, bottom: 8),
               child: Container(
                 alignment: Alignment.center,
                 color: Colors.transparent,
