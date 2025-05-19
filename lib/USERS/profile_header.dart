@@ -7,6 +7,7 @@ import 'dart:io';
 import '../COMPONENTS/avatar.dart';
 import '../ADD/addoption.dart';
 import 'follow_service.dart';
+import 'followers_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileHeader extends StatefulWidget {
@@ -273,26 +274,45 @@ class _ProfileHeaderState extends State<ProfileHeader> {
     );
   }
 
-  Widget _buildStatColumn({required int count, required String label, required Color color}) {
-    return Column(
-      children: [
-        Text(
-          count.toString(),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: color,
+  Widget _buildStatColumn({
+    required int count,
+    required String label,
+    required Color color,
+  }) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FollowersPage(
+              userId: widget.userId,
+              type: label.toLowerCase(),
+              title: label,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[500],
+        );
+      },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            count.toString(),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: color.withOpacity(0.7),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
