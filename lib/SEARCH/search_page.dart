@@ -150,7 +150,6 @@ class _SearchPageState extends State<SearchPage> {
                       final doc = snapshot.data!.docs[index];
                       final data = doc.data() as Map<String, dynamic>;
                       final itemName = data['itemName'];
-                      final query = itemName.replaceAll(RegExp(r'^[@#]'), '');
 
                       IconData icon;
                       Color iconColor;
@@ -171,7 +170,7 @@ class _SearchPageState extends State<SearchPage> {
                         child: Card(
                           child: ListTile(
                             leading: Icon(icon, color: iconColor),
-                            title: Text(itemName, style: const TextStyle(color: Color(0xFF212121))),
+                            title: Text(itemName.replaceAll(RegExp(r'^[@#]'), ''), style: const TextStyle(color: Color(0xFF212121))),
                             trailing: IconButton(
                               icon: const Icon(Icons.close, color: Colors.grey),
                               onPressed: () {
