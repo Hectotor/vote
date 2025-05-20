@@ -13,16 +13,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 class ProfileHeader extends StatefulWidget {
   final String userId;
   final Map<String, dynamic> userData;
-  final bool showPosts;
-  final Function(bool)? onTabChanged;
   final bool isOwner;
 
   const ProfileHeader({
     Key? key,
     required this.userId,
     required this.userData,
-    this.showPosts = true,
-    this.onTabChanged,
     required this.isOwner,
   }) : super(key: key);
 
@@ -38,7 +34,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
   String? _profileImageUrl;
   bool _isLoading = false;
   final TextEditingController _bioController = TextEditingController();
-  bool _showPosts = true;
+
   int _followersCount = 0;
   int _followingCount = 0;
 
@@ -118,34 +114,9 @@ class _ProfileHeaderState extends State<ProfileHeader> {
       _bioController.text = widget.userData['bio'];
     }
     _profileImageUrl = widget.userData['profilePhotoUrl'];
-    _showPosts = widget.showPosts;
   }
   
-  Widget _buildTabButton({required String label, required bool isSelected, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.blue[800] : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? Colors.blue[800]! :  Color(0xFF212121)
 
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white :  Color(0xFF212121),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +125,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
       children: [
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all (0),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
@@ -261,53 +232,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 ],
               ),  
               const SizedBox(height: 25),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  if (widget.isOwner) ...[
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        child: _buildTabButton(
-                          label: 'Posts',
-                          isSelected: _showPosts,
-                          onTap: () {
-                            setState(() => _showPosts = true);
-                            widget.onTabChanged?.call(true);
-                          },
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        child: _buildTabButton(
-                          label: 'Sauvegardés',
-                          isSelected: !_showPosts,
-                          onTap: () {
-                            setState(() => _showPosts = false);
-                            widget.onTabChanged?.call(false);
-                          },
-                        ),
-                      ),
-                    ),
-                  ] else ...[
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        child: _buildTabButton(
-                          label: 'Posts',
-                          isSelected: true,
-                          onTap: () {},
-                        ),
-                      ),
-                    ),
-                  ]
-                ],
-              ),
             ],
           ),
         ),

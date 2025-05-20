@@ -80,6 +80,32 @@ class _UserPageState extends State<UserPage> {
       _isFollowing = !_isFollowing;
     });
   }
+  
+  Widget _buildTabButton({required String label, required bool isSelected, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue[800] : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.blue[800]! : const Color(0xFF212121),
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : const Color(0xFF212121),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -140,50 +166,154 @@ class _UserPageState extends State<UserPage> {
             const SizedBox(width: 16),
           ],
         ),
-        body: Column(
+        body: IndexedStack(
+          index: _showPosts ? 0 : 1,
           children: [
-            // En-tête du profil avec les données utilisateur déjà chargées et gestion des onglets
-            ProfileHeader(
-              userId: _userId ?? '',
-              userData: _userData ?? {},
-              showPosts: _showPosts,
-              onTabChanged: (showPosts) {
-                setState(() {
-                  _showPosts = showPosts;
-                });
-              },
-              isOwner: _userId == FirebaseAuth.instance.currentUser?.uid,
-            ),
-            
-            // Contenu qui change selon l'onglet sélectionné
-            Expanded(
-              child: IndexedStack(
-                index: _showPosts ? 0 : 1,
+            // Page des posts de l'utilisateur (index 0)
+            SingleChildScrollView(
+              child: Column(
                 children: [
-                  // Page des posts de l'utilisateur (index 0)
-                  SingleChildScrollView(
-                    child: Container(
-                      constraints: BoxConstraints(
-                        // Définir une hauteur minimale pour permettre le défilement même avec peu de contenu
-                        minHeight: MediaQuery.of(context).size.height - 200,
-                      ),
-                      child: UserContentView(
-                        userId: _userId!,
-                        showPosts: true,
-                      ),
+                  // En-tête du profil avec les données utilisateur déjà chargées
+                  ProfileHeader(
+                    userId: _userId ?? '',
+                    userData: _userData ?? {},
+                    isOwner: _userId == FirebaseAuth.instance.currentUser?.uid,
+                  ),
+                  
+                  // Boutons de navigation entre Posts et Sauvegardés
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        if (_userId == FirebaseAuth.instance.currentUser?.uid) ...[
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              child: _buildTabButton(
+                                label: 'Posts',
+                                isSelected: _showPosts,
+                                onTap: () {
+                                  setState(() => _showPosts = true);
+                                },
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              child: _buildTabButton(
+                                label: 'Sauvegardés',
+                                isSelected: !_showPosts,
+                                onTap: () {
+                                  setState(() => _showPosts = false);
+                                },
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              child: _buildTabButton(
+                                label: 'Posts',
+                                isSelected: true,
+                                onTap: () {},
+                              ),
+                            ),
+                          ),
+                        ]
+                      ],
                     ),
                   ),
-                  // Page des posts sauvegardés (index 1)
-                  SingleChildScrollView(
-                    child: Container(
-                      constraints: BoxConstraints(
-                        // Définir une hauteur minimale pour permettre le défilement même avec peu de contenu
-                        minHeight: MediaQuery.of(context).size.height - 200,
-                      ),
-                      child: UserContentView(
-                        userId: _userId!,
-                        showPosts: false,
-                      ),
+                  
+                  // Contenu des posts
+                  Container(
+                    constraints: BoxConstraints(
+                      // Définir une hauteur minimale pour permettre le défilement même avec peu de contenu
+                      minHeight: MediaQuery.of(context).size.height - 200,
+                    ),
+                    child: UserContentView(
+                      userId: _userId!,
+                      showPosts: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Page des posts sauvegardés (index 1)
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  // En-tête du profil avec les données utilisateur déjà chargées
+                  ProfileHeader(
+                    userId: _userId ?? '',
+                    userData: _userData ?? {},
+                    isOwner: _userId == FirebaseAuth.instance.currentUser?.uid,
+                  ),
+                  
+                  // Boutons de navigation entre Posts et Sauvegardés
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        if (_userId == FirebaseAuth.instance.currentUser?.uid) ...[
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              child: _buildTabButton(
+                                label: 'Posts',
+                                isSelected: _showPosts,
+                                onTap: () {
+                                  setState(() => _showPosts = true);
+                                },
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              child: _buildTabButton(
+                                label: 'Sauvegardés',
+                                isSelected: !_showPosts,
+                                onTap: () {
+                                  setState(() => _showPosts = false);
+                                },
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              child: _buildTabButton(
+                                label: 'Posts',
+                                isSelected: true,
+                                onTap: () {},
+                              ),
+                            ),
+                          ),
+                        ]
+                      ],
+                    ),
+                  ),
+                  
+                  // Contenu des posts sauvegardés
+                  Container(
+                    constraints: BoxConstraints(
+                      // Définir une hauteur minimale pour permettre le défilement même avec peu de contenu
+                      minHeight: MediaQuery.of(context).size.height - 200,
+                    ),
+                    child: UserContentView(
+                      userId: _userId!,
+                      showPosts: false,
                     ),
                   ),
                 ],
