@@ -180,8 +180,37 @@ class _SearchPageState extends State<SearchPage> {
                               },
                             ),
                             onTap: () {
-                              _searchController.text = query;
-                              _performSearch(query);
+                              if (itemName.startsWith('@')) {
+                                // C'est une mention
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FilteredMentionsPage(
+                                      mention: itemName.substring(1),
+                                    ),
+                                  ),
+                                );
+                              } else if (itemName.startsWith('#')) {
+                                // C'est un hashtag
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FilteredHashtagPage(
+                                      hashtag: itemName.substring(1),
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                // C'est un profil
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => UserPage(
+                                      userId: data['userId'],
+                                    ),
+                                  ),
+                                );
+                              }
                             },
                           ),
                         ),
