@@ -49,10 +49,10 @@ class VotePercentageBadge extends StatelessWidget {
             ),
             if (showHeart) ...[
               const SizedBox(width: 4),
-              Icon(
-                Icons.favorite,
-                color: _getColorByPercentage(percentage),
-                size: 16,
+              Image.asset(
+                'assets/logo/icon.png',
+                width: 20,
+                height: 20,
               ),
             ],
           ],
