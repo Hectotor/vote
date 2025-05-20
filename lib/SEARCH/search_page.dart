@@ -33,6 +33,9 @@ class _SearchPageState extends State<SearchPage> {
       _combinedResults = [];
     });
 
+    // Note: L'historique est maintenant sauvegardé au moment du clic sur un résultat
+    // pour pouvoir enregistrer l'ID de l'élément sélectionné
+
     // Profils (pseudo)
     final usersSnapshot = await FirebaseFirestore.instance
         .collection('users')
@@ -261,6 +264,13 @@ class _SearchPageState extends State<SearchPage> {
                               title: Text(title, style: const TextStyle(color: Color(0xFF212121))),
                               onTap: () {
                                 if (type == 'profile') {
+                                  // Sauvegarder dans l'historique avec l'ID de l'utilisateur
+                                  SearchHistoryService.saveSearch(
+                                    _searchController.text,
+                                    'profile',
+                                    data['userId'],
+                                    data['pseudo'],
+                                  );
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -268,6 +278,13 @@ class _SearchPageState extends State<SearchPage> {
                                     ),
                                   );
                                 } else if (type == 'hashtag') {
+                                  // Sauvegarder dans l'historique avec le nom du hashtag comme ID
+                                  SearchHistoryService.saveSearch(
+                                    _searchController.text,
+                                    'hashtag',
+                                    data['name'], // Le nom du hashtag sert d'ID
+                                    '#${data['name']}',
+                                  );
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -275,6 +292,13 @@ class _SearchPageState extends State<SearchPage> {
                                     ),
                                   );
                                 } else if (type == 'mention') {
+                                  // Sauvegarder dans l'historique avec le nom de la mention comme ID
+                                  SearchHistoryService.saveSearch(
+                                    _searchController.text,
+                                    'mention',
+                                    data['name'], // Le nom de la mention sert d'ID
+                                    '@${data['name']}',
+                                  );
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
