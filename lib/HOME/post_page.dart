@@ -200,7 +200,7 @@ class _PostPageState extends State<PostPage> {
                             try {
                               final postRef = _firestore.collection('posts').doc(post.postId);
                               final postDoc = await postRef.get();
-                              final postData = postDoc.data() as Map<String, dynamic>?;
+                              final postData = postDoc.data();
                               
                               if (postData == null) return;
                               

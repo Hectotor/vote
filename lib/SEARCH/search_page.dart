@@ -151,6 +151,7 @@ class _SearchPageState extends State<SearchPage> {
                       final data = doc.data() as Map<String, dynamic>;
                       final itemName = data['itemName'];
 
+
                       IconData icon;
                       Color iconColor;
                       
