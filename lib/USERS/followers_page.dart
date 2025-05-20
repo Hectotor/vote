@@ -184,11 +184,9 @@ class _FollowersPageState extends State<FollowersPage> {
                                 .get(),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const ListTile(
-                                  leading: CircleAvatar(
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  ),
-                                  title: Text('Chargement...'),
+                                return ListTile(
+
+              
                                 );
                               }
 
