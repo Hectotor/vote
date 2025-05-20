@@ -133,10 +133,11 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          if (!_isSearching)
-            FutureBuilder(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            if (!_isSearching)
+              FutureBuilder(
               future: SearchHistoryService.getSearchHistory().first,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -225,7 +226,10 @@ class _SearchPageState extends State<SearchPage> {
               },
             ),
           if (_isSearching)
-            Expanded(
+            Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height - 200, // Hauteur ajustable
+              ),
               child: _combinedResults.isEmpty
                   ? const Center(
                       child: Text('Aucun résultat trouvé'),
@@ -313,7 +317,8 @@ class _SearchPageState extends State<SearchPage> {
                       },
                     ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }

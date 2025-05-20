@@ -122,11 +122,12 @@ class _FollowersPageState extends State<FollowersPage> {
         ),
         iconTheme: const IconThemeData(color: Color(0xFF212121)),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Container(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Container(
               decoration: BoxDecoration(
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(25),
@@ -163,14 +164,17 @@ class _FollowersPageState extends State<FollowersPage> {
               ),
             ),
           ),
-          Expanded(
+          Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height - 200, // Hauteur ajustable
+            ),
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredUsers.isEmpty
                     ? const Center(
                         child: Text(
                           'Aucun utilisateur trouvé',
-                          style: TextStyle(color: Colors.white70),
+                          style: TextStyle(color: Colors.grey),
                         ),
                       )
                     : ListView.builder(
@@ -227,7 +231,8 @@ class _FollowersPageState extends State<FollowersPage> {
                         },
                       ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
