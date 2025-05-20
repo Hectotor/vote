@@ -74,147 +74,194 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-appBar: AppBar(
-  elevation: 0,
-  toolbarHeight: 70,
-  backgroundColor: Colors.white,
-  title: Container(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    decoration: BoxDecoration(
-      color: Colors.grey[200],
-      borderRadius: BorderRadius.circular(25),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.1),
-          spreadRadius: 1,
-          blurRadius: 5,
-          offset: const Offset(0, 2),
+      appBar: AppBar(
+        elevation: 0,
+        toolbarHeight: 70,
+        backgroundColor: Colors.white,
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(25),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 5,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: TextField(
+            controller: _searchController,
+            onChanged: (value) {
+              if (value.isEmpty) {
+                setState(() {
+                  _isSearching = false;
+                  _combinedResults = [];
+                });
+              } else {
+                _performSearch(value);
+              }
+            },
+            onSubmitted: (value) {
+              if (value.isNotEmpty) {
+                _performSearch(value);
+              }
+            },
+            style: const TextStyle(color: Color(0xFF212121)),
+            cursorColor: Colors.blue[800],
+            decoration: InputDecoration(
+              hintText: 'Rechercher un pseudo, # ou @',
+              hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
+              border: InputBorder.none,
+              prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+              contentPadding: const EdgeInsets.symmetric(vertical: 15),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, color: Colors.grey),
+                      onPressed: () {
+                        _searchController.clear();
+                        _performSearch('');
+                      },
+                    )
+                  : null,
+            ),
+          ),
         ),
-      ],
-    ),
-    child: TextField(
-      controller: _searchController,
-      onChanged: _performSearch,
-      style: const TextStyle(color: Color(0xFF212121)),
-      cursorColor: Colors.blue[800],
-      decoration: InputDecoration(
-        hintText: 'Rechercher un pseudo, # ou @',
-        hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
-        border: InputBorder.none,
-        prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
-        contentPadding: const EdgeInsets.symmetric(vertical: 15),
-        suffixIcon: _searchController.text.isNotEmpty
-          ? IconButton(
-              icon: const Icon(Icons.clear, color: Colors.grey),
-              onPressed: () {
-                _searchController.clear();
-                _performSearch('');
-              },
-            )
-          : null,
       ),
-    ),
-  ),
+      body: Column(
+        children: [
+          if (!_isSearching)
+            FutureBuilder(
+              future: SearchHistoryService.getSearchHistory().first,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const SizedBox.shrink();
+                }
 
-),
+                if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: snapshot.data!.docs.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final doc = snapshot.data!.docs[index];
+                      final data = doc.data() as Map<String, dynamic>;
+                      final itemName = data['itemName'];
+                      final query = itemName.replaceAll(RegExp(r'^[@#]'), '');
 
-      body: _isSearching
-          ? _combinedResults.isEmpty
-              ? const Center(
-                  child: Text("Aucun résultat", style: TextStyle(color: Colors.white70)),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _combinedResults.length,
-                  itemBuilder: (context, index) {
-                    final item = _combinedResults[index];
-                    final type = item['type'];
-                    final data = item['data'];
+                      IconData icon;
+                      Color iconColor;
+                      
+                      if (itemName.startsWith('@')) {
+                        icon = Icons.alternate_email;
+                        iconColor = Colors.green;
+                      } else if (itemName.startsWith('#')) {
+                        icon = Icons.tag;
+                        iconColor = Colors.purple;
+                      } else {
+                        icon = Icons.person;
+                        iconColor = Colors.blue;
+                      }
 
-                    String title = '';
-                    IconData icon = Icons.person;
-                    Color iconColor = Colors.white;
-
-                    if (type == 'profile') {
-                      title = data['pseudo'] ?? 'Utilisateur';
-                      icon = Icons.person;
-                      iconColor = Colors.orange;
-                    } else if (type == 'hashtag') {
-                      title = '${data['name']}';
-                      icon = Icons.tag;
-                      iconColor = Colors.blue;
-                    } else if (type == 'mention') {
-                      title = '${data['name']}';
-                      icon = Icons.alternate_email;
-                      iconColor = Colors.green;
-                    }
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Card(
-                        child: ListTile(
-                          leading: Icon(icon, color: iconColor),
-                          title: Text(title, style: const TextStyle(color: Color(0xFF212121))),
-                          onTap: () {
-                            // Sauvegarder la recherche dans l'historique
-                            final String query = _searchController.text.trim();
-                            
-                            if (type == 'profile') {
-                              // Sauvegarder la recherche de profil
-                              SearchHistoryService.saveSearch(
-                                query,
-                                'profile',
-                                data['userId'] ?? '',
-                                data['pseudo'] ?? 'Utilisateur',
-                              );
-                              
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => UserPage(
-                                    userId: data['userId'],
-                                    showLoginButton: false,
-                                  ),
-                                ),
-                              );
-                            } else if (type == 'hashtag') {
-                              // Sauvegarder la recherche de hashtag
-                              SearchHistoryService.saveSearch(
-                                query,
-                                'hashtag',
-                                data['name'] ?? '',
-                                '#${data['name'] ?? ''}',
-                              );
-                              
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => FilteredHashtagPage(hashtag: data['name']),
-                                ),
-                              );
-                            } else if (type == 'mention') {
-                              // Sauvegarder la recherche de mention
-                              SearchHistoryService.saveSearch(
-                                query,
-                                'mention',
-                                data['name'] ?? '',
-                                '@${data['name'] ?? ''}',
-                              );
-                              
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => FilteredMentionsPage(mention: data['name']),
-                                ),
-                              );
-                            }
-                          },
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Card(
+                          child: ListTile(
+                            leading: Icon(icon, color: iconColor),
+                            title: Text(itemName, style: const TextStyle(color: Color(0xFF212121))),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.close, color: Colors.grey),
+                              onPressed: () {
+                                SearchHistoryService.deleteHistoryEntry(doc.id);
+                                setState(() {});
+                              },
+                            ),
+                            onTap: () {
+                              _searchController.text = query;
+                              _performSearch(query);
+                            },
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                )
-          : const Center(),
+                      );
+                    },
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          if (_isSearching)
+            Expanded(
+              child: _combinedResults.isEmpty
+                  ? const Center(
+                      child: Text('Aucun résultat trouvé'),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _combinedResults.length,
+                      itemBuilder: (context, index) {
+                        final result = _combinedResults[index];
+                        final type = result['type'];
+                        final data = result['data'];
+
+                        String title = '';
+                        IconData icon = Icons.person;
+                        Color iconColor = Colors.grey;
+
+                        if (type == 'profile') {
+                          title = '${data['pseudo']}';
+                          icon = Icons.person;
+                          iconColor = Colors.blue;
+                        } else if (type == 'hashtag') {
+                          title = '${data['name']}';
+                          icon = Icons.tag;
+                          iconColor = Colors.purple;
+                        } else if (type == 'mention') {
+                          title = '${data['name']}';
+                          icon = Icons.alternate_email;
+                          iconColor = Colors.green;
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Card(
+                            child: ListTile(
+                              leading: Icon(icon, color: iconColor),
+                              title: Text(title, style: const TextStyle(color: Color(0xFF212121))),
+                              onTap: () {
+                                if (type == 'profile') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => UserPage(userId: data['userId']),
+                                    ),
+                                  );
+                                } else if (type == 'hashtag') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FilteredHashtagPage(hashtag: data['name']),
+                                    ),
+                                  );
+                                } else if (type == 'mention') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FilteredMentionsPage(mention: data['name']),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+        ],
+      ),
     );
   }
 }
