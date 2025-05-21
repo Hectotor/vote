@@ -39,7 +39,7 @@ class _BirthDateStepState extends State<BirthDateStep> {
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+
           ),
           textAlign: TextAlign.center,
         ),

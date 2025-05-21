@@ -144,7 +144,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF212121)),
             onPressed: () {
               Navigator.pushReplacement(
                 context,
@@ -167,7 +167,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey[300],
+
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -189,7 +189,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
                         _isPasswordVisible
                             ? Icons.visibility
                             : Icons.visibility_off,
-                        color: Colors.grey[400],
+
                       ),
                       onPressed: () {
                         setState(() {
@@ -210,7 +210,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
                       child: Text(
                         'Mot de passe oublié ?',
                         style: TextStyle(
-                          color: Colors.grey[400],
+
                           fontSize: 14,
                         ),
                       ),
@@ -296,7 +296,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
                       Text(
                         'Pas encore de compte ?',
                         style: TextStyle(
-                          color: Colors.grey[400],
+
                           fontSize: 15,
                         ),
                       ),
@@ -312,7 +312,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
                         child: const Text(
                           'Créer un compte',
                           style: TextStyle(
-                            color: Colors.white,
+                        
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                           ),
@@ -354,17 +354,17 @@ class _ConnexionPageState extends State<ConnexionPage> {
           }
         }
       },
-      style: const TextStyle(color: Colors.white),
+      
       decoration: InputDecoration( 
         filled: true,
         labelText: label,
         labelStyle: TextStyle(
-          color: Colors.grey[400],
+
           fontSize: 16,
         ),
         prefixIcon: Icon(
           icon,
-          color: Colors.grey[400],
+      
           size: 22,
         ),
         suffixIcon: suffixIcon,
@@ -382,7 +382,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(
-            color: Colors.white,
+            
             width: 1,
           ),
         ),

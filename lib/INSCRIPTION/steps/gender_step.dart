@@ -31,7 +31,7 @@ class _GenderStepState extends State<GenderStep> {
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+
           ),
           textAlign: TextAlign.center,
         ),

@@ -42,7 +42,7 @@ class _PseudoStepState extends State<PseudoStep> {
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+      
           ),
           textAlign: TextAlign.center,
         ),
@@ -133,7 +133,7 @@ class _PseudoStepState extends State<PseudoStep> {
         fillColor: Colors.grey[900],
 
         hintText: 'Entre ton pseudo',
-        hintStyle: TextStyle(color: Colors.grey[600], fontSize: 18),
+        hintStyle: TextStyle(color: Colors.white, fontSize: 18),
 
         suffixIcon: widget.isCheckingPseudo
             ? const Padding(

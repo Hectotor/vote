@@ -64,7 +64,7 @@ class _PasswordStepState extends State<PasswordStep> {
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+
           ),
           textAlign: TextAlign.center,
         ),

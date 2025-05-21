@@ -93,7 +93,7 @@ class MyApp extends StatelessWidget {
         Locale('fr', 'FR'), // Add French locale
         Locale('en', ''),
       ],
-      home: const SplashScreen(), // Set ScreenPage as the home widget
+      home: const ConnexionPage(), // Set ScreenPage as the home widget
     );
   }
 }

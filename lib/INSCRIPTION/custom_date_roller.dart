@@ -76,15 +76,15 @@ class CustomDateRoller {
                 bottom: MediaQuery.of(context).padding.bottom + 16,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF000000),
+                color: const Color(0xFFf5f5f5),
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.4), // plus doux
-                    blurRadius: 30,
-                    spreadRadius: 0.5,
-                    offset: const Offset(0, 10), // ombre légère vers le bas
-                  ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
                 ],
               ),
               child: SafeArea(
@@ -139,7 +139,7 @@ class CustomDateRoller {
                                         fontWeight: index == selectedDayIndex 
                                             ? FontWeight.bold 
                                             : FontWeight.normal,
-                                        color: Colors.white,
+                                        color: const Color(0xFF212121),
                                       ),
                                     ),
                                   );
@@ -207,7 +207,7 @@ class CustomDateRoller {
                                         fontWeight: index == selectedMonthIndex 
                                             ? FontWeight.bold 
                                             : FontWeight.normal,
-                                        color: Colors.white,
+                                        color: const Color(0xFF212121),
                                       ),
                                     ),
                                   );
@@ -275,7 +275,7 @@ class CustomDateRoller {
                                         fontWeight: index == selectedYearIndex 
                                             ? FontWeight.bold 
                                             : FontWeight.normal,
-                                        color: Colors.white,
+                                        color: const Color(0xFF212121),
                                       ),
                                     ),
                                   );
