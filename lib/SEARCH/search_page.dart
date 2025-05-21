@@ -60,7 +60,9 @@ class _SearchPageState extends State<SearchPage> {
     final results = <Map<String, dynamic>>[];
 
     for (var doc in usersSnapshot.docs) {
-      results.add({'type': 'profile', 'data': doc.data()});
+      final userData = doc.data();
+      userData['userId'] = doc.id;
+      results.add({'type': 'profile', 'data': userData, 'docId': doc.id});
     }
     for (var doc in hashtagsSnapshot.docs) {
       results.add({'type': 'hashtag', 'data': doc.data()});
@@ -210,7 +212,7 @@ class _SearchPageState extends State<SearchPage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => UserPage(
-                                      userId: data['userId'],
+                                      userId: data['itemId'],
                                     ),
                                   ),
                                 );
@@ -272,13 +274,13 @@ class _SearchPageState extends State<SearchPage> {
                                   SearchHistoryService.saveSearch(
                                     _searchController.text,
                                     'profile',
-                                    data['userId'],
+                                    result['docId'] ?? data['userId'], // Utiliser l'ID du document ou userId
                                     data['pseudo'],
                                   );
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => UserPage(userId: data['userId']),
+                                      builder: (context) => UserPage(userId: result['docId'] ?? data['userId']),
                                     ),
                                   );
                                 } else if (type == 'hashtag') {
