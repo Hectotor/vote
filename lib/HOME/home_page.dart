@@ -40,7 +40,9 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       //backgroundColor: Colors.black,
+      extendBody: true, // Permet au contenu de défiler derrière la navbar
       body: SafeArea(
+        bottom: false, // Désactive le padding de sécurité en bas pour permettre le défilement complet
         child: RefreshIndicator(
           onRefresh: _refreshPosts,
           child: Column(

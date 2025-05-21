@@ -176,7 +176,7 @@ class _PostActionsState extends State<PostActions> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.white.withOpacity(0.9), // Rendre le fond légèrement transparent
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
