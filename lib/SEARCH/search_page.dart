@@ -4,6 +4,7 @@ import '../USERS/user_page.dart';
 import 'filtered_hashtag_page.dart';
 import './filtered_mentions_page.dart';
 import 'search_history_service.dart';
+import '../COMPONENTS/avatar.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -176,7 +177,7 @@ class _SearchPageState extends State<SearchPage> {
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Card(
                           child: ListTile(
-                            leading: Icon(icon, color: iconColor),
+                            leading: !itemName.startsWith('@') && !itemName.startsWith('#') ? Avatar(userId: data['itemId'], radius: 20) : Icon(icon, color: iconColor),
                             title: Text(itemName.replaceAll(RegExp(r'^[@#]'), ''), style: const TextStyle(color: Color(0xFF212121))),
                             trailing: IconButton(
                               icon: const Icon(Icons.close, color: Colors.grey),
@@ -266,7 +267,7 @@ class _SearchPageState extends State<SearchPage> {
                           padding: const EdgeInsets.only(bottom: 8),
                           child: Card(
                             child: ListTile(
-                              leading: Icon(icon, color: iconColor),
+                              leading: type == 'profile' ? Avatar(userId: result['docId'], radius: 20) : Icon(icon, color: iconColor),
                               title: Text(title, style: const TextStyle(color: Color(0xFF212121))),
                               onTap: () {
                                 if (type == 'profile') {
