@@ -10,7 +10,7 @@ import 'INSCRIPTION/connexion_screen.dart';
 
 class NavBar extends StatefulWidget {
   final int initialIndex;
-  
+
   const NavBar({super.key, this.initialIndex = 0});
 
   @override
@@ -19,35 +19,33 @@ class NavBar extends StatefulWidget {
 
 class _NavBarState extends State<NavBar> {
   late int _selectedIndex;
-  List<Widget> _pages = [];
+  late List<Widget> _pages;
 
   void _onItemTapped(int index) {
-    // Si on clique sur le bouton d'ajout
     if (index == 2) {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation1, animation2) => const ConnexionPage(),
+            pageBuilder: (_, __, ___) => const ConnexionPage(),
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
           ),
         );
         return;
       }
-      // Naviguer vers AddPage sans transition
       Navigator.push(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) => const AddPage(),
+          pageBuilder: (_, __, ___) => const AddPage(),
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
         ),
       );
       return;
     }
-    
+
     setState(() {
       _selectedIndex = index;
     });
@@ -57,12 +55,12 @@ class _NavBarState extends State<NavBar> {
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
-    _pages = [
-      const HomePage(),
-      const SearchPage(),
-      const AddPage(),
-      const NotificationsPage(),
-      const UserPage(),
+    _pages = const [
+      HomePage(),
+      SearchPage(),
+      AddPage(),
+      NotificationsPage(),
+      UserPage(),
     ];
   }
 
@@ -70,82 +68,94 @@ class _NavBarState extends State<NavBar> {
   Widget build(BuildContext context) {
     return GradientBackground(
       child: Scaffold(
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: _pages,
-        ),
-        bottomNavigationBar: _selectedIndex == 2
-            ? null // Hide the navigation bar when on AddPage
-            : BottomNavigationBar(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                selectedFontSize: 0,
-                unselectedFontSize: 0,
-                items: <BottomNavigationBarItem>[
-                  _buildNavItem(
-                    Icons.home_outlined,
-                    Icons.home,
-                    '',
-                    0,
+        extendBody: true,
+        body: Stack(
+          children: [
+            IndexedStack(
+              index: _selectedIndex,
+              children: _pages.map((page) {
+                return SafeArea(
+                  bottom: false,
+                  child: page,
+                );
+              }).toList(),
+            ),
+            if (_selectedIndex != 2)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 20,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildIconButton(Icons.home_outlined, Icons.home, 0),
+                        _buildIconButton(Icons.search_outlined, Icons.search, 1),
+                        _buildAddButtonCustom(),
+                        _buildIconButton(Icons.notifications_outlined, Icons.notifications, 3),
+                        _buildIconButton(Icons.person_outline, Icons.person, 4),
+                      ],
+                    ),
                   ),
-                  _buildNavItem(
-                    Icons.search_outlined,
-                    Icons.search,
-                    '',
-                    1,
-                  ),
-                  _buildAddButton(),
-                  _buildNavItem(
-                    Icons.notifications_outlined,
-                    Icons.notifications,
-                    '',
-                    3,
-                  ),
-                  _buildNavItem(
-                    Icons.person_outline,
-                    Icons.person,
-                    '',
-                    4,
-                  ),
-                ],
-                currentIndex: _selectedIndex,
-                selectedItemColor: Color(0xFF1E88E5),
-                unselectedItemColor: Color(0x9E9E9E9E),
-                onTap: _onItemTapped,
-                type: BottomNavigationBarType.fixed,
-                showSelectedLabels: false,
-                showUnselectedLabels: false,
+                ),
               ),
-      ),
-    );
-  }
-
-  BottomNavigationBarItem _buildNavItem(
-    IconData unselectedIcon,
-    IconData selectedIcon,
-    String label,
-    int index,
-  ) {
-    return BottomNavigationBarItem(
-      icon: Icon(
-        _selectedIndex == index ? selectedIcon : unselectedIcon,
-        size: 30,
-      ),
-      label: label,
-    );
-  }
-
-  BottomNavigationBarItem _buildAddButton() {
-    return BottomNavigationBarItem(
-      icon: SizedBox(
-        width: 40,
-        height: 40,
-        child: Image.asset(
-          'assets/logo/icon.png',
-          fit: BoxFit.contain,
+          ],
         ),
       ),
-      label: '',
+    );
+  }
+
+  Widget _buildIconButton(IconData unselected, IconData selected, int index) {
+    final isSelected = _selectedIndex == index;
+    return GestureDetector(
+      onTap: () => _onItemTapped(index),
+      child: Icon(
+        isSelected ? selected : unselected,
+        size: 28,
+        color: isSelected ? const Color(0xFF1E88E5) : Colors.grey[600],
+      ),
+    );
+  }
+
+  Widget _buildAddButtonCustom() {
+    return GestureDetector(
+      onTap: () => _onItemTapped(2),
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E88E5),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.4),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Image.asset(
+            'assets/logo/icon.png',
+            fit: BoxFit.contain,
+          ),
+        ),
+      ),
     );
   }
 }

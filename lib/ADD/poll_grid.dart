@@ -37,10 +37,10 @@ class _PollGridState extends State<PollGrid> {
   List<bool> _isTextVisible = [];
 
   final List<Color> vibrantGradients = [
-    Color(0xFFFFFFFF),   // Deep Navy
-    Color(0xFFFFFFFF),   // Dark Midnight Blue
-    Color(0xFFFFFFFF),   // Rich Indigo
-    Color(0xFFFFFFFF)    // Bright Indigo
+    Color(0xF5F5F5F5),   // Deep Navy
+    Color(0xF5F5F5F5),   // Dark Midnight Blue
+    Color(0xF5F5F5F5),   // Rich Indigo
+    Color(0xF5F5F5F5)    // Bright Indigo
   ];
 
   List<Color> _getColors() {
@@ -187,12 +187,12 @@ class _PollGridState extends State<PollGrid> {
           gradient: gradient,
           borderRadius: BorderRadius.circular(15.0),
           boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                spreadRadius: 1,
-                                //blurRadius: 5,
-                                //offset: const Offset(0, 1),
-                              ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
           ],
         ),
         child: Stack(
