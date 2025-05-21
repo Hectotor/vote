@@ -190,8 +190,8 @@ class _PollGridState extends State<PollGrid> {
                               BoxShadow(
                                 color: Colors.black12,
                                 spreadRadius: 1,
-                                blurRadius: 2,
-                                offset: const Offset(0, 1),
+                                //blurRadius: 5,
+                                //offset: const Offset(0, 1),
                               ),
           ],
         ),
