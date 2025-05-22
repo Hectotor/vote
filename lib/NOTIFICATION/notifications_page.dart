@@ -21,110 +21,110 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF212121),
-        actions: [
-          // Bouton pour marquer toutes les notifications comme lues
+      body: Column(
+        children: [
           StreamBuilder<int>(
             stream: NotificationService.getUnreadCount(),
             builder: (context, snapshot) {
               final hasUnread = snapshot.hasData && snapshot.data! > 0;
               return hasUnread
-                  ? IconButton(
-                      icon: const Icon(Icons.done_all),
-                      onPressed: () async {
-                        await NotificationService.markAllAsRead();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Toutes les notifications ont été marquées comme lues'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      },
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 20),
+                      child: IconButton(
+                        icon: const Icon(Icons.done_all),
+                        onPressed: () async {
+                          await NotificationService.markAllAsRead();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Toutes les notifications ont été marquées comme lues'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
+                      ),
                     )
                   : const SizedBox.shrink();
             },
           ),
-        ],
-      ),
-      body: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(
-              child: ReusableLoginButton(),
-            );
-          }
-          
-          return RefreshIndicator(
-            onRefresh: _refreshNotifications,
-            child: StreamBuilder<List<NotificationModel>>(
-              stream: NotificationService.getNotifications(),
+          Expanded(
+            child: StreamBuilder<User?>(
+              stream: FirebaseAuth.instance.authStateChanges(),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.notifications_off, size: 64, color: Colors.grey[400]),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Aucune notification',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: ReusableLoginButton(),
                   );
                 }
+                
+                return RefreshIndicator(
+                  onRefresh: _refreshNotifications,
+                  child: StreamBuilder<List<NotificationModel>>(
+                    stream: NotificationService.getNotifications(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-                final notifications = snapshot.data!;
-                return ListView.builder(
-                  itemCount: notifications.length,
-                  itemBuilder: (context, index) {
-                    final notification = notifications[index];
-                    return Dismissible(
-                      key: Key(notification.id),
-                      background: Container(
-                        color: Colors.red,
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 20),
-                        child: const Icon(
-                          Icons.delete,
-                          color: Colors.white,
-                        ),
-                      ),
-                      direction: DismissDirection.endToStart,
-                      onDismissed: (direction) {
-                        NotificationService.deleteNotification(notification.id);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Notification supprimée'),
-                            duration: Duration(seconds: 2),
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.notifications_off, size: 64, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Aucune notification',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
                           ),
                         );
-                      },
-                      child: NotificationItem(
-                        notification: notification,
-                      ),
-                    );
-                  },
+                      }
+
+                      final notifications = snapshot.data!;
+                      return ListView.builder(
+                        itemCount: notifications.length,
+                        itemBuilder: (context, index) {
+                          final notification = notifications[index];
+                          return Dismissible(
+                            key: Key(notification.id),
+                            background: Container(
+                              color: Colors.red,
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
+                              child: const Icon(
+                                Icons.delete,
+                                color: Colors.white,
+                              ),
+                            ),
+                            direction: DismissDirection.endToStart,
+                            onDismissed: (direction) {
+                              NotificationService.deleteNotification(notification.id);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Notification supprimée'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            child: NotificationItem(
+                              notification: notification,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 );
               },
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
