@@ -126,7 +126,7 @@ class _NavBarState extends State<NavBar> {
       child: Icon(
         isSelected ? selected : unselected,
         size: 28,
-        color: isSelected ? const Color(0xFF1E88E5) : Colors.grey[600],
+        color: isSelected ? const Color(0xFF212121) : const Color(0xFF212121),
       ),
     );
   }
@@ -134,26 +134,13 @@ class _NavBarState extends State<NavBar> {
   Widget _buildAddButtonCustom() {
     return GestureDetector(
       onTap: () => _onItemTapped(2),
-      child: Container(
+      child: SizedBox(
         width: 50,
         height: 50,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E88E5),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.blue.withOpacity(0.4),
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Image.asset(
-            'assets/logo/icon.png',
-            fit: BoxFit.contain,
-          ),
+        child: const Icon(
+          Icons.add_box_outlined,
+          size: 30,
+          color: Color(0xFF212121),
         ),
       ),
     );

@@ -6,7 +6,7 @@ class SearchHistoryService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Nombre maximum d'entrées d'historique à conserver
-  static const int _maxHistoryEntries = 10;
+  static const int _maxHistoryEntries = 5;
 
   // Enregistre une recherche dans l'historique
   static Future<void> saveSearch(String query, String type, String itemId, String itemName) async {
