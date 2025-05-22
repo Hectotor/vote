@@ -15,9 +15,28 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   bool _isSearching = false;
+  bool _isFocused = false;
 
   List<Map<String, dynamic>> _combinedResults = [];
+  
+  @override
+  void initState() {
+    super.initState();
+    _searchFocusNode.addListener(() {
+      setState(() {
+        _isFocused = _searchFocusNode.hasFocus;
+      });
+    });
+  }
+  
+  @override
+  void dispose() {
+    _searchFocusNode.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void _performSearch(String rawQuery) async {
     final query = rawQuery.trim().replaceAll(RegExp(r'^[@#]'), ''); // Supprimer # ou @
@@ -100,6 +119,7 @@ class _SearchPageState extends State<SearchPage> {
           ),
           child: TextField(
             controller: _searchController,
+            focusNode: _searchFocusNode,
             onChanged: (value) {
               if (value.isEmpty) {
                 setState(() {
@@ -139,7 +159,7 @@ class _SearchPageState extends State<SearchPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            if (!_isSearching)
+            if (!_isSearching && _isFocused)
               FutureBuilder(
               future: SearchHistoryService.getSearchHistory().first,
               builder: (context, snapshot) {
