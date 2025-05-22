@@ -3,15 +3,18 @@ import '../USERS/user_page.dart';
 import 'filtered_hashtag_page.dart';
 import 'filtered_mentions_page.dart';
 import '../COMPONENTS/avatar.dart';
+import 'search_history_service.dart';
 
 class SearchResultsWidget extends StatelessWidget {
   final List<Map<String, dynamic>> results;
   final bool isSearching;
+  final String searchQuery;
 
   const SearchResultsWidget({
     super.key,
     required this.results,
     required this.isSearching,
+    required this.searchQuery,
   });
 
   @override
@@ -48,6 +51,13 @@ class SearchResultsWidget extends StatelessWidget {
                           style: const TextStyle(color: Color(0xFF212121)),
                         ),
                         onTap: () {
+                          // Sauvegarder dans l'historique avec l'ID de l'utilisateur
+                          SearchHistoryService.saveSearch(
+                            searchQuery,
+                            'profile',
+                            result['docId'] ?? data['userId'], // Utiliser l'ID du document ou userId
+                            data['pseudo'] ?? 'Utilisateur',
+                          );
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -68,6 +78,13 @@ class SearchResultsWidget extends StatelessWidget {
                           style: const TextStyle(color: Color(0xFF212121)),
                         ),
                         onTap: () {
+                          // Sauvegarder dans l'historique avec le nom du hashtag comme ID
+                          SearchHistoryService.saveSearch(
+                            searchQuery,
+                            'hashtag',
+                            data['name'], // Le nom du hashtag sert d'ID
+                            '#${data['name']}',
+                          );
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -90,6 +107,13 @@ class SearchResultsWidget extends StatelessWidget {
                           style: const TextStyle(color: Color(0xFF212121)),
                         ),
                         onTap: () {
+                          // Sauvegarder dans l'historique avec le nom de la mention comme ID
+                          SearchHistoryService.saveSearch(
+                            searchQuery,
+                            'mention',
+                            data['name'], // Le nom de la mention sert d'ID
+                            '@${data['name']}',
+                          );
                           Navigator.push(
                             context,
                             MaterialPageRoute(

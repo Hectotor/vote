@@ -189,11 +189,7 @@ class _SearchPageState extends State<SearchPage> {
               SearchResultsWidget(
                 results: _combinedResults,
                 isSearching: _isSearching,
-              ),
-            if (_isSearching)
-              SearchResultsWidget(
-                results: _combinedResults,
-                isSearching: _isSearching,
+                searchQuery: _searchController.text,
               ),
           ],
         ),
