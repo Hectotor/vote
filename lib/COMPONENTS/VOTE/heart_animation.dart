@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vibration/vibration.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class HeartAnimation extends StatefulWidget {
   final bool showHeart;
@@ -18,9 +19,11 @@ class _HeartAnimationState extends State<HeartAnimation>
     with SingleTickerProviderStateMixin {
   double _scale = 0.0;
   bool _visible = false;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void dispose() {
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -33,6 +36,9 @@ class _HeartAnimationState extends State<HeartAnimation>
   }
 
   void _showHeart() async {
+    // Jouer le son de clic
+    await _audioPlayer.play(AssetSource('sounds/click.mp3'));
+    
     // Effet tactile amélioré
     try {
       // Essayer d'abord la vibration personnalisée

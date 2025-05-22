@@ -29,6 +29,7 @@ dependencies:
   mailer: ^6.4.1
   path_provider: ^2.1.5
   http: ^1.4.0
+  audioplayers: ^6.4.0
 
 dev_dependencies:
   flutter_test:
