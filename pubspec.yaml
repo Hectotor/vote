@@ -30,6 +30,7 @@ dependencies:
   path_provider: ^2.1.5
   http: ^1.4.0
   audioplayers: ^6.4.0
+  timeago: ^3.7.1
 
 dev_dependencies:
   flutter_test:
