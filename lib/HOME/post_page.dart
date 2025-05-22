@@ -96,6 +96,8 @@ class _PostPageState extends State<PostPage> {
   @override
   Widget build(BuildContext context) {
     final _commentScrollController = ScrollController();
+    // Variable pour savoir si le post existe
+    bool postExists = false;
     
     return Scaffold(
       appBar: AppBar(
@@ -125,8 +127,37 @@ class _PostPageState extends State<PostPage> {
                   }
 
                   if (!snapshot.hasData || !snapshot.data!.exists) {
-                    return const Center(child: Text('Post non trouvé'));
+                    // Marquer que le post n'existe pas
+                    postExists = false;
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Post non trouvé',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Ce contenu n\'est plus disponible',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
                   }
+                  
+                  // Marquer que le post existe
+                  postExists = true;
 
                   final doc = snapshot.data!;
                   final data = doc.data() as Map<String, dynamic>;
@@ -287,10 +318,10 @@ class _PostPageState extends State<PostPage> {
           ],
         ),
       ),
-      bottomNavigationBar: CommentInput(
+      bottomNavigationBar: postExists ? CommentInput(
         controller: _commentController,
         onSend: _addComment,
-      ),
+      ) : null,
     );
   }
 }

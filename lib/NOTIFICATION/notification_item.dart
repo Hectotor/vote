@@ -91,6 +91,10 @@ class NotificationItem extends StatelessWidget {
         iconData = Icons.favorite;
         iconColor = Colors.red;
         break;
+      case 'like_milestone':
+        iconData = Icons.emoji_events;
+        iconColor = Colors.amber;
+        break;
       case 'comment':
         iconData = Icons.comment;
         iconColor = Colors.blue;
@@ -116,6 +120,7 @@ class NotificationItem extends StatelessWidget {
     switch (notification.type) {
       case 'like':
       case 'comment':
+      case 'like_milestone':
         if (notification.postId != null) {
           Navigator.push(
             context,
