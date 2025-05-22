@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'totalVotesCount_notif.dart';
+import 'likesCount_notif.dart';
 import 'notification_model.dart';
 
 class NotificationService {
@@ -100,35 +102,20 @@ class NotificationService {
     required String userId,
     required String postId,
   }) async {
-    try {
-      // Récupérer le post pour vérifier le nombre de likes actuel
-      final postDoc = await _firestore.collection('posts').doc(postId).get();
-      if (!postDoc.exists) return;
+    await LikesCountNotification.createLikeMilestoneNotification(
+      userId: userId,
+      postId: postId,
+    );
+  }
 
-      final postData = postDoc.data();
-      if (postData == null) return;
-
-      // Récupérer le nombre de likes
-      final int likesCount = postData['likes'] ?? 0;
-
-      // Vérifier si on a atteint un jalon (100, 200, etc.)
-      if (likesCount == 100 || likesCount == 200 || likesCount == 500 || likesCount == 1000 || likesCount == 5000 || likesCount == 10000) {
-        // Créer une notification de jalon
-        await _firestore.collection('notifications').add({
-          'userId': userId,
-          'type': 'like_milestone',
-          'sourceUserId': 'system', // Notification système
-          'sourceUserName': 'Système',
-          'postId': postId,
-          'commentId': null,
-          'message': 'Ton post vient de franchir les ${likesCount} j\'aime ! ',
-          'isRead': false,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
-      }
-    } catch (e) {
-      print('Erreur lors de la création de la notification de jalon: $e');
-    }
+  static Future<void> createVotesMilestoneNotification({
+    required String userId,
+    required String postId,
+  }) async {
+    await TotalVotesCountNotification.createVotesMilestoneNotification(
+      userId: userId,
+      postId: postId,
+    );
   }
 
   // Créer une notification d'exemple pour visualisation
