@@ -1,10 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../USERS/user_page.dart';
-import 'filtered_hashtag_page.dart';
-import './filtered_mentions_page.dart';
-import 'search_history_service.dart';
-import '../COMPONENTS/avatar.dart';
+
+import 'search_results_widget.dart';
+import 'search_history_widget.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -104,19 +102,31 @@ class _SearchPageState extends State<SearchPage> {
         toolbarHeight: 70,
         backgroundColor: Colors.white,
         automaticallyImplyLeading: true,
-        actions: _isFocused ? [
-          TextButton(
-            onPressed: () {
-              _searchFocusNode.unfocus();
-              setState(() {
-                _searchController.clear();
-                _isSearching = false;
-                _combinedResults = [];
-              });
-            },
-            child: const Text('Annuler', style: TextStyle(color: Color(0xFF212121))),
+        actions: [
+          AnimatedSlide(
+            offset: Offset(_isFocused ? 0.0 : 1.0, 0.0),
+            duration: const Duration(milliseconds: 250),
+            child: AnimatedOpacity(
+              opacity: _isFocused ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: _isFocused ? 80 : 0,
+                child: _isFocused ? TextButton(
+                  onPressed: () {
+                    _searchFocusNode.unfocus();
+                    setState(() {
+                      _searchController.clear();
+                      _isSearching = false;
+                      _combinedResults = [];
+                    });
+                  },
+                  child: const Text('Annuler', style: TextStyle(color: Color(0xFF212121))),
+                ) : null,
+              ),
+            ),
           ),
-        ] : null,
+        ],
         title: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
@@ -174,184 +184,17 @@ class _SearchPageState extends State<SearchPage> {
         child: Column(
           children: [
             if (!_isSearching && _isFocused)
-              FutureBuilder(
-              future: SearchHistoryService.getSearchHistory().first,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SizedBox.shrink();
-                }
-
-                if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: snapshot.data!.docs.length,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final doc = snapshot.data!.docs[index];
-                      final data = doc.data() as Map<String, dynamic>;
-                      final itemName = data['itemName'];
-
-
-                      IconData icon;
-                      Color iconColor;
-                      
-                      if (itemName.startsWith('@')) {
-                        icon = Icons.alternate_email;
-                        iconColor = Colors.green;
-                      } else if (itemName.startsWith('#')) {
-                        icon = Icons.tag;
-                        iconColor = Colors.purple;
-                      } else {
-                        icon = Icons.person;
-                        iconColor = Colors.blue;
-                      }
-
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          leading: !itemName.startsWith('@') && !itemName.startsWith('#') ? Avatar(userId: data['itemId'], radius: 20) : Icon(icon, color: iconColor),
-                          title: Text(itemName.replaceAll(RegExp(r'^[@#]'), ''), style: const TextStyle(color: Color(0xFF212121))),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.close, color: Colors.grey),
-                            onPressed: () {
-                              SearchHistoryService.deleteHistoryEntry(doc.id);
-                              setState(() {});
-                            },
-                          ),
-                          onTap: () {
-                            if (itemName.startsWith('@')) {
-                              // C'est une mention
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => FilteredMentionsPage(
-                                    mention: itemName.substring(1),
-                                  ),
-                                ),
-                              );
-                            } else if (itemName.startsWith('#')) {
-                              // C'est un hashtag
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => FilteredHashtagPage(
-                                    hashtag: itemName.substring(1),
-                                  ),
-                                ),
-                              );
-                            } else {
-                              // C'est un profil
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => UserPage(
-                                    userId: data['itemId'],
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                      );
-                    },
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          if (_isSearching)
-            Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height - 200, // Hauteur ajustable
+              SearchHistoryWidget(),
+            if (_isSearching)
+              SearchResultsWidget(
+                results: _combinedResults,
+                isSearching: _isSearching,
               ),
-              child: _combinedResults.isEmpty
-                  ? const Center(
-                      child: Text('Aucun résultat trouvé'),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _combinedResults.length,
-                      itemBuilder: (context, index) {
-                        final result = _combinedResults[index];
-                        final type = result['type'];
-                        final data = result['data'];
-
-                        String title = '';
-                        IconData icon = Icons.person;
-                        Color iconColor = Colors.grey;
-
-                        if (type == 'profile') {
-                          title = '${data['pseudo']}';
-                          icon = Icons.person;
-                          iconColor = Colors.blue;
-                        } else if (type == 'hashtag') {
-                          title = '${data['name']}';
-                          icon = Icons.tag;
-                          iconColor = Colors.purple;
-                        } else if (type == 'mention') {
-                          title = '${data['name']}';
-                          icon = Icons.alternate_email;
-                          iconColor = Colors.green;
-                        }
-
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Card(
-                            child: ListTile(
-                              leading: type == 'profile' ? Avatar(userId: result['docId'], radius: 20) : Icon(icon, color: iconColor),
-                              title: Text(title, style: const TextStyle(color: Color(0xFF212121))),
-                              onTap: () {
-                                if (type == 'profile') {
-                                  // Sauvegarder dans l'historique avec l'ID de l'utilisateur
-                                  SearchHistoryService.saveSearch(
-                                    _searchController.text,
-                                    'profile',
-                                    result['docId'] ?? data['userId'], // Utiliser l'ID du document ou userId
-                                    data['pseudo'],
-                                  );
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => UserPage(userId: result['docId'] ?? data['userId']),
-                                    ),
-                                  );
-                                } else if (type == 'hashtag') {
-                                  // Sauvegarder dans l'historique avec le nom du hashtag comme ID
-                                  SearchHistoryService.saveSearch(
-                                    _searchController.text,
-                                    'hashtag',
-                                    data['name'], // Le nom du hashtag sert d'ID
-                                    '#${data['name']}',
-                                  );
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => FilteredHashtagPage(hashtag: data['name']),
-                                    ),
-                                  );
-                                } else if (type == 'mention') {
-                                  // Sauvegarder dans l'historique avec le nom de la mention comme ID
-                                  SearchHistoryService.saveSearch(
-                                    _searchController.text,
-                                    'mention',
-                                    data['name'], // Le nom de la mention sert d'ID
-                                    '@${data['name']}',
-                                  );
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => FilteredMentionsPage(mention: data['name']),
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
+            if (_isSearching)
+              SearchResultsWidget(
+                results: _combinedResults,
+                isSearching: _isSearching,
+              ),
           ],
         ),
       ),
