@@ -205,25 +205,23 @@ class _FollowersPageState extends State<FollowersPage> {
 
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 8),
-                                child: Card(
-                                  child: ListTile(
-                                    leading: Avatar(
-                                      userId: userId,
-                                      radius: 20,
-                                    ),
-                                    title: Text(
-                                      userData['pseudo'] ?? 'Utilisateur',
-                                      style: const TextStyle(color: Color(0xFF212121)),
-                                    ),
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => UserPage(userId: userId),
-                                        ),
-                                      );
-                                    },
+                                child: ListTile(
+                                  leading: Avatar(
+                                    userId: userId,
+                                    radius: 20,
                                   ),
+                                  title: Text(
+                                    userData['pseudo'] ?? 'Utilisateur',
+                                    style: const TextStyle(color: Color(0xFF212121)),
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => UserPage(userId: userId),
+                                      ),
+                                    );
+                                  },
                                 ),
                               );
                             },
