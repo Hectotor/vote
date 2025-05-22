@@ -36,20 +36,12 @@ class PollGrid extends StatefulWidget {
 class _PollGridState extends State<PollGrid> {
   List<bool> _isTextVisible = [];
 
-  final List<Color> vibrantGradients = [
-    Color(0xF5F5F5F5),   // Deep Navy
-    Color(0xF5F5F5F5),   // Dark Midnight Blue
-    Color(0xF5F5F5F5),   // Rich Indigo
-    Color(0xF5F5F5F5)    // Bright Indigo
-  ];
+  // Couleur de fond sombre pour les blocs
+  final Color backgroundColor = Color(0xFF1B202A);  // Couleur sombre
 
-  List<Color> _getColors() {
-    return [
-      Colors.blue,
-      Colors.purple,
-      Colors.orange,
-      Colors.green,
-    ];
+  // Couleur pour les icônes et textes
+  Color _getIconColor() {
+    return Colors.white;  // Blanc pour contraster avec le fond sombre
   }
 
   @override
@@ -165,35 +157,20 @@ class _PollGridState extends State<PollGrid> {
 
   Widget _buildBloc(int index) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final blockWidth = (screenWidth - 24.0 - 8.0) / 2;
-    final gradient = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [
-        vibrantGradients[index % vibrantGradients.length],
-        vibrantGradients[index % vibrantGradients.length].withOpacity(0.7),
-      ],
-    );
-
-    final colors = _getColors();
-    final color = colors[index % colors.length];
+    // Calculer la largeur du bloc en fonction du nombre de colonnes (comme dans poll_grid_display.dart)
+    final blockWidth = (screenWidth - 20.0 - 8.0) / 2; // 10px de marge de chaque côté + 8px d'espacement
+    final blockHeight = blockWidth; // Aspect ratio 1:1 pour des blocs carrés
+    
+    // Nous utilisons maintenant un contour au lieu d'une couleur de fond
 
     return GestureDetector(
       onTap: () => _showAddOptionDialog(index),
       child: Container(
         width: blockWidth,
-        height: 200.0, 
+        height: blockHeight, 
         decoration: BoxDecoration(
-          gradient: gradient,
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(15.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              spreadRadius: 1,
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-            ),
-          ],
         ),
         child: Stack(
           fit: StackFit.expand,
@@ -225,7 +202,7 @@ class _PollGridState extends State<PollGrid> {
                     icon: Icon(
                       Icons.add_photo_alternate_outlined, 
                       size: 40, 
-                      color: color.withOpacity(0.7),
+                      color: _getIconColor().withOpacity(0.7),
                     ),
                     onPressed: () => _showAddOptionDialog(index),
                   ),
@@ -252,7 +229,7 @@ class _PollGridState extends State<PollGrid> {
                 right: 0,
                 top: 0,
                 child: IconButton(
-                  icon: Icon(Icons.close_sharp, color: color),
+                  icon: Icon(Icons.close_sharp, color: _getIconColor()),
                   onPressed: () {
                     // Vérifier que l'index est valide avant la suppression
                      if (index >= 2 && index < widget.textControllers.length) {
@@ -271,62 +248,72 @@ class _PollGridState extends State<PollGrid> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        final blockWidth = (screenWidth - 20.0 - 8.0) / 2; // 10px de marge de chaque côté + 8px d'espacement
+        
         if (widget.textControllers.length <= 2) {
           // Pour les 2 premiers blocs, utiliser GridView normal
           return SizedBox(
-            height: 200.0,
+            height: blockWidth, // Hauteur égale à la largeur pour un ratio 1:1
             child: GridView.builder(
               physics: NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: (constraints.maxWidth - 8.0) / (2 * 200.0),
+                childAspectRatio: 1.0, // Ratio 1:1 pour des blocs carrés
                 crossAxisSpacing: 8.0,
                 mainAxisSpacing: 8.0,
               ),
+              padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 10), // Mêmes marges que dans poll_grid_display.dart
               itemCount: widget.textControllers.length,
               itemBuilder: (context, index) => _buildBloc(index),
             ),
           );
-        } else {
-          // Pour 3 ou 4 blocs, utiliser une disposition uniforme
-          return SizedBox(
-            height: widget.textControllers.length == 3 ? 416.0 : 416.0, // 200 * 2 + 8 (spacing) + 8 (padding)
+        } else if (widget.textControllers.length == 3) {
+          // Pour 3 blocs, utiliser la disposition 'triple' comme dans poll_grid_display.dart
+          return Padding(
+            padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 10),
             child: Column(
               children: [
-                // Première rangée (blocs 1 et 2)
+                // Ligne du haut avec 2 blocs
                 Row(
                   children: [
                     Expanded(child: _buildBloc(0)),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Expanded(child: _buildBloc(1)),
                   ],
                 ),
-                SizedBox(height: 10),
-                // Deuxième rangée (blocs 3 et 4)
-                if (widget.textControllers.length == 3)
-                  Row(
+                // Bloc du bas centré
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(
-                        child: Center(
-                          child: SizedBox(
-                            width: (constraints.maxWidth - 8.0) / 2, // Largeur identique aux autres blocs
-                            height: 200.0, // Hauteur identique aux autres blocs
-                            child: _buildBloc(2),
-                          ),
-                        ),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width / 2.2, // Même taille que dans poll_grid_display.dart
+                        child: _buildBloc(2),
                       ),
                     ],
-                  )
-                else if (widget.textControllers.length == 4)
-                  Row(
-                    children: [
-                      Expanded(child: _buildBloc(2)),
-                      SizedBox(width: 10),
-                      Expanded(child: _buildBloc(3)),
-                    ],
-                  )
+                  ),
+                ),
               ],
+            ),
+          );
+        } else {
+          // Pour 4 blocs ou plus, utiliser un GridView standard avec 2 colonnes
+          return Container(
+            margin: const EdgeInsets.only(bottom: 0),
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 1.0,
+              ),
+              padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 10),
+              itemCount: widget.textControllers.length,
+              itemBuilder: (context, index) => _buildBloc(index),
             ),
           );
         }
