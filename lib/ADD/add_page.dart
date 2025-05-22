@@ -151,7 +151,7 @@ class _AddPageState extends State<AddPage> {
           elevation: 0,
           scrolledUnderElevation: 0,
           centerTitle: true,
-          title: const Text('Crée ton vote', style: TextStyle(fontSize: 18)),
+          title: const Text('Lance ton sondage 🔥', style: TextStyle(fontSize: 18)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: _isLoading.value ? null : _cancel,

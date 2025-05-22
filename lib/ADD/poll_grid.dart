@@ -263,16 +263,14 @@ class _PollGridState extends State<PollGrid> {
                 crossAxisSpacing: 8.0,
                 mainAxisSpacing: 8.0,
               ),
-              padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 10), // Mêmes marges que dans poll_grid_display.dart
+ // Mêmes marges que dans poll_grid_display.dart
               itemCount: widget.textControllers.length,
               itemBuilder: (context, index) => _buildBloc(index),
             ),
           );
         } else if (widget.textControllers.length == 3) {
           // Pour 3 blocs, utiliser la disposition 'triple' comme dans poll_grid_display.dart
-          return Padding(
-            padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 10),
-            child: Column(
+          return Column(
               children: [
                 // Ligne du haut avec 2 blocs
                 Row(
@@ -296,8 +294,7 @@ class _PollGridState extends State<PollGrid> {
                   ),
                 ),
               ],
-            ),
-          );
+            );
         } else {
           // Pour 4 blocs ou plus, utiliser un GridView standard avec 2 colonnes
           return Container(
@@ -311,7 +308,7 @@ class _PollGridState extends State<PollGrid> {
                 mainAxisSpacing: 8,
                 childAspectRatio: 1.0,
               ),
-              padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 10),
+
               itemCount: widget.textControllers.length,
               itemBuilder: (context, index) => _buildBloc(index),
             ),
