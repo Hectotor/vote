@@ -72,7 +72,7 @@ class _PostActionsState extends State<PostActions> {
                     size: 26,
                     onTap: null,
                   ),
-                  const SizedBox(width: 6),
+                  //const SizedBox(width: 2),
                   Text(
                     '$likeCount',
                     style: const TextStyle(
