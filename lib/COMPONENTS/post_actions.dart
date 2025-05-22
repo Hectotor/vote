@@ -125,7 +125,7 @@ class _PostActionsState extends State<PostActions> {
             children: [
               const Icon(
                 Icons.mode_comment_outlined,
-                color: Colors.blueAccent,
+                //color: Colors.blueAccent,
                 size: 24,
               ),
               const SizedBox(width: 6),
@@ -162,7 +162,7 @@ class _PostActionsState extends State<PostActions> {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: const Icon(
           Icons.send_rounded,
-          color: Colors.deepPurple,
+          //color: Colors.black,
           size: 24,
         ),
       ),
