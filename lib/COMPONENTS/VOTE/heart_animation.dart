@@ -37,7 +37,7 @@ class _HeartAnimationState extends State<HeartAnimation>
 
   void _showHeart() async {
     // Jouer le son de clic
-    await _audioPlayer.play(AssetSource('sounds/click.mp3'));
+    await _audioPlayer.play(AssetSource('sounds/click2.mp3'));
     
     // Effet tactile amélioré
     try {

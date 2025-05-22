@@ -30,6 +30,7 @@ class _UserPageState extends State<UserPage> {
   Map<String, dynamic>? _userData;
   bool _showPosts = true; // true pour Posts, false pour Sauvegardés
   bool _isFollowing = false;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -79,6 +80,22 @@ class _UserPageState extends State<UserPage> {
     setState(() {
       _isFollowing = !_isFollowing;
     });
+  }
+
+  Future<void> _refreshUserData() async {
+    if (_isRefreshing) return;
+    
+    setState(() {
+      _isRefreshing = true;
+    });
+    
+    try {
+      await _loadUserData();
+    } finally {
+      setState(() {
+        _isRefreshing = false;
+      });
+    }
   }
   
   Widget _buildTabButton({required String label, required bool isSelected, required VoidCallback onTap}) {
@@ -133,55 +150,57 @@ class _UserPageState extends State<UserPage> {
     }
     
     return Scaffold(
-        appBar: AppBar(
-          title: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              _pseudo ?? 'Utilisateur',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+      appBar: AppBar(
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            _pseudo ?? 'Utilisateur',
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          centerTitle: false,
-          actions: [
-            if (_userId != _auth.currentUser?.uid) ...[
-              IconButton(
-                icon: Icon(
-                  _isFollowing ? Icons.person_remove : Icons.person_add,
-                  color: _isFollowing ? Colors.grey : Colors.blue,
+        ),
+        centerTitle: false,
+        actions: [
+          if (_userId != _auth.currentUser?.uid) ...[
+            IconButton(
+              icon: Icon(
+                _isFollowing ? Icons.person_remove : Icons.person_add,
+                color: _isFollowing ? Colors.grey : Colors.blue,
+              ),
+              onPressed: _toggleFollow,
+            ),
+          ],
+          if (_userId == _auth.currentUser?.uid) ...[
+            IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                // Action du menu
+              },
+            ),
+          ],
+          const SizedBox(width: 16),
+        ],
+      ),
+      body: IndexedStack(
+        index: _showPosts ? 0 : 1,
+        children: [
+          // Page des posts de l'utilisateur (index 0)
+          RefreshIndicator(
+            onRefresh: _refreshUserData,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: ProfileHeader(
+                    userId: _userId ?? '',
+                    userData: _userData ?? {},
+                    isOwner: _userId == FirebaseAuth.instance.currentUser?.uid,
+                  ),
                 ),
-                onPressed: _toggleFollow,
-              ),
-            ],
-            if (_userId == _auth.currentUser?.uid) ...[
-              IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  // Action du menu
-                },
-              ),
-            ],
-            const SizedBox(width: 16),
-          ],
-        ),
-        body: IndexedStack(
-          index: _showPosts ? 0 : 1,
-          children: [
-            // Page des posts de l'utilisateur (index 0)
-            SingleChildScrollView(
-              child: Column(
-                children: [
-                  // En-tête du profil avec les données utilisateur déjà chargées
-                  ProfileHeader(
-                    userId: _userId ?? '',
-                    userData: _userData ?? {},
-                    isOwner: _userId == FirebaseAuth.instance.currentUser?.uid,
-                  ),
-                  
-                  // Boutons de navigation entre Posts et Sauvegardés
-                  Padding(
+                SliverToBoxAdapter(
+                  child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -229,34 +248,31 @@ class _UserPageState extends State<UserPage> {
                       ],
                     ),
                   ),
-                  
-                  // Contenu des posts
-                  Container(
-                    constraints: BoxConstraints(
-                      // Définir une hauteur minimale pour permettre le défilement même avec peu de contenu
-                      minHeight: MediaQuery.of(context).size.height - 200,
-                    ),
-                    child: UserContentView(
-                      userId: _userId!,
-                      showPosts: true,
-                    ),
+                ),
+                SliverFillRemaining(
+                  child: UserContentView(
+                    userId: _userId!,
+                    showPosts: true,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            // Page des posts sauvegardés (index 1)
-            SingleChildScrollView(
-              child: Column(
-                children: [
-                  // En-tête du profil avec les données utilisateur déjà chargées
-                  ProfileHeader(
+          ),
+          // Page des posts sauvegardés (index 1)
+          RefreshIndicator(
+            onRefresh: _refreshUserData,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: ProfileHeader(
                     userId: _userId ?? '',
                     userData: _userData ?? {},
                     isOwner: _userId == FirebaseAuth.instance.currentUser?.uid,
                   ),
-                  
-                  // Boutons de navigation entre Posts et Sauvegardés
-                  Padding(
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -304,23 +320,18 @@ class _UserPageState extends State<UserPage> {
                       ],
                     ),
                   ),
-                  
-                  // Contenu des posts sauvegardés
-                  Container(
-                    constraints: BoxConstraints(
-                      // Définir une hauteur minimale pour permettre le défilement même avec peu de contenu
-                      minHeight: MediaQuery.of(context).size.height - 200,
-                    ),
-                    child: UserContentView(
-                      userId: _userId!,
-                      showPosts: false,
-                    ),
+                ),
+                SliverFillRemaining(
+                  child: UserContentView(
+                    userId: _userId!,
+                    showPosts: false,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
     );
   }
 }

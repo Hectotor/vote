@@ -183,19 +183,16 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                         _buildStatColumn(
                           count: widget.userData['publishpostscount'] ?? 0,
                           label: 'Posts',
-                          color: Colors.blue,
                           onTap: null,
                         ),
                         _buildStatColumn(
                           count: widget.userData['votesCountUser'] ?? 0,
                           label: 'Votes',
-                          color: Colors.pink,
                           onTap: null,
                         ),
                         _buildStatColumn(
                           count: _followersCount,
                           label: 'Followers',
-                          color: Colors.purple,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -212,7 +209,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                         _buildStatColumn(
                           count: _followingCount,
                           label: 'Following',
-                          color: Colors.orange,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -243,7 +239,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
   Widget _buildStatColumn({
     required int count,
     required String label,
-    required Color color,
     required VoidCallback? onTap,
   }) {
     return GestureDetector(
@@ -253,18 +248,18 @@ class _ProfileHeaderState extends State<ProfileHeader> {
         children: [
           Text(
             count.toString(),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: color,
+              color: Color(0xFF212121),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12,
-              color: color.withOpacity(0.7),
+              color: Color(0xFF757575),
             ),
           ),
         ],
