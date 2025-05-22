@@ -89,6 +89,24 @@ class NotificationService {
     });
   }
 
+  // Créer une notification d'exemple pour visualisation
+  static Future<void> createExampleNotification() async {
+    final User? currentUser = _auth.currentUser;
+    if (currentUser == null) return;
+    
+    await _firestore.collection('notifications').add({
+      'userId': currentUser.uid,
+      'type': 'like',
+      'sourceUserId': 'exampleUserId',
+      'sourceUserName': 'John Doe',
+      'postId': 'examplePostId',
+      'commentId': null,
+      'message': 'John Doe a aimé votre publication',
+      'isRead': false,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  }
+
   // Obtenir le nombre de notifications non lues
   static Stream<int> getUnreadCount() {
     final User? currentUser = _auth.currentUser;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../COMPONENTS/avatar.dart';
 import '../USERS/user_page.dart';
-import '../POSTS/post_detail_page.dart';
+import '../HOME/post_page.dart';
 import 'notification_model.dart';
 import 'notification_service.dart';
 
@@ -120,7 +120,7 @@ class NotificationItem extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PostDetailPage(postId: notification.postId!),
+              builder: (context) => PostPage(postId: notification.postId!),
             ),
           );
         }
@@ -138,7 +138,7 @@ class NotificationItem extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PostDetailPage(postId: notification.postId!),
+              builder: (context) => PostPage(postId: notification.postId!),
             ),
           );
         }

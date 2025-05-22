@@ -23,30 +23,36 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return Scaffold(
       body: Column(
         children: [
-          StreamBuilder<int>(
-            stream: NotificationService.getUnreadCount(),
-            builder: (context, snapshot) {
-              final hasUnread = snapshot.hasData && snapshot.data! > 0;
-              return hasUnread
-                  ? Padding(
-                      padding: const EdgeInsets.only(top: 20),
-                      child: IconButton(
-                        icon: const Icon(Icons.done_all),
-                        onPressed: () async {
-                          await NotificationService.markAllAsRead();
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Toutes les notifications ont été marquées comme lues'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    )
-                  : const SizedBox.shrink();
-            },
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Bouton pour créer une notification d'exemple
+                TextButton.icon(
+                  icon: const Icon(Icons.add_alert),
+                  label: const Text('Exemple'),
+                  onPressed: () async {
+                    await NotificationService.createExampleNotification();
+                  },
+                ),
+                // Bouton pour marquer toutes les notifications comme lues
+                StreamBuilder<int>(
+                  stream: NotificationService.getUnreadCount(),
+                  builder: (context, snapshot) {
+                    final hasUnread = snapshot.hasData && snapshot.data! > 0;
+                    return hasUnread
+                        ? IconButton(
+                            icon: const Icon(Icons.done_all),
+                            onPressed: () async {
+                              await NotificationService.markAllAsRead();
+                            },
+                          )
+                        : const SizedBox.shrink();
+                  },
+                ),
+              ],
+            ),
           ),
           Expanded(
             child: StreamBuilder<User?>(
@@ -105,12 +111,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             direction: DismissDirection.endToStart,
                             onDismissed: (direction) {
                               NotificationService.deleteNotification(notification.id);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Notification supprimée'),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
                             },
                             child: NotificationItem(
                               notification: notification,
