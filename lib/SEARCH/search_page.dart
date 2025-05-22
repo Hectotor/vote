@@ -103,6 +103,20 @@ class _SearchPageState extends State<SearchPage> {
         elevation: 0,
         toolbarHeight: 70,
         backgroundColor: Colors.white,
+        automaticallyImplyLeading: true,
+        actions: _isFocused ? [
+          TextButton(
+            onPressed: () {
+              _searchFocusNode.unfocus();
+              setState(() {
+                _searchController.clear();
+                _isSearching = false;
+                _combinedResults = [];
+              });
+            },
+            child: const Text('Annuler', style: TextStyle(color: Color(0xFF212121))),
+          ),
+        ] : null,
         title: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
