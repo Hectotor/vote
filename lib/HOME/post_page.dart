@@ -96,8 +96,6 @@ class _PostPageState extends State<PostPage> {
   @override
   Widget build(BuildContext context) {
     final _commentScrollController = ScrollController();
-    // Variable pour savoir si le post existe
-    bool postExists = false;
     
     return Scaffold(
       appBar: AppBar(
@@ -127,8 +125,6 @@ class _PostPageState extends State<PostPage> {
                   }
 
                   if (!snapshot.hasData || !snapshot.data!.exists) {
-                    // Marquer que le post n'existe pas
-                    postExists = false;
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -156,9 +152,6 @@ class _PostPageState extends State<PostPage> {
                     );
                   }
                   
-                  // Marquer que le post existe
-                  postExists = true;
-
                   final doc = snapshot.data!;
                   final data = doc.data() as Map<String, dynamic>;
                   
@@ -318,10 +311,17 @@ class _PostPageState extends State<PostPage> {
           ],
         ),
       ),
-      bottomNavigationBar: postExists ? CommentInput(
-        controller: _commentController,
-        onSend: _addComment,
-      ) : null,
+      bottomNavigationBar: StreamBuilder<DocumentSnapshot>(
+        stream: _firestore.collection('posts').doc(widget.postId).snapshots(),
+        builder: (context, snapshot) {
+          // Afficher le CommentInput uniquement si le post existe
+          final postExists = snapshot.hasData && snapshot.data!.exists;
+          return postExists ? CommentInput(
+            controller: _commentController,
+            onSend: _addComment,
+          ) : const SizedBox.shrink();
+        },
+      ),
     );
   }
 }
