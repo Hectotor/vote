@@ -103,7 +103,7 @@ class _TrendingPostsWidgetState extends State<TrendingPostsWidget> {
           const Padding(
             padding: EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
             child: Text(
-              'En top tendance',
+              'En top tendance 🔥',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
