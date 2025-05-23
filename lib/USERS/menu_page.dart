@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'help_support_page.dart';
+import 'delete_account_dialog.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({Key? key}) : super(key: key);
@@ -58,52 +59,7 @@ class _MenuPageState extends State<MenuPage> {
 
   Future<void> _deleteAccount() async {
     // Afficher une boîte de dialogue de confirmation
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Supprimer le compte'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Êtes-vous sûr de vouloir supprimer votre compte ?',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 12),
-            Text('Toutes les données associées à votre compte seront supprimées définitivement :'),
-            SizedBox(height: 8),
-            Padding(
-              padding: EdgeInsets.only(left: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('• Vos publications et sondages'),
-                  Text('• Vos votes et commentaires'),
-                  Text('• Votre profil et vos abonnements'),
-                  Text('• Vos paramètres personnalisés'),
-                ],
-              ),
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Cette action est irréversible et ne peut pas être annulée.',
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    ) ?? false;
+    final confirmed = await DeleteAccountDialog.show(context);
 
     if (!confirmed) return;
 
@@ -210,8 +166,8 @@ class _MenuPageState extends State<MenuPage> {
             onTap: _signOut,
           ),
           ListTile(
-            leading: const Icon(Icons.delete_forever,),
-            title: const Text('Supprimer le compte'),
+            leading: const Icon(Icons.delete_forever, color: Colors.black),
+            title: const Text('Supprimer le compte', style: TextStyle(color: Colors.black)),
             onTap: _deleteAccount,
           ),
         ],
