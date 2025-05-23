@@ -159,30 +159,31 @@ class _DescriptionFieldState extends State<DescriptionField> {
   Widget build(BuildContext context) {
     return CompositedTransformTarget(
       link: _layerLink,
-      child: TextField(
-        controller: widget.controller,
-        autofocus: true,
-        textCapitalization: TextCapitalization.sentences,
-        decoration: InputDecoration(
-          hintText: 'Ajoute une description...',
-          hintStyle: TextStyle(
-            fontSize: 18,
-            color: Colors.grey,
-            fontStyle: FontStyle.italic,
-            fontWeight: FontWeight.w500,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 15,),
+        child: TextField(
+          controller: widget.controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            hintText: 'Ajoute une description...',
+            hintStyle: TextStyle(
+              fontSize: 18,
+              color: Colors.grey,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w500,
+            ),
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.zero,
           ),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
+          style: const TextStyle(
+            fontSize: 18,
+          ),
+          maxLines: null,
+          maxLength: 350,
+          keyboardType: TextInputType.multiline,
+          buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
         ),
-        style: const TextStyle(
-
-          fontSize: 18,
-        ),
-
-        maxLines: null,
-        maxLength: 350,
-        keyboardType: TextInputType.multiline,
-        buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
       ),
     );
   }
