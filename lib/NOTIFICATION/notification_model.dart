@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class NotificationModel {
   final String id;
   final String userId; // ID de l'utilisateur qui reçoit la notification
-  final String type; // like, comment, follow, etc.
+  final String type; // like, comment, follow, mention, etc.
   final String sourceUserId; // ID de l'utilisateur qui a déclenché la notification
   final String? sourceUserName; // Nom de l'utilisateur qui a déclenché la notification
   final String? postId; // ID du post concerné (si applicable)

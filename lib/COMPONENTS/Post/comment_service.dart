@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../NOTIFICATION/mention_service.dart';
 
 class CommentService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -31,6 +32,15 @@ class CommentService {
           .add(commentData);
 
       print('Commentaire ajouté avec l\'ID: ${commentRef.id} dans la collection globale');
+      
+      // Créer les notifications pour les mentions
+      await MentionService.processMentions(
+        text: text,
+        sourceUserId: user.uid,
+        sourceUserName: user.displayName ?? 'Utilisateur',
+        postId: postId,
+        commentId: commentRef.id,
+      );
       
       // Mettre à jour le compteur de commentaires du post
       print('Mise à jour du compteur de commentaires pour le post: $postId');

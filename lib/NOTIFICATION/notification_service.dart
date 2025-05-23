@@ -118,6 +118,35 @@ class NotificationService {
     );
   }
 
+  // Créer une notification de mention
+  static Future<void> createMentionNotification({
+    required String mentionedUserId,
+    required String sourceUserId,
+    required String sourceUserName,
+    required String postId,
+    String? commentId,
+  }) async {
+    // Ne pas créer de notification si l'utilisateur s'auto-notifie
+    if (mentionedUserId == sourceUserId) return;
+
+    final String type = commentId != null ? 'mention_comment' : 'mention_post';
+    final String message = commentId != null
+        ? '$sourceUserName vous a mentionné dans un commentaire'
+        : '$sourceUserName vous a mentionné dans un post';
+
+    await _firestore.collection('notifications').add({
+      'userId': mentionedUserId,
+      'type': type,
+      'sourceUserId': sourceUserId,
+      'sourceUserName': sourceUserName,
+      'postId': postId,
+      'commentId': commentId,
+      'message': message,
+      'isRead': false,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  }
+
   // Créer une notification d'exemple pour visualisation
   static Future<void> createExampleNotification() async {
     final User? currentUser = _auth.currentUser;

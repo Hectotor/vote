@@ -8,6 +8,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'dart:io';
+import '../NOTIFICATION/mention_service.dart';
 
 class PublishService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -72,6 +73,14 @@ class PublishService {
         'blocs': [],
         'createdAt': FieldValue.serverTimestamp(),
       });
+
+      // Créer les notifications pour les mentions
+      await MentionService.processMentions(
+        text: description,
+        sourceUserId: user.uid,
+        sourceUserName: user.displayName ?? 'Utilisateur',
+        postId: postRef.id,
+      );
 
       // Mettre à jour le document avec son propre ID (pour faciliter les références)
       await postRef.update({'postId': postRef.id});
