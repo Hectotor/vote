@@ -6,132 +6,144 @@ class HelpSupportPage extends StatelessWidget {
   void _showContactInfo(BuildContext context, String title, String info) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$title: $info'),
+        content: Text('$title : $info'),
         duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Aide et support'),
+        centerTitle: true,
         elevation: 0,
       ),
       body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
-          // Section FAQ
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Foire aux questions',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ),
+          const SizedBox(height: 16),
+          _sectionTitle('Foire aux questions'),
           _buildFaqItem(
             context,
             'Comment créer un sondage ?',
-            'Pour créer un sondage, appuyez sur le bouton + en bas de l\'écran. '
-            'Ajoutez ensuite au moins 2 images et du texte pour chaque option. '
-            'Vous pouvez ajouter jusqu\'à 4 options au total.',
+            'Appuie sur le bouton + en bas de l\'écran. Ajoute ensuite 2 à 4 images avec du texte pour chaque option.',
           ),
           _buildFaqItem(
             context,
             'Comment modifier mon profil ?',
-            'Accédez à votre profil en appuyant sur l\'icône de profil dans la barre de navigation. '
-            'Appuyez ensuite sur le bouton de menu (trois points) et sélectionnez "Modifier le profil".',
+            'Va sur ton profil, appuie sur les trois points en haut à droite puis sélectionne "Modifier le profil".',
           ),
           _buildFaqItem(
             context,
             'Comment supprimer un sondage ?',
-            'Accédez au sondage que vous souhaitez supprimer, appuyez sur les trois points '
-            'en haut à droite du sondage et sélectionnez "Supprimer".',
+            'Ouvre ton sondage, appuie sur les trois points en haut, puis sélectionne "Supprimer".',
           ),
           _buildFaqItem(
             context,
-            'Puis-je modifier un sondage après l\'avoir publié ?',
-            'Non, une fois qu\'un sondage est publié, il ne peut plus être modifié pour '
-            'garantir l\'intégrité des votes.',
+            'Puis-je modifier un sondage après publication ?',
+            'Non, cela permet de garantir l\'intégrité des votes.',
           ),
 
-          const Divider(height: 32),
-
-          // Section Contact
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Nous contacter',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+          const SizedBox(height: 24),
+          _sectionTitle('Nous contacter'),
+          _buildContactTile(
+            icon: Icons.email_outlined,
+            title: 'Email',
+            subtitle: 'support@votelyapp.com',
+            onTap: () => _showContactInfo(context, 'Email', 'support@votelyapp.com'),
           ),
-          ListTile(
-            leading: const Icon(Icons.email),
-            title: const Text('Email'),
-            subtitle: const Text('support@toplyke.com'),
-            onTap: () => _showContactInfo(context, 'Email', 'support@toplyke.com'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.language),
-            title: const Text('Site web'),
-            subtitle: const Text('www.toplyke.com/support'),
-            onTap: () => _showContactInfo(context, 'Site web', 'www.toplyke.com/support'),
+          _buildContactTile(
+            icon: Icons.language_outlined,
+            title: 'Site web',
+            subtitle: 'www.votelyapp.com/support',
+            onTap: () => _showContactInfo(context, 'Site web', 'www.votelyapp.com/support'),
           ),
 
-          const Divider(height: 32),
-
-          // Section Conditions d'utilisation et Politique de confidentialité
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Informations légales',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+          const SizedBox(height: 24),
+          _sectionTitle('Informations légales'),
+          _buildContactTile(
+            icon: Icons.description_outlined,
+            title: 'Conditions d\'utilisation',
+            onTap: () => _showContactInfo(context, 'Conditions', 'www.votelyapp.com/terms'),
           ),
-          ListTile(
-            leading: const Icon(Icons.description),
-            title: const Text('Conditions d\'utilisation'),
-            onTap: () => _showContactInfo(context, 'Conditions', 'www.toplyke.com/terms'),
+          _buildContactTile(
+            icon: Icons.privacy_tip_outlined,
+            title: 'Politique de confidentialité',
+            onTap: () => _showContactInfo(context, 'Confidentialité', 'www.votelyapp.com/privacy'),
           ),
-          ListTile(
-            leading: const Icon(Icons.privacy_tip),
-            title: const Text('Politique de confidentialité'),
-            onTap: () => _showContactInfo(context, 'Confidentialité', 'www.toplyke.com/privacy'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.gavel),
-            title: const Text('Règles de la communauté'),
-            onTap: () => _showContactInfo(context, 'Règles', 'www.toplyke.com/community-guidelines'),
+          _buildContactTile(
+            icon: Icons.gavel_outlined,
+            title: 'Règles de la communauté',
+            onTap: () => _showContactInfo(context, 'Règles', 'www.votelyapp.com/community-guidelines'),
           ),
 
           const SizedBox(height: 32),
           Center(
             child: Text(
-              'Version de l\'application: 1.0.0',
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              'Version de l\'application : 1.0.0',
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  Widget _buildFaqItem(BuildContext context, String question, String answer) {
-    return ExpansionTile(
-      title: Text(
-        question,
-        style: const TextStyle(fontWeight: FontWeight.w500),
-      ),
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Text(
-            answer,
-            style: TextStyle(color: Colors.grey[800]),
-          ),
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          color: Colors.black87,
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildFaqItem(BuildContext context, String question, String answer) {
+    return Card(
+      elevation: 1,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ExpansionTile(
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        title: Text(
+          question,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        children: [
+          Text(answer, style: TextStyle(color: Colors.grey[700])),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    VoidCallback? onTap,
+  }) {
+    return Card(
+      elevation: 1,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+        subtitle: subtitle != null ? Text(subtitle) : null,
+        onTap: onTap,
+        trailing: const Icon(Icons.chevron_right),
+      ),
     );
   }
 }

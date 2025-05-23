@@ -49,7 +49,10 @@ class _MenuPageState extends State<MenuPage> {
   Future<void> _signOut() async {
     try {
       await _auth.signOut();
-      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const ConnexionPage()),
+        (route) => false
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur lors de la déconnexion: $e')),
