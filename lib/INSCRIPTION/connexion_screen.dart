@@ -29,9 +29,6 @@ class _ConnexionPageState extends State<ConnexionPage> {
     _emailController.addListener(_updateButtonState);
     _passwordController.addListener(_updateButtonState);
     _emailFocusNode = FocusNode();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      FocusScope.of(context).requestFocus(_emailFocusNode);
-    });
   }
 
   @override
@@ -49,8 +46,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
   }
 
   bool _isFormValid() {
-    return _emailController.text.isNotEmpty &&
-        _passwordController.text.isNotEmpty;
+    return _emailController.text.isNotEmpty && _passwordController.text.isNotEmpty;
   }
 
   String? _validateEmail(String? value) {
@@ -61,9 +57,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
   }
 
   Future<void> _login() async {
-    if (!_isFormValid()) {
-      return;
-    }
+    if (!_isFormValid()) return;
 
     setState(() {
       _isLoading = true;
@@ -71,15 +65,12 @@ class _ConnexionPageState extends State<ConnexionPage> {
     });
 
     try {
-      // Se connecter avec Firebase Auth
       UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // Vérifier si l'email est vérifié
       if (!userCredential.user!.emailVerified) {
-        // Afficher le popup pour l'email non vérifié
         await showDialog(
           context: context,
           builder: (context) => EmailVerificationPopup(
@@ -87,30 +78,19 @@ class _ConnexionPageState extends State<ConnexionPage> {
             isUnverified: true,
           ),
         );
-        
-        // Déconnecter l'utilisateur
         await FirebaseAuth.instance.signOut();
-        
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
         return;
       }
 
-      // Mettre à jour le statut emailVerified dans Firestore
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .update({
-            'emailVerified': true,
-            'lastSeen': FieldValue.serverTimestamp(),
-          });
+      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).update({
+        'emailVerified': true,
+        'lastSeen': FieldValue.serverTimestamp(),
+      });
 
-      // Redirection vers la page principale
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const NavBar()),
       );
-
     } on FirebaseAuthException catch (e) {
       setState(() {
         switch (e.code) {
@@ -124,14 +104,10 @@ class _ConnexionPageState extends State<ConnexionPage> {
             _errorMessage = 'Erreur de connexion. Réessayez.';
         }
       });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Une erreur est survenue. Réessayez.';
-      });
+    } catch (_) {
+      setState(() => _errorMessage = 'Une erreur est survenue. Réessayez.');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -146,10 +122,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Color(0xFF212121)),
             onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const NavBar()),
-              );
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const NavBar()));
             },
           ),
         ),
@@ -162,13 +135,9 @@ class _ConnexionPageState extends State<ConnexionPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-                  Text(
+                  const Text(
                     'Se connecter',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w600,
-
-                    ),
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 40),
                   _buildTextField(
@@ -185,46 +154,26 @@ class _ConnexionPageState extends State<ConnexionPage> {
                     icon: Icons.lock_outline,
                     obscureText: !_isPasswordVisible,
                     suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
+                      icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
                     ),
                   ),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => PasswordResetPage()),
-                        );
-                      },
-                      child: Text(
-                        'Mot de passe oublié ?',
-                        style: TextStyle(
-
-                          fontSize: 14,
-                        ),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => PasswordResetPage()),
                       ),
+                      child: const Text('Mot de passe oublié ?', style: TextStyle(fontSize: 14)),
                     ),
                   ),
                   if (_errorMessage != null)
                     Padding(
-                      padding: const EdgeInsets.only(top: 16, left: 16),
+                      padding: const EdgeInsets.only(top: 16),
                       child: Text(
                         _errorMessage!,
-                        style: TextStyle(
-                          color: Colors.red[400],
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.red[400], fontSize: 14),
                       ),
                     ),
                   const SizedBox(height: 32),
@@ -234,55 +183,38 @@ class _ConnexionPageState extends State<ConnexionPage> {
                     child: ElevatedButton(
                       onPressed: _isLoading || !_isFormValid() ? null : _login,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
                       ),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
+                      child: Ink(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
                           gradient: LinearGradient(
-                            colors: [
-                              Colors.blue[600]!, 
-                              Colors.blue[900]!
-                            ],
+                            colors: [Colors.blue.shade600, Colors.blue.shade900],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        curve: Curves.easeInOut,
                         child: Container(
-                          width: double.infinity,
-                          height: 56,
                           alignment: Alignment.center,
+                          height: 56,
                           child: _isLoading
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 3,
-                                )
+                              ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 3)
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
+                                  children: const [
                                     Text(
                                       'Se connecter',
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.white,
-                                        letterSpacing: 1.2,
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
-                                    const Icon(
-                                      Icons.login,
-                                      color: Colors.white,
-                                      size: 24,
-                                    ),
+                                    SizedBox(width: 10),
+                                    Icon(Icons.login, color: Colors.white),
                                   ],
                                 ),
                         ),
@@ -293,30 +225,13 @@ class _ConnexionPageState extends State<ConnexionPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        'Pas encore de compte ?',
-                        style: TextStyle(
-
-                          fontSize: 15,
-                        ),
-                      ),
+                      const Text('Pas encore de compte ?', style: TextStyle(fontSize: 15)),
                       TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MultiStepInscription(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          'Créer un compte',
-                          style: TextStyle(
-                        
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const MultiStepInscription()),
                         ),
+                        child: const Text('Créer un compte', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                       ),
                     ],
                   ),
@@ -354,55 +269,32 @@ class _ConnexionPageState extends State<ConnexionPage> {
           }
         }
       },
-      
-      decoration: InputDecoration( 
-        filled: true,
+      decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(
-
-          fontSize: 16,
-        ),
-        prefixIcon: Icon(
-          icon,
-      
-          size: 22,
-        ),
+        labelStyle: const TextStyle(fontSize: 16),
+        prefixIcon: Icon(icon, size: 22),
         suffixIcon: suffixIcon,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
+        filled: true,
+        fillColor: Colors.grey.shade100,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.grey[800]!,
-            width: 1,
-          ),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(
-            
-            width: 1,
-          ),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.red[400]!,
-            width: 1,
-          ),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red.shade400, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.red[400]!,
-            width: 1.5,
-          ),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red.shade400, width: 1),
         ),
-        errorStyle: TextStyle(
-          color: Colors.red[400],
-        ),
+        errorStyle: TextStyle(color: Colors.red.shade400),
       ),
     );
   }
