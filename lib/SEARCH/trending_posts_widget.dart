@@ -83,11 +83,21 @@ class _TrendingPostsWidgetState extends State<TrendingPostsWidget> {
     }
   }
 
+  Future<void> _refreshTrendingPosts() async {
+    // Ru00e9initialiser le chargement
+    await _loadTrendingPosts();
+    return Future.value();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+    return RefreshIndicator(
+      onRefresh: _refreshTrendingPosts,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
         // Afficher le titre seulement s'il y a des posts tendance ou si le chargement est en cours
         if (_isLoadingTrending || !_trendingPosts.isEmpty)
           const Padding(
@@ -183,8 +193,11 @@ class _TrendingPostsWidgetState extends State<TrendingPostsWidget> {
                         ),
                       );
                     }).toList(),
-                  ),const SizedBox(height: 100),
-      ],
+                  ),
+                  const SizedBox(height: 100),
+          ],
+        ),
+      ),
     );
   }
 }
