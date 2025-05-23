@@ -156,10 +156,25 @@ class _AddPageState extends State<AddPage> {
           elevation: 0,
           scrolledUnderElevation: 0,
           centerTitle: true,
-          title: const Text('Lance ton sondage 🔥', style: TextStyle(fontSize: 18)),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: _isLoading.value ? null : _cancel,
+          title: ValueListenableBuilder<bool>(
+            valueListenable: _isLoading,
+            builder: (context, isLoading, _) {
+              return Text(
+                isLoading ? 'Publication en cours...' : 'Lance ton sondage 🔥',
+                style: const TextStyle(fontSize: 18)
+              );
+            },
+          ),
+          leading: ValueListenableBuilder<bool>(
+            valueListenable: _isLoading,
+            builder: (context, isLoading, _) {
+              return isLoading 
+                ? Container() 
+                : IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: _cancel,
+                  );
+            },
           ),
           actions: [
             TextButton(
