@@ -192,7 +192,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                         ),
                         _buildStatColumn(
                           count: _followersCount,
-                          label: 'Followers',
+                          label: 'Abonnées',
                           onTap: () {
                             Navigator.push(
                               context,
@@ -200,7 +200,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                                 builder: (context) => FollowersPage(
                                   userId: widget.userId,
                                   type: 'followers',
-                                  title: 'Followers',
+                                  title: 'Abonnées',
                                 ),
                               ),
                             );
@@ -208,7 +208,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                         ),
                         _buildStatColumn(
                           count: _followingCount,
-                          label: 'Following',
+                          label: 'Suivis',
                           onTap: () {
                             Navigator.push(
                               context,
@@ -216,7 +216,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                                 builder: (context) => FollowersPage(
                                   userId: widget.userId,
                                   type: 'following',
-                                  title: 'Following',
+                                  title: 'Suivis',
                                 ),
                               ),
                             );
