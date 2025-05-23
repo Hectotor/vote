@@ -88,32 +88,23 @@ class _TrendingPostsWidgetState extends State<TrendingPostsWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
-          child: Text(
-            'En top tendance',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
+        // Afficher le titre seulement s'il y a des posts tendance ou si le chargement est en cours
+        if (_isLoadingTrending || !_trendingPosts.isEmpty)
+          const Padding(
+            padding: EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
+            child: Text(
+              'En top tendance',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF212121),
+              ),
             ),
           ),
-        ),
         _isLoadingTrending
             ? const Center(child: CircularProgressIndicator())
             : _trendingPosts.isEmpty
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Text(
-                        'Aucun post tendance aujourd\'hui',
-                        style: TextStyle(
-                          color: Color(0xFF757575),
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  )
+                ? const SizedBox() // Ne rien afficher quand il n'y a pas de posts tendance
                 : Column(
                     children: _trendingPosts.map((post) {
                       // Extraire les informations du post
