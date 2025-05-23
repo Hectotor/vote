@@ -263,14 +263,16 @@ class _PollGridState extends State<PollGrid> {
                 crossAxisSpacing: 8.0,
                 mainAxisSpacing: 8.0,
               ),
- // Mêmes marges que dans poll_grid_display.dart
+              padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 10), // Mêmes marges que dans poll_grid_display.dart
               itemCount: widget.textControllers.length,
               itemBuilder: (context, index) => _buildBloc(index),
             ),
           );
         } else if (widget.textControllers.length == 3) {
           // Pour 3 blocs, utiliser la disposition 'triple' comme dans poll_grid_display.dart
-          return Column(
+          return Padding(
+            padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 10),
+            child: Column(
               children: [
                 // Ligne du haut avec 2 blocs
                 Row(
@@ -287,14 +289,15 @@ class _PollGridState extends State<PollGrid> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(
-                        width: MediaQuery.of(context).size.width / 2.2, // Même taille que dans poll_grid_display.dart
+                        width: MediaQuery.of(context).size.width / 2.3, // Taille identique à poll_grid_display.dart
                         child: _buildBloc(2),
                       ),
                     ],
                   ),
                 ),
               ],
-            );
+            ),
+          );
         } else {
           // Pour 4 blocs ou plus, utiliser un GridView standard avec 2 colonnes
           return Container(
@@ -308,6 +311,7 @@ class _PollGridState extends State<PollGrid> {
                 mainAxisSpacing: 8,
                 childAspectRatio: 1.0,
               ),
+              padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 10),
 
               itemCount: widget.textControllers.length,
               itemBuilder: (context, index) => _buildBloc(index),

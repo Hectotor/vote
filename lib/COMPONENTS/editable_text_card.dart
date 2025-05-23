@@ -20,7 +20,7 @@ class EditableTextCard extends StatelessWidget {
       fontWeight: FontWeight.w900,
       fontStyle: FontStyle.italic,
     ),
-    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+    this.padding = const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
   }) : super(key: key);
 
   @override
