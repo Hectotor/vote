@@ -88,14 +88,14 @@ class _NavBarState extends State<NavBar> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 5),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black12,
-                          blurRadius: 10,
+                          blurRadius: 20,
                           offset: Offset(0, 5),
                         ),
                       ],
