@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../HOME/post_page.dart';
+import '../COMPONENTS/post_header.dart';
+import '../COMPONENTS/post_description.dart';
+import '../COMPONENTS/post_actions.dart';
+import '../HOME/poll_grid_home_modern_new.dart';
 
 class TrendingPostsWidget extends StatefulWidget {
   const TrendingPostsWidget({Key? key}) : super(key: key);
@@ -52,8 +56,17 @@ class _TrendingPostsWidgetState extends State<TrendingPostsWidget> {
       
       for (var doc in topPosts) {
         final data = doc.data() as Map<String, dynamic>;
+        // S'assurer que tous les champs nu00e9cessaires sont pru00e9sents
         posts.add({
           'id': doc.id,
+          'userId': data['userId'] ?? '',
+          'pseudo': data['pseudo'] ?? 'Utilisateur',
+          'profilePhotoUrl': data['profilePhotoUrl'] ?? '',
+          'filterColor': data['filterColor'],
+          'description': data['description'] ?? '',
+          'createdAt': data['createdAt'] ?? Timestamp.now(),
+          'blocs': data['blocs'] ?? [],
+          'totalVotesCount': data['totalVotesCount'] ?? 0,
           ...data,
         });
       }
@@ -72,138 +85,115 @@ class _TrendingPostsWidgetState extends State<TrendingPostsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 16.0),
-            child: Text(
-              'Tendances du jour',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF212121),
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
+          child: Text(
+            'En top tendance',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF212121),
             ),
           ),
-          _isLoadingTrending
-              ? const Center(child: CircularProgressIndicator())
-              : _trendingPosts.isEmpty
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text(
-                          'Aucun post tendance aujourd\'hui',
-                          style: TextStyle(
-                            color: Color(0xFF757575),
-                            fontSize: 16,
-                          ),
+        ),
+        _isLoadingTrending
+            ? const Center(child: CircularProgressIndicator())
+            : _trendingPosts.isEmpty
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        'Aucun post tendance aujourd\'hui',
+                        style: TextStyle(
+                          color: Color(0xFF757575),
+                          fontSize: 16,
                         ),
                       ),
-                    )
-                  : Column(
-                      children: _trendingPosts.map((post) {
-                        // Extraire les informations du post
-                        final String postId = post['id'] ?? '';
-                        final String pseudo = post['pseudo'] ?? 'Utilisateur';
-                        final String profilePhotoUrl = post['profilePhotoUrl'] ?? '';
-                        final int totalVotes = post['totalVotesCount'] ?? 0;
-                        
-                        // Cru00e9er un aperu00e7u du texte du post (limitu00e9 u00e0 100 caractu00e8res)
-                        final String text = post['text'] ?? '';
-                        final String previewText = text.length > 100 
-                            ? '${text.substring(0, 97)}...' 
-                            : text;
-                        
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PostPage(postId: postId),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 16.0),
-                            padding: const EdgeInsets.all(12.0),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.1),
-                                  spreadRadius: 1,
-                                  blurRadius: 5,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Avatar de l'utilisateur
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundImage: profilePhotoUrl.isNotEmpty
-                                      ? NetworkImage(profilePhotoUrl)
-                                      : null,
-                                  child: profilePhotoUrl.isEmpty
-                                      ? const Icon(Icons.person)
-                                      : null,
-                                ),
-                                const SizedBox(width: 12),
-                                // Contenu du post
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        pseudo,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        previewText,
-                                        style: const TextStyle(fontSize: 14),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      // Statistiques du post
-                                      Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.how_to_vote,
-                                            size: 16,
-                                            color: Color(0xFF757575),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            '$totalVotes votes',
-                                            style: const TextStyle(
-                                              color: Color(0xFF757575),
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
                     ),
-        ],
-      ),
+                  )
+                : Column(
+                    children: _trendingPosts.map((post) {
+                      // Extraire les informations du post
+                      final String postId = post['id'] ?? '';
+                      final String userId = post['userId'] ?? '';
+                      final String pseudo = post['pseudo'] ?? 'Utilisateur';
+                      final String? profilePhotoUrl = post['profilePhotoUrl'];
+                      final int? filterColor = post['filterColor'] != null 
+                          ? (post['filterColor'] is String ? int.parse(post['filterColor']) : post['filterColor'] as int) 
+                          : null;
+                      final String description = post['description'] ?? '';
+                      final Timestamp createdAt = post['createdAt'] as Timestamp? ?? Timestamp.now();
+                      
+                      // Extraire les blocs du post
+                      final List<dynamic> blocs = post['blocs'] ?? [];
+                      
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                        elevation: 1,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // En-tu00eate du post avec avatar et pseudo
+                            PostHeader(
+                              key: Key('header_$postId'),
+                              pseudo: pseudo,
+                              profilePhotoUrl: profilePhotoUrl,
+                              filterColor: filterColor,
+                              createdAt: createdAt,
+                              postId: postId,
+                              userId: userId,
+                            ),
+                            
+                            // Description du post
+                            if (description.isNotEmpty)
+                              PostDescription(
+                                key: Key('desc_$postId'),
+                                pseudo: pseudo,
+                                description: description,
+                              ),
+                            
+                            // Grille de sondage (si le post a des blocs)
+                            if (blocs.isNotEmpty)
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PostPage(postId: postId),
+                                    ),
+                                  );
+                                },
+                                child: PollGridHomeModern(
+                                  key: Key('poll_$postId'),
+                                  blocs: blocs.map((bloc) => {
+                                    'postImageUrl': bloc['postImageUrl'],
+                                    'text': bloc['text'],
+                                    'filterColor': bloc['filterColor']?.toString(),
+                                    'voteCount': bloc['voteCount'] ?? 0,
+                                    'votes': bloc['votes'] ?? [],
+                                  }).toList(),
+                                  postId: postId,
+                                ),
+                              ),
+                            
+                            // Actions du post (likes, commentaires, etc.)
+                            PostActions(
+                              key: Key('actions_$postId'),
+                              postId: postId,
+                              userId: userId,
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+      ],
     );
   }
 }

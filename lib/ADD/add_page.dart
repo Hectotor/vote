@@ -8,6 +8,7 @@ import 'dart:async';
 import 'publish.dart';
 import 'poll_grid.dart';
 import 'bottom_add_bloc.dart';
+import '../navBar.dart';
 
 class Post {
   final User user;
@@ -108,7 +109,11 @@ class _AddPageState extends State<AddPage> {
           _mentions.clear();
         });
 
-        Navigator.pop(context);
+        // Rediriger vers la NavBar au lieu de simplement revenir en arriu00e8re
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const NavBar()),
+          (route) => false, // Supprime toutes les routes pru00e9cu00e9dentes
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Échec de la publication')),
