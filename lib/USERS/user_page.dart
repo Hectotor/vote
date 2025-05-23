@@ -4,8 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'profile_header.dart';
 import 'user_content_view.dart';
 import '../models/reusable_login_button.dart';
-
 import 'follow_service.dart';
+import 'menu_page.dart';
 
 class UserPage extends StatefulWidget {
   final String? userId;
@@ -176,7 +176,10 @@ class _UserPageState extends State<UserPage> {
             IconButton(
               icon: const Icon(Icons.menu),
               onPressed: () {
-                // Action du menu
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MenuPage()),
+                );
               },
             ),
           ],
