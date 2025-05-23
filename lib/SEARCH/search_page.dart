@@ -133,7 +133,7 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ],
         title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16,),
           decoration: BoxDecoration(
             color: Colors.grey[200],
             borderRadius: BorderRadius.circular(25),

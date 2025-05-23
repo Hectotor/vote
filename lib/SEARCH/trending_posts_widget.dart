@@ -122,7 +122,7 @@ class _TrendingPostsWidgetState extends State<TrendingPostsWidget> {
                       final List<dynamic> blocs = post['blocs'] ?? [];
                       
                       return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                        margin: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
                         elevation: 1,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.0),
