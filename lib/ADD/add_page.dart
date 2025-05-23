@@ -208,12 +208,15 @@ class _AddPageState extends State<AddPage> {
                     child: BackdropFilter(
                       filter: ui.ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
                       child: Container(
-                        color: Colors.black.withOpacity(0.4),
+                        color: Colors.black.withValues(alpha: 0.4),
                         child: const Center(
                           child: SizedBox(
                             width: 30,
                             height: 30,
-                            child: CircularProgressIndicator(strokeWidth: 3),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
                           ),
                         ),
                       ),
