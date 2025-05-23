@@ -277,9 +277,19 @@ class _PollGridState extends State<PollGrid> {
                 // Ligne du haut avec 2 blocs
                 Row(
                   children: [
-                    Expanded(child: _buildBloc(0)),
+                    Expanded(
+                      child: AspectRatio(
+                        aspectRatio: 1.0,
+                        child: _buildBloc(0),
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(child: _buildBloc(1)),
+                    Expanded(
+                      child: AspectRatio(
+                        aspectRatio: 1.0,
+                        child: _buildBloc(1),
+                      ),
+                    ),
                   ],
                 ),
                 // Bloc du bas centré
@@ -290,6 +300,7 @@ class _PollGridState extends State<PollGrid> {
                     children: [
                       SizedBox(
                         width: MediaQuery.of(context).size.width / 2.3, // Taille identique à poll_grid_display.dart
+                        height: MediaQuery.of(context).size.width / 2.3, // Hauteur identique à la largeur pour maintenir le ratio 1:1
                         child: _buildBloc(2),
                       ),
                     ],
@@ -309,12 +320,15 @@ class _PollGridState extends State<PollGrid> {
                 crossAxisCount: 2,
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
-                childAspectRatio: 1.0,
+                childAspectRatio: 1.0, // Garantit que les blocs sont carrés
               ),
               padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 10),
 
               itemCount: widget.textControllers.length,
-              itemBuilder: (context, index) => _buildBloc(index),
+              itemBuilder: (context, index) => AspectRatio(
+                aspectRatio: 1.0,
+                child: _buildBloc(index),
+              ),
             ),
           );
         }
