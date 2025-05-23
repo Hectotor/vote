@@ -37,7 +37,7 @@ class _TexteWidgetState extends State<TexteWidget> {
               ),
             )
           : null,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
         child: TextField(
           controller: widget.controller,
           autofocus: false,
@@ -52,10 +52,12 @@ class _TexteWidgetState extends State<TexteWidget> {
           decoration: const InputDecoration(
             border: InputBorder.none,
             contentPadding: EdgeInsets.zero,
+            counterText: '',
           ),
           cursorColor: Colors.white,
           keyboardType: TextInputType.multiline,
           maxLines: null,
+          maxLength: 25, // Limite à 25 caractères
           textInputAction: TextInputAction.done,
           onChanged: (value) {
             setState(() {
@@ -79,11 +81,13 @@ class _TexteWidgetState extends State<TexteWidget> {
         ),
         decoration: const InputDecoration(
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          contentPadding: EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+          counterText: '',
         ),
         cursorColor: Colors.white,
         keyboardType: TextInputType.multiline,
         maxLines: null,
+        maxLength: 25, // Limite à 25 caractères
         textInputAction: TextInputAction.done,
         onSubmitted: (value) {
           widget.onVisibilityChanged(true);

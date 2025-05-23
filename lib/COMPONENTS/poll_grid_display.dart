@@ -184,12 +184,22 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
               children: [
                 // Ligne du haut avec 2 blocs
                 Row(
-                  children: [
-                    Expanded(child: createVoteCard(0)),
-                    const SizedBox(width: 8),
-                    Expanded(child: createVoteCard(1)),
-                  ],
-                ),
+                children: [
+                  Expanded(
+                    child: AspectRatio(
+                      aspectRatio: 1.0,
+                      child: createVoteCard(0),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: AspectRatio(
+                      aspectRatio: 1.0,
+                      child: createVoteCard(1),
+                    ),
+                  ),
+                ],
+              ),
                 // Bloc du bas centré
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
@@ -198,6 +208,7 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
                     children: [
                       SizedBox(
                         width: MediaQuery.of(context).size.width / 2.3, //taille du container bas 3
+                        height: MediaQuery.of(context).size.width / 2.3, // Hauteur identique pour maintenir le ratio 1:1
                         child: createVoteCard(2),
                       ),
                     ],
@@ -225,7 +236,10 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
               ),
                             padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 10), // Supprime le padding par défaut
               itemCount: widget.blocs.length,
-              itemBuilder: (context, index) => createVoteCard(index),
+              itemBuilder: (context, index) => AspectRatio(
+                aspectRatio: 1.0,
+                child: createVoteCard(index),
+              ),
             ),
           );
         },
