@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'search_results_widget.dart';
 import 'search_history_widget.dart';
+import 'trending_posts_widget.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -28,6 +29,8 @@ class _SearchPageState extends State<SearchPage> {
       });
     });
   }
+  
+
   
   @override
   void dispose() {
@@ -93,6 +96,8 @@ class _SearchPageState extends State<SearchPage> {
       _combinedResults = results;
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -182,6 +187,7 @@ class _SearchPageState extends State<SearchPage> {
       ),
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!_isSearching && _isFocused)
               SearchHistoryWidget(),
@@ -191,6 +197,8 @@ class _SearchPageState extends State<SearchPage> {
                 isSearching: _isSearching,
                 searchQuery: _searchController.text,
               ),
+            if (!_isSearching && !_isFocused)
+              const TrendingPostsWidget(),
           ],
         ),
       ),
