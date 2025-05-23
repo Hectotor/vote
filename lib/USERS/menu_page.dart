@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'help_support_page.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({Key? key}) : super(key: key);
@@ -170,7 +171,10 @@ class _MenuPageState extends State<MenuPage> {
             leading: const Icon(Icons.help),
             title: const Text('Aide et support'),
             onTap: () {
-              // Naviguer vers la page d'aide
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HelpSupportPage()),
+              );
             },
           ),
           ListTile(
