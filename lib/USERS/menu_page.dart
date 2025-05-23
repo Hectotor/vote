@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import '../INSCRIPTION/connexion_screen.dart';
 import 'help_support_page.dart';
 import 'delete_account_dialog.dart';
 
@@ -14,7 +15,6 @@ class MenuPage extends StatefulWidget {
 
 class _MenuPageState extends State<MenuPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _darkMode = false;
   bool _notificationsEnabled = true;
 
@@ -64,28 +64,41 @@ class _MenuPageState extends State<MenuPage> {
     if (!confirmed) return;
 
     try {
+      // Afficher un indicateur de chargement
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
       final user = _auth.currentUser;
       if (user != null) {
-        // Supprimer les données utilisateur de Firestore
-        await _firestore.collection('users').doc(user.uid).delete();
+        // Appeler la fonction Cloud pour supprimer le compte et toutes les données associées
+        final functions = FirebaseFunctions.instance;
+        final callable = functions.httpsCallable('deleteUserAccount');
+        final result = await callable.call();
         
-        // Supprimer les posts de l'utilisateur
-        final postsSnapshot = await _firestore
-            .collection('posts')
-            .where('userId', isEqualTo: user.uid)
-            .get();
-            
-        for (var doc in postsSnapshot.docs) {
-          await _firestore.collection('posts').doc(doc.id).delete();
+        // Fermer l'indicateur de chargement
+        Navigator.of(context).pop();
+        
+        if (result.data['success'] == true) {
+          // Rediriger vers la page de connexion
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const ConnexionPage()),
+            (route) => false
+          );
+        } else {
+          throw Exception(result.data['message'] ?? 'Erreur inconnue');
         }
-        
-        // Supprimer le compte Firebase Auth
-        await user.delete();
-        
-        // Rediriger vers la page de connexion
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
       }
     } catch (e) {
+      // Fermer l'indicateur de chargement s'il est encore affiché
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur lors de la suppression du compte: $e')),
       );
