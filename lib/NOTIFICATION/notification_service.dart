@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'totalVotesCount_notif.dart';
 import 'likesCount_notif.dart';
 import 'notification_model.dart';
+import 'followingId_post_notif.dart';
 
 class NotificationService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -145,6 +146,20 @@ class NotificationService {
       'isRead': false,
       'timestamp': FieldValue.serverTimestamp(),
     });
+  }
+
+  // Créer une notification de nouveau post pour les abonnés
+  static Future<void> createNewPostNotification({
+    required String sourceUserId,
+    required String sourceUserName,
+    required String postId,
+  }) async {
+    // Déléguer la création des notifications à la classe spécialisée
+    await FollowingPostNotification.createFollowingPostNotification(
+      sourceUserId: sourceUserId,
+      sourceUserName: sourceUserName,
+      postId: postId,
+    );
   }
 
   // Créer une notification d'exemple pour visualisation

@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'dart:io';
 import '../NOTIFICATION/mention_service.dart';
+import '../NOTIFICATION/followingId_post_notif.dart';
 
 class PublishService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -77,6 +78,13 @@ class PublishService {
       // Créer les notifications pour les mentions
       await MentionService.processMentions(
         text: description,
+        sourceUserId: user.uid,
+        sourceUserName: user.displayName ?? 'Utilisateur',
+        postId: postRef.id,
+      );
+
+      // Créer les notifications pour les abonnés
+      await FollowingPostNotification.createFollowingPostNotification(
         sourceUserId: user.uid,
         sourceUserName: user.displayName ?? 'Utilisateur',
         postId: postRef.id,
