@@ -183,7 +183,7 @@ class _TrendingPostsWidgetState extends State<TrendingPostsWidget> {
                         ),
                       );
                     }).toList(),
-                  ),
+                  ),const SizedBox(height: 100),
       ],
     );
   }

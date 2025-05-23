@@ -232,7 +232,7 @@ class _HomePageState extends State<HomePage> {
                                 postId: post.postId,
                                 userId: post.userId,
                               ),
-
+                          
                           
                             ],
                           ),
@@ -241,7 +241,7 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                 ),
-              ),
+              ),const SizedBox(height: 100),
             ],
           ),
         ),
