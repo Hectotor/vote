@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
+import 'community_rules_page.dart';
 
 class HelpSupportPage extends StatelessWidget {
   const HelpSupportPage({Key? key}) : super(key: key);
 
   void _showContactInfo(BuildContext context, String title, String info) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$title : $info'),
-        duration: const Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    if (title == 'Règles') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CommunityRulesPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$title : $info'),
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
@@ -78,7 +86,7 @@ class HelpSupportPage extends StatelessWidget {
           _buildContactTile(
             icon: Icons.gavel_outlined,
             title: 'Règles de la communauté',
-            onTap: () => _showContactInfo(context, 'Règles', 'www.votelyapp.com/community-guidelines'),
+            onTap: () => _showContactInfo(context, 'Règles', ''),
           ),
 
           const SizedBox(height: 32),
