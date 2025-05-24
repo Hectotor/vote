@@ -252,7 +252,7 @@ class _UserPageState extends State<UserPage> {
                     ),
                   ),
                 ),
-                SliverFillRemaining(
+                SliverToBoxAdapter(
                   child: UserContentView(
                     userId: _userId!,
                     showPosts: true,
@@ -324,7 +324,7 @@ class _UserPageState extends State<UserPage> {
                     ),
                   ),
                 ),
-                SliverFillRemaining(
+                SliverToBoxAdapter(
                   child: UserContentView(
                     userId: _userId!,
                     showPosts: false,
