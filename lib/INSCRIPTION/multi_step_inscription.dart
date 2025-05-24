@@ -24,7 +24,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
   // Contrôleurs
   final TextEditingController _pseudoController = TextEditingController();
   final TextEditingController _genderController = TextEditingController();
-  final TextEditingController _dateNaissanceController = TextEditingController();
+  final TextEditingController _dateBirthdayController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -66,7 +66,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
     _pageController.dispose();
     _pseudoController.dispose();
     _genderController.dispose();
-    _dateNaissanceController.dispose();
+    _dateBirthdayController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     
@@ -138,8 +138,8 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
   // Méthode pour ouvrir le sélecteur de date de naissance
   void _openBirthDateSelector() {
     DateTime? initialDate;
-    if (_dateNaissanceController.text.isNotEmpty) {
-      final parts = _dateNaissanceController.text.split('/');
+    if (_dateBirthdayController.text.isNotEmpty) {
+      final parts = _dateBirthdayController.text.split('/');
       if (parts.length == 3) {
         initialDate = DateTime(
           int.parse(parts[2]),
@@ -156,7 +156,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
       maxDate: DateTime.now(),
       onDateSelected: (date) {
         setState(() {
-          _dateNaissanceController.text = 
+          _dateBirthdayController.text = 
               '${date.day.toString().padLeft(2, '0')}/'
               '${date.month.toString().padLeft(2, '0')}/'
               '${date.year}';
@@ -214,7 +214,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
       case 0: // Genre
         return _genderController.text.isNotEmpty;
       case 1: // Date de naissance
-        return _dateNaissanceController.text.isNotEmpty;
+        return _dateBirthdayController.text.isNotEmpty;
       case 2: // Pseudo
         return _pseudoController.text.length >= 3 && _pseudoErrorMessage == null;
       case 3: // Email
@@ -252,7 +252,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
         'pseudo': _pseudoController.text.toLowerCase(),
         'gender': _genderController.text,
         'email': _emailController.text.toLowerCase(),
-        'dateNaissance': _dateNaissanceController.text.trim(),
+        'dateBirthday': _dateBirthdayController.text.trim(),
         'profilePhotoUrl': '',
         'bio': '',
         'emailVerified': userCredential.user!.emailVerified,
@@ -355,7 +355,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
 
   Widget _buildBirthDateStep() {
     return BirthDateStep(
-      dateNaissanceController: _dateNaissanceController,
+      dateBirthdayController: _dateBirthdayController,
       onOpenBirthDateSelector: _openBirthDateSelector,
       isLoading: _isLoading,
       isStepValid: _isStepValid,

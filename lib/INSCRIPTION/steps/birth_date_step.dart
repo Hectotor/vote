@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class BirthDateStep extends StatefulWidget {
-  final TextEditingController dateNaissanceController;
+  final TextEditingController dateBirthdayController;
   final VoidCallback onOpenBirthDateSelector;
   final bool isLoading;
   final VoidCallback? onNextStep;
@@ -9,7 +9,7 @@ class BirthDateStep extends StatefulWidget {
 
   const BirthDateStep({
     Key? key,
-    required this.dateNaissanceController,
+    required this.dateBirthdayController,
     required this.onOpenBirthDateSelector,
     required this.isLoading,
     required this.isStepValid,
@@ -62,9 +62,9 @@ class _BirthDateStepState extends State<BirthDateStep> {
                     ),
                   ),
                   child: Text(
-                    widget.dateNaissanceController.text.isEmpty
+                    widget.dateBirthdayController.text.isEmpty
                         ? 'Sélectionne une date'
-                        : widget.dateNaissanceController.text,
+                        : widget.dateBirthdayController.text,
                     style: const TextStyle(fontSize: 18),
                   ),
                 ),
