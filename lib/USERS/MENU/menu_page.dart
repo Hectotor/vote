@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import '../INSCRIPTION/connexion_screen.dart';
+import '../../INSCRIPTION/connexion_screen.dart';
 import 'help_support_page.dart';
-import 'delete_account_dialog.dart';
+import '../delete_account_dialog.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({Key? key}) : super(key: key);
@@ -158,13 +158,6 @@ class _MenuPageState extends State<MenuPage> {
           const Padding(
             padding: EdgeInsets.only(left: 16, top: 16, bottom: 8),
             child: Text('Compte', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-          ),
-          ListTile(
-            leading: const Icon(Icons.privacy_tip),
-            title: const Text('Confidentialité'),
-            onTap: () {
-              // Naviguer vers la page de confidentialité
-            },
           ),
           ListTile(
             leading: const Icon(Icons.help),

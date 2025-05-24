@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'community_rules_page.dart';
+import '../community_rules_page.dart';
 import 'terms_of_service_page.dart';
 import 'privacy_policy_page.dart';
 
@@ -35,7 +35,6 @@ class HelpSupportPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Aide et support'),

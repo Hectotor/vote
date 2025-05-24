@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'profile_header.dart';
+import 'MENU/profile_header.dart';
 import 'user_content_view.dart';
 import '../models/reusable_login_button.dart';
 import 'follow_service.dart';
-import 'menu_page.dart';
+import 'MENU/menu_page.dart';
 
 class UserPage extends StatefulWidget {
   final String? userId;
