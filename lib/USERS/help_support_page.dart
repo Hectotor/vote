@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
 import 'community_rules_page.dart';
+import 'terms_of_service_page.dart';
+import 'privacy_policy_page.dart';
 
 class HelpSupportPage extends StatelessWidget {
   const HelpSupportPage({Key? key}) : super(key: key);
 
   void _showContactInfo(BuildContext context, String title, String info) {
-    if (title == 'Règles') {
+    if (title == 'Conditions') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const TermsOfServicePage()),
+      );
+    } else if (title == 'Confidentialité') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const PrivacyPolicyPage()),
+      );
+    } else if (title == 'Règles') {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const CommunityRulesPage()),
@@ -55,21 +67,15 @@ class HelpSupportPage extends StatelessWidget {
             'Puis-je modifier un sondage après publication ?',
             'Non, cela permet de garantir l\'intégrité des votes.',
           ),
-
           const SizedBox(height: 24),
           _sectionTitle('Nous contacter'),
           _buildContactTile(
             icon: Icons.email_outlined,
             title: 'Email',
-            subtitle: 'support@votelyapp.com',
-            onTap: () => _showContactInfo(context, 'Email', 'support@votelyapp.com'),
+            subtitle: 'contact@votelyapp.com',
+            onTap: () => _showContactInfo(context, 'Email', 'contact@votelyapp.com'),
           ),
-          _buildContactTile(
-            icon: Icons.language_outlined,
-            title: 'Site web',
-            subtitle: 'www.votelyapp.com/support',
-            onTap: () => _showContactInfo(context, 'Site web', 'www.votelyapp.com/support'),
-          ),
+    
 
           const SizedBox(height: 24),
           _sectionTitle('Informations légales'),
