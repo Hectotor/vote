@@ -16,6 +16,7 @@ class TrendingPostsWidget extends StatefulWidget {
 class _TrendingPostsWidgetState extends State<TrendingPostsWidget> {
   List<Map<String, dynamic>> _trendingPosts = [];
   bool _isLoadingTrending = true;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -23,10 +24,28 @@ class _TrendingPostsWidgetState extends State<TrendingPostsWidget> {
     _loadTrendingPosts();
   }
 
-  Future<void> _loadTrendingPosts() async {
+  Future<void> _refreshTrendingPosts() async {
+    if (_isRefreshing) return;
+    
     setState(() {
-      _isLoadingTrending = true;
+      _isRefreshing = true;
     });
+    
+    try {
+      await _loadTrendingPosts();
+    } finally {
+      setState(() {
+        _isRefreshing = false;
+      });
+    }
+  }
+
+  Future<void> _loadTrendingPosts() async {
+    if (!_isRefreshing) {
+      setState(() {
+        _isLoadingTrending = true;
+      });
+    }
     
     try {
       // Obtenir la date de du00e9but d'aujourd'hui
@@ -85,106 +104,118 @@ class _TrendingPostsWidgetState extends State<TrendingPostsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Afficher le titre seulement s'il y a des posts tendance ou si le chargement est en cours
-        if (_isLoadingTrending || !_trendingPosts.isEmpty)
-          const Padding(
-            padding: EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
-            child: Text(
-              'En top tendance 🔥',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF212121),
+    // Utiliser un Container avec une hauteur fixe pour s'assurer que le RefreshIndicator fonctionne
+    return Container(
+      height: 800, // Hauteur suffisante pour contenir le contenu
+      child: RefreshIndicator(
+        onRefresh: _refreshTrendingPosts,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            // Afficher le titre seulement s'il y a des posts tendance ou si le chargement est en cours
+            if (_isLoadingTrending || _trendingPosts.isNotEmpty)
+              const Padding(
+                padding: EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
+                child: Text(
+                  'En top tendance 🔥',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF212121),
+                  ),
+                ),
               ),
-            ),
-          ),
-        _isLoadingTrending
-            ? const Center(child: CircularProgressIndicator())
-            : _trendingPosts.isEmpty
-                ? const SizedBox() // Ne rien afficher quand il n'y a pas de posts tendance
-                : Column(
-                    children: _trendingPosts.map((post) {
-                      // Extraire les informations du post
-                      final String postId = post['id'] ?? '';
-                      final String userId = post['userId'] ?? '';
-                      final String pseudo = post['pseudo'] ?? 'Utilisateur';
-                      final String? profilePhotoUrl = post['profilePhotoUrl'];
-                      final int? filterColor = post['filterColor'] != null 
-                          ? (post['filterColor'] is String ? int.parse(post['filterColor']) : post['filterColor'] as int) 
-                          : null;
-                      final String description = post['description'] ?? '';
-                      final Timestamp createdAt = post['createdAt'] as Timestamp? ?? Timestamp.now();
-                      
-                      // Extraire les blocs du post
-                      final List<dynamic> blocs = post['blocs'] ?? [];
-                      
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-                        elevation: 1,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // En-tu00eate du post avec avatar et pseudo
-                            PostHeader(
-                              key: Key('header_$postId'),
-                              pseudo: pseudo,
-                              profilePhotoUrl: profilePhotoUrl,
-                              filterColor: filterColor,
-                              createdAt: createdAt,
-                              postId: postId,
-                              userId: userId,
+              
+            // Afficher l'indicateur de chargement ou les posts
+            _isLoadingTrending
+                ? const Center(child: CircularProgressIndicator())
+                : _trendingPosts.isEmpty
+                    ? const SizedBox() // Ne rien afficher quand il n'y a pas de posts tendance
+                    : Column(
+                        children: _trendingPosts.map((post) {
+                          // Extraire les informations du post
+                          final String postId = post['id'] ?? '';
+                          final String userId = post['userId'] ?? '';
+                          final String pseudo = post['pseudo'] ?? 'Utilisateur';
+                          final String? profilePhotoUrl = post['profilePhotoUrl'];
+                          final int? filterColor = post['filterColor'] != null 
+                              ? (post['filterColor'] is String ? int.parse(post['filterColor']) : post['filterColor'] as int) 
+                              : null;
+                          final String description = post['description'] ?? '';
+                          final Timestamp createdAt = post['createdAt'] as Timestamp? ?? Timestamp.now();
+                          
+                          // Extraire les blocs du post
+                          final List<dynamic> blocs = post['blocs'] ?? [];
+                          
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                            elevation: 1,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
                             ),
-                            
-                            // Description du post
-                            if (description.isNotEmpty)
-                              PostDescription(
-                                key: Key('desc_$postId'),
-                                pseudo: pseudo,
-                                description: description,
-                              ),
-                            
-                            // Grille de sondage (si le post a des blocs)
-                            if (blocs.isNotEmpty)
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PostPage(postId: postId),
-                                    ),
-                                  );
-                                },
-                                child: PollGridHomeModern(
-                                  key: Key('poll_$postId'),
-                                  blocs: blocs.map((bloc) => {
-                                    'postImageUrl': bloc['postImageUrl'],
-                                    'text': bloc['text'],
-                                    'filterColor': bloc['filterColor']?.toString(),
-                                    'voteCount': bloc['voteCount'] ?? 0,
-                                    'votes': bloc['votes'] ?? [],
-                                  }).toList(),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // En-tu00eate du post avec avatar et pseudo
+                                PostHeader(
+                                  key: Key('header_$postId'),
+                                  pseudo: pseudo,
+                                  profilePhotoUrl: profilePhotoUrl,
+                                  filterColor: filterColor,
+                                  createdAt: createdAt,
                                   postId: postId,
+                                  userId: userId,
                                 ),
-                              ),
-                            
-                            // Actions du post (likes, commentaires, etc.)
-                            PostActions(
-                              key: Key('actions_$postId'),
-                              postId: postId,
-                              userId: userId,
+                                
+                                // Description du post
+                                if (description.isNotEmpty)
+                                  PostDescription(
+                                    key: Key('desc_$postId'),
+                                    pseudo: pseudo,
+                                    description: description,
+                                  ),
+                                
+                                // Grille de sondage (si le post a des blocs)
+                                if (blocs.isNotEmpty)
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => PostPage(postId: postId),
+                                        ),
+                                      );
+                                    },
+                                    child: PollGridHomeModern(
+                                      key: Key('poll_$postId'),
+                                      blocs: blocs.map((bloc) => {
+                                        'postImageUrl': bloc['postImageUrl'],
+                                        'text': bloc['text'],
+                                        'filterColor': bloc['filterColor']?.toString(),
+                                        'voteCount': bloc['voteCount'] ?? 0,
+                                        'votes': bloc['votes'] ?? [],
+                                      }).toList(),
+                                      postId: postId,
+                                    ),
+                                  ),
+                                
+                                // Actions du post (likes, commentaires, etc.)
+                                PostActions(
+                                  key: Key('actions_$postId'),
+                                  postId: postId,
+                                  userId: userId,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),const SizedBox(height: 100),
-      ],
+                          );
+                        }).toList(),
+                      ),
+                      
+            // Espace en bas pour assurer que tout est visible
+            const SizedBox(height: 100),
+          ],
+        ),
+      ),
     );
   }
 }
