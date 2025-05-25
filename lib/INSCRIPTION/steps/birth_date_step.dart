@@ -54,8 +54,7 @@ class _BirthDateStepState extends State<BirthDateStep> {
                 child: ElevatedButton(
                   onPressed: widget.onOpenBirthDateSelector,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[900],
-                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.grey.shade100,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),

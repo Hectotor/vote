@@ -123,7 +123,6 @@ class _EmailStepState extends State<EmailStep> {
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
           ),
           textAlign: TextAlign.center,
         ),
@@ -214,12 +213,12 @@ class _EmailStepState extends State<EmailStep> {
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(fontSize: 18),
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.grey[900],
+            fillColor: Colors.grey.shade100,
             hintText: 'Entre ton email',
-            hintStyle: TextStyle(color: Colors.grey[600], fontSize: 18),
+            hintStyle: TextStyle(fontSize: 18),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none,

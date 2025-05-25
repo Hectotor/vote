@@ -127,13 +127,12 @@ class _PseudoStepState extends State<PseudoStep> {
       focusNode: widget.pseudoFocusNode,
       textCapitalization: TextCapitalization.words,
       textAlign: TextAlign.center,
-      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         filled: true,
-        fillColor: Colors.grey[900],
+        fillColor: Colors.grey.shade100,
 
         hintText: 'Entre ton pseudo',
-        hintStyle: TextStyle(color: Colors.white, fontSize: 18),
+        hintStyle: TextStyle(fontSize: 18),
 
         suffixIcon: widget.isCheckingPseudo
             ? const Padding(

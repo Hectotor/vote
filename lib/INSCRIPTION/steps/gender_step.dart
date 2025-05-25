@@ -46,8 +46,7 @@ class _GenderStepState extends State<GenderStep> {
                 child: ElevatedButton(
                   onPressed: widget.onOpenGenderSelector,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[900],
-                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.grey.shade100,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
