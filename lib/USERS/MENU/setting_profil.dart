@@ -132,6 +132,12 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
       appBar: AppBar(
         title: const Text('Modifier le profil'),
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: _isLoading && !_dataLoaded
           ? const Center(child: CircularProgressIndicator())

@@ -10,6 +10,12 @@ class PrivacyPolicyPage extends StatelessWidget {
         title: const Text('Politique de confidentialité'),
         centerTitle: true,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

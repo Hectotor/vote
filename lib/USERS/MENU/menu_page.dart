@@ -89,7 +89,7 @@ class _MenuPageState extends State<MenuPage> {
       child: ListTile(
         leading: Icon(icon, color: iconColor),
         title: Text(title, style: const TextStyle(fontSize: 16)),
-        trailing: const Icon(Icons.arrow_back, size: 16),
+        trailing: const Icon(Icons.arrow_forward, size: 16),
         onTap: onTap,
       ),
     );
@@ -102,6 +102,12 @@ class _MenuPageState extends State<MenuPage> {
         title: const Text('Menu'),
         centerTitle: true,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: ListView(
         children: [

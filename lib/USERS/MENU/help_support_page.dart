@@ -40,6 +40,12 @@ class HelpSupportPage extends StatelessWidget {
         title: const Text('Aide et support'),
         centerTitle: true,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -8,9 +8,13 @@ class TermsOfServicePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Conditions d\'utilisation'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
