@@ -21,11 +21,11 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
   bool _dataLoaded = false;
 
   final List<String> _genderOptions = [
-    'Homme',
     'Femme',
-    'Non-binaire',
-    'Autres',
-    'Préfère ne pas dire'
+    'Homme',
+    'Non binaire',
+    'Préfère ne pas dire',
+    'Autre'
   ];
 
   @override
@@ -121,10 +121,6 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    const Text(
-                      'Informations personnelles',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
                     const SizedBox(height: 24),
                     _buildTextField(_firstNameController, 'Prénom'),
                     const SizedBox(height: 16),
@@ -136,16 +132,46 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
                     const SizedBox(height: 30),
                     SizedBox(
                       width: double.infinity,
-                      height: 50,
+                      height: 56,
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _saveProfile,
                         style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: EdgeInsets.zero,
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
                         ),
-                        child: _isLoading
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text('Enregistrer', style: TextStyle(fontSize: 16)),
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.blue.shade600, Colors.blue.shade900],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Container(
+                            alignment: Alignment.center,
+                            height: 56,
+                            child: _isLoading
+                                ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 3)
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: const [
+                                      Text(
+                                        'Enregistrer',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      SizedBox(width: 10),
+                                      Icon(Icons.save, color: Colors.white),
+                                    ],
+                                  ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -205,34 +231,62 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
     );
   }
 
-  Widget _buildGenderSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Genre', style: TextStyle(fontSize: 16)),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _genderOptions.map((gender) {
-            final isSelected = _selectedGender == gender;
-            return ChoiceChip(
-              label: Text(gender),
-              selected: isSelected,
-              onSelected: (_) => setState(() => _selectedGender = gender),
-              selectedColor: Theme.of(context).colorScheme.primary,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.black,
-                fontWeight: FontWeight.w500,
+Widget _buildGenderSelector() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          const Text(
+            'Genre',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const Expanded(child: SizedBox()),
+        ],
+      ),
+      const SizedBox(height: 12),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: _genderOptions.map((gender) {
+          final isSelected = _selectedGender == gender;
+          return InkWell(
+            onTap: () => setState(() => _selectedGender = gender),
+            borderRadius: BorderRadius.circular(30),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : [],
               ),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
+              child: Text(
+                gender,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black87,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    ],
+  );
+}
+
 }
 
 class _DateInputFormatter extends TextInputFormatter {

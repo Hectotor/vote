@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'MENU/profile_header.dart';
+import 'profile_header.dart';
 import 'user_content_view.dart';
 import '../models/reusable_login_button.dart';
 import 'follow_service.dart';
