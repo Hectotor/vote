@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../../INSCRIPTION/connexion_screen.dart';
 import 'help_support_page.dart';
+import 'setting_profil.dart';
 import '../delete_account_dialog.dart';
 
 class MenuPage extends StatefulWidget {
@@ -107,7 +108,10 @@ class _MenuPageState extends State<MenuPage> {
           const SizedBox(height: 10),
           buildSectionTitle('Profil'),
           buildMenuItem(Icons.person_outline, 'Modifier le profil', () {
-            // TODO: Implémenter la modification du profil
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingProfilePage()),
+            );
           }),
 
           buildSectionTitle('Compte'),
