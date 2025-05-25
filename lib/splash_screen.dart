@@ -86,17 +86,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     child: Column(
                       children: [
                         Image.asset('assets/logo/icon.png'),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'TopLyke',
-                          style: TextStyle(
-                            fontSize: 50,
-                            fontWeight: FontWeight.w900,
-                            fontStyle: FontStyle.italic,
-                            fontFamily: 'AvenirNext',
-                            color: Colors.white,
-                          ),
-                        ),
+
                       ],
                     ),
                   ),

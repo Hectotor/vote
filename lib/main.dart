@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Toplyke',
+      title: 'Vote',
       theme: ThemeData(
         useMaterial3: true,
         splashFactory: NoSplash.splashFactory,
@@ -93,7 +93,7 @@ class MyApp extends StatelessWidget {
         Locale('fr', 'FR'), // Add French locale
         Locale('en', ''),
       ],
-      home: const ConnexionPage(), // Set ScreenPage as the home widget
+      home: const SplashScreen(), // Set ScreenPage as the home widget
     );
   }
 }
