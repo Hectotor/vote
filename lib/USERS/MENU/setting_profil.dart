@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 import '../../INSCRIPTION/custom_gender_roller.dart';
+import '../../INSCRIPTION/custom_date_roller.dart';
 
 class SettingProfilePage extends StatefulWidget {
   const SettingProfilePage({Key? key}) : super(key: key);
@@ -50,8 +50,6 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
             .get();
 
         if (userData.exists) {
-          // Afficher toutes les données pour débogage
-          print('Données utilisateur: ${userData.data()}');
           
           // Récupérer les données
           final data = userData.data() as Map<String, dynamic>;
@@ -95,7 +93,7 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
   }
 
   Future<void> _saveProfile() async {
-    if (!_formKey.currentState!.validate()) return;
+    // Tous les champs ne sont pas obligatoires, donc on ne vérifie pas la validation
 
     setState(() => _isLoading = true);
 
@@ -249,67 +247,81 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
-      validator: (value) =>
-          (value == null || value.isEmpty) ? 'Veuillez entrer votre $label' : null,
+      validator: (value) => null, // Champ non obligatoire
     );
   }
 
   Widget _buildDateField() {
-    return TextFormField(
-      controller: _dateBirthdayController,
-      keyboardType: TextInputType.number,
-      maxLength: 10,
-      inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly,
-        _DateInputFormatter(),
-      ],
-      decoration: InputDecoration(
-        labelText: 'Date de naissance (jj/mm/aaaa)',
-        counterText: '',
-        filled: true,
-        fillColor: Colors.grey.shade100,
-        border: OutlineInputBorder(
+    return GestureDetector(
+      onTap: _openBirthDateSelector,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          border: Border.all(color: Colors.grey.shade300),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                _dateBirthdayController.text.isEmpty 
+                    ? 'Sélectionnez une date de naissance' 
+                    : _dateBirthdayController.text,
+                style: TextStyle(
+                  color: _dateBirthdayController.text.isEmpty 
+                      ? Colors.grey.shade600 
+                      : Colors.black87,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            const Icon(Icons.calendar_today, color: Colors.grey, size: 20),
+          ],
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.blue.shade600),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        hintText: 'jj/mm/aaaa',
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Veuillez saisir une date';
-        }
+    );
+  }
+
+  void _openBirthDateSelector() {
+    DateTime? initialDate;
+    if (_dateBirthdayController.text.isNotEmpty) {
+      final parts = _dateBirthdayController.text.split('/');
+      if (parts.length == 3) {
         try {
-          final parsedDate = DateFormat('dd/MM/yyyy').parseStrict(value);
-          final now = DateTime.now();
-          if (parsedDate.isAfter(now)) {
-            return 'La date ne peut pas être dans le futur';
-          }
-          if (parsedDate.isBefore(DateTime(1900))) {
-            return 'La date est trop ancienne';
-          }
+          initialDate = DateTime(
+            int.parse(parts[2]),
+            int.parse(parts[1]),
+            int.parse(parts[0]),
+          );
         } catch (e) {
-          return 'Format invalide (jj/mm/aaaa)';
+          // Ignorer l'erreur si la date n'est pas valide
         }
-        return null;
+      }
+    }
+    
+    CustomDateRoller.show(
+      context,
+      initialDate: initialDate ?? DateTime.now().subtract(const Duration(days: 6570)), // ~18 ans par défaut
+      minDate: DateTime(1900),
+      maxDate: DateTime.now(),
+      onDateSelected: (date) {
+        setState(() {
+          _dateBirthdayController.text = 
+              '${date.day.toString().padLeft(2, '0')}/'+
+              '${date.month.toString().padLeft(2, '0')}/'+
+              '${date.year}';
+        });
       },
     );
   }
 
-Widget _buildGenderSelector() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-
-      GestureDetector(
+  Widget _buildGenderSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
         onTap: () {
           _openGenderSelector();
         },
@@ -354,18 +366,3 @@ void _openGenderSelector() {
 }
 }
 
-class _DateInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    final digitsOnly = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    final buffer = StringBuffer();
-    for (int i = 0; i < digitsOnly.length; i++) {
-      buffer.write(digitsOnly[i]);
-      if ((i == 1 || i == 3) && i != digitsOnly.length - 1) buffer.write('/');
-    }
-    return newValue.copyWith(
-      text: buffer.toString(),
-      selection: TextSelection.collapsed(offset: buffer.length),
-    );
-  }
-}
