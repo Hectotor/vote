@@ -106,7 +106,6 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
           'first_name': _firstNameController.text.trim(),
           'last_name': _lastNameController.text.trim(),
           'dateBirthday': _dateBirthdayController.text.trim(),
-          'pseudo': _pseudoController.text.trim(),
           'gender': _selectedGender,
           'lastUpdated': FieldValue.serverTimestamp(),
         });
@@ -145,7 +144,7 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
                 child: Column(
                   children: [
                     const SizedBox(height: 24),
-                    _buildTextField(_pseudoController, 'Pseudo'),
+                    _buildReadOnlyField(_pseudoController, 'Pseudo'),
                     const SizedBox(height: 16),
                     _buildTextField(_firstNameController, 'Prénom'),
                     const SizedBox(height: 16),
@@ -203,6 +202,29 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
                 ),
               ),
             ),
+    );
+  }
+
+  Widget _buildReadOnlyField(TextEditingController controller, String label) {
+    return TextFormField(
+      controller: controller,
+      readOnly: true,
+      enabled: false,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.grey.shade200,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        suffixIcon: Icon(Icons.lock, color: Colors.grey.shade500, size: 20),
+      ),
     );
   }
 
