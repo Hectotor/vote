@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import '../../INSCRIPTION/custom_gender_roller.dart';
 
 class SettingProfilePage extends StatefulWidget {
   const SettingProfilePage({Key? key}) : super(key: key);
@@ -16,17 +17,12 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _dateBirthdayController = TextEditingController();
+  final _pseudoController = TextEditingController();
   String _selectedGender = '';
   bool _isLoading = false;
   bool _dataLoaded = false;
 
-  final List<String> _genderOptions = [
-    'Femme',
-    'Homme',
-    'Non binaire',
-    'Préfère ne pas dire',
-    'Autre'
-  ];
+  // Les options de genre sont définies dans CustomGenderRoller
 
   @override
   void initState() {
@@ -54,11 +50,37 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
             .get();
 
         if (userData.exists) {
+          // Afficher toutes les données pour débogage
+          print('Données utilisateur: ${userData.data()}');
+          
+          // Récupérer les données
+          final data = userData.data() as Map<String, dynamic>;
+          
           setState(() {
-            _firstNameController.text = userData['first_name'] ?? '';
-            _lastNameController.text = userData['last_name'] ?? '';
-            _dateBirthdayController.text = userData['dateBirthday'] ?? '';
-            _selectedGender = userData['gender'] ?? 'Homme';
+            _firstNameController.text = data['first_name'] ?? '';
+            _lastNameController.text = data['last_name'] ?? '';
+            _dateBirthdayController.text = data['dateBirthday'] ?? '';
+            
+            // Rechercher le pseudo dans différents champs possibles
+            if (data.containsKey('pseudo')) {
+              _pseudoController.text = data['pseudo'] ?? '';
+              print('Pseudo trouvé dans le champ \'pseudo\': ${_pseudoController.text}');
+            } else if (data.containsKey('username')) {
+              _pseudoController.text = data['username'] ?? '';
+              print('Pseudo trouvé dans le champ \'username\': ${_pseudoController.text}');
+            } else {
+              // Parcourir tous les champs pour trouver un champ qui pourrait contenir le pseudo
+              data.forEach((key, value) {
+                if ((key.toLowerCase().contains('pseudo') || key.toLowerCase().contains('user') || 
+                    key.toLowerCase().contains('name')) && value is String) {
+                  print('Champ potentiel pour le pseudo: $key = $value');
+                }
+              });
+              
+              _pseudoController.text = '';
+            }
+            
+            _selectedGender = data['gender'] ?? 'Homme';
             _dataLoaded = true;
           });
         }
@@ -84,6 +106,7 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
           'first_name': _firstNameController.text.trim(),
           'last_name': _lastNameController.text.trim(),
           'dateBirthday': _dateBirthdayController.text.trim(),
+          'pseudo': _pseudoController.text.trim(),
           'gender': _selectedGender,
           'lastUpdated': FieldValue.serverTimestamp(),
         });
@@ -122,6 +145,8 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
                 child: Column(
                   children: [
                     const SizedBox(height: 24),
+                    _buildTextField(_pseudoController, 'Pseudo'),
+                    const SizedBox(height: 16),
                     _buildTextField(_firstNameController, 'Prénom'),
                     const SizedBox(height: 16),
                     _buildTextField(_lastNameController, 'Nom'),
@@ -186,7 +211,20 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: Colors.grey.shade100,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.blue.shade600),
+        ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
       validator: (value) =>
@@ -206,7 +244,20 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
       decoration: InputDecoration(
         labelText: 'Date de naissance (jj/mm/aaaa)',
         counterText: '',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: Colors.grey.shade100,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.blue.shade600),
+        ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         hintText: 'jj/mm/aaaa',
       ),
@@ -235,58 +286,50 @@ Widget _buildGenderSelector() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Row(
-        children: [
-          const Text(
-            'Genre',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+
+      GestureDetector(
+        onTap: () {
+          _openGenderSelector();
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
           ),
-          const Expanded(child: SizedBox()),
-        ],
-      ),
-      const SizedBox(height: 12),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: _genderOptions.map((gender) {
-          final isSelected = _selectedGender == gender;
-          return InkWell(
-            onTap: () => setState(() => _selectedGender = gender),
-            borderRadius: BorderRadius.circular(30),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : [],
-              ),
-              child: Text(
-                gender,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black87,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _selectedGender.isEmpty ? 'Sélectionnez un genre' : _selectedGender,
+                  style: TextStyle(
+                    color: _selectedGender.isEmpty ? Colors.grey.shade600 : Colors.black87,
+                    fontSize: 16,
+                  ),
                 ),
               ),
-            ),
-          );
-        }).toList(),
+              const Icon(Icons.arrow_drop_down, color: Colors.grey),
+            ],
+          ),
+        ),
       ),
     ],
   );
 }
 
+void _openGenderSelector() {
+  CustomGenderRoller.show(
+    context,
+    initialGender: _selectedGender.isNotEmpty ? _selectedGender : 'Femme',
+    onGenderSelected: (gender) {
+      setState(() {
+        _selectedGender = gender;
+      });
+    },
+  );
+}
 }
 
 class _DateInputFormatter extends TextInputFormatter {

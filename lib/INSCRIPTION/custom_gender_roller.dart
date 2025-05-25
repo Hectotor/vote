@@ -11,6 +11,7 @@ class CustomGenderRoller {
       'Homme',
       'Femme',
       'Non-binaire',
+      'Autre',
       'Préfère ne pas dire',
     ];
     
