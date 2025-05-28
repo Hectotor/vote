@@ -104,7 +104,8 @@ class _HomePageState extends State<HomePage> {
                     }).toList() ?? [];
 
                     return ListView.builder(
-                      padding: const EdgeInsets.only(left: 5, right: 5),
+                      // Ajouter un padding en bas pour u00e9viter que la barre de navigation ne cache les actions du post
+                      padding: const EdgeInsets.only(left: 5, right: 5, bottom: 100),
                       itemCount: posts.length,
                       itemBuilder: (context, index) {
                         final post = posts[index];
