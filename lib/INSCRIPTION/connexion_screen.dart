@@ -114,7 +114,9 @@ class _ConnexionPageState extends State<ConnexionPage> {
   @override
   Widget build(BuildContext context) {
     return GradientBackground(
-      child: Scaffold(
+      child: PopScope(
+        canPop: true,
+        child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -240,6 +242,7 @@ class _ConnexionPageState extends State<ConnexionPage> {
             ),
           ),
         ),
+      ),
       ),
     );
   }
