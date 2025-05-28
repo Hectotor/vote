@@ -112,11 +112,8 @@ class _PostActionsState extends State<PostActions> {
               : () {
                   Navigator.push(
                     context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation1, animation2) =>
-                          PostPage(postId: widget.postId),
-                      transitionDuration: Duration.zero,
-                      reverseTransitionDuration: Duration.zero,
+                    MaterialPageRoute(
+                      builder: (context) => PostPage(postId: widget.postId),
                     ),
                   );
                 },
