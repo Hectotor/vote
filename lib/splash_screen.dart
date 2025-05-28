@@ -34,16 +34,6 @@ class _SplashScreenState extends State<SplashScreen> {
       final user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
-        // Vérifier si l'email est vérifié
-        if (!user.emailVerified) {
-          // Rediriger vers la page de connexion
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const ConnexionPage()),
-          );
-          return;
-        }
-
         // Rediriger vers la page principale
         Navigator.pushReplacement(
           context,
@@ -53,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
         // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const ConnexionPage()),
+          MaterialPageRoute(builder: (context) => const NavBar()),
         );
       }
     } catch (e) {
