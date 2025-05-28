@@ -291,7 +291,9 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: true,
+      child: Scaffold(
       appBar: AppBar(
         title: Text('Étape ${_currentStep + 1}/5'),
         leading: IconButton(
@@ -340,6 +342,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
             ),
         ],
       ),
+    ),
     );
   }
 
