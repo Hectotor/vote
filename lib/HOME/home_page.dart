@@ -38,7 +38,13 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    // Fermer le clavier lorsque l'utilisateur touche l'u00e9cran
+    return GestureDetector(
+      onTap: () {
+        // Fermer le clavier
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
       //backgroundColor: Colors.black,
       extendBody: true, // Permet au contenu de défiler derrière la navbar
       body: SafeArea(
@@ -247,6 +253,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
+    ),
     );
   }
 }
