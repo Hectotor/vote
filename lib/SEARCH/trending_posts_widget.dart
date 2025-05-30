@@ -197,6 +197,13 @@ class _TrendingPostsWidgetState extends State<TrendingPostsWidget> {
                                       }).toList(),
                                       postId: postId,
                                     ),
+                                    // Forcer le rafraîchissement du widget après un vote
+                                    onDoubleTap: () {
+                                      setState(() {
+                                        // Rafraîchir les données
+                                        _loadTrendingPosts();
+                                      });
+                                    },
                                   ),
                                 
                                 // Actions du post (likes, commentaires, etc.)

@@ -7,12 +7,16 @@ class PollGridDisplay extends StatefulWidget {
   final List<dynamic> blocs;
   final String type;
   final String postId;
+  final bool forceShowPercentage;
+  final String? votedBlocId;
 
   const PollGridDisplay({
     Key? key,
     required this.blocs,
     required this.type,
     required this.postId,
+    this.forceShowPercentage = false,
+    this.votedBlocId,
   }) : super(key: key);
 
   @override
@@ -29,7 +33,17 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
   void initState() {
     super.initState();
     _voteService = Provider.of<VoteService>(context, listen: false);
-    _checkVoteStatus();
+    
+    // Si forceShowPercentage est true, utiliser directement les valeurs fournies
+    if (widget.forceShowPercentage) {
+      setState(() {
+        _hasVoted = true;
+        _votedBlocId = widget.votedBlocId;
+      });
+    } else {
+      // Sinon, vérifier le statut de vote normalement
+      _checkVoteStatus();
+    }
   }
 
   // Vérifier si l'utilisateur a déjà voté et récupérer le bloc voté
