@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:toplyke/HOME/post_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:share_plus/share_plus.dart';
 import 'Post/post_like_service.dart';
 import 'ANIMATION/heart_animation_post_action.dart';
 
@@ -151,18 +152,36 @@ class _PostActionsState extends State<PostActions> {
   }
 
   Widget _buildShareButton() {
-    return InkWell(
-      onTap: () {
-        // TODO: Implémenter le partage
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _firestore.collection('posts').doc(widget.postId).snapshots(),
+      builder: (context, snapshot) {
+        final postData = snapshot.data?.data() as Map<String, dynamic>?;
+        final postText = postData?['text']?.toString() ?? '';
+        final username = postData?['pseudo']?.toString() ?? 'Un utilisateur';
+        
+        return InkWell(
+          onTap: () async {
+            // Création d'un lien profond vers le post
+            final deepLink = 'https://vote.app/post/${widget.postId}';
+            
+            final text = postText.isNotEmpty 
+                ? '$username a partagé : "$postText"\n\nDécouvre ce post sur Vote !\n$deepLink' 
+                : 'Découvre ce post sur Vote !\n$deepLink';
+                
+            await Share.share(
+              text,
+              subject: 'Un post partagé depuis Vote',
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: const Icon(
+              Icons.send_rounded,
+              size: 24,
+            ),
+          ),
+        );
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: const Icon(
-          Icons.send_rounded,
-          //color: Colors.black,
-          size: 24,
-        ),
-      ),
     );
   }
 

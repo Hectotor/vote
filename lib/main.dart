@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter/painting.dart';
 import 'package:provider/provider.dart';
 import 'package:toplyke/COMPONENTS/VOTE/vote_service.dart';
-import 'package:toplyke/INSCRIPTION/connexion_screen.dart';
+import 'package:toplyke/SERVICES/navigation_service.dart';
+import 'dart:async';
+import 'package:app_links/app_links.dart';
 
 
 void main() async {
@@ -24,6 +26,9 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   
+  // Initialisation des deep links
+  _initDeepLinks();
+  
   runApp(
     MultiProvider(
       providers: [
@@ -36,6 +41,28 @@ void main() async {
   );
 }
 
+// Gestion des deep links
+Future<void> _initDeepLinks() async {
+  final appLinks = AppLinks();
+  
+  // Gérer les liens initiaux (quand l'app est fermée)
+  try {
+    final initialUri = await appLinks.getInitialAppLink();
+    if (initialUri != null) {
+      await NavigationService.handleDeepLink(initialUri);
+    }
+  } catch (e) {
+    print('Erreur lors de la récupération du lien initial: $e');
+  }
+
+  // Gérer les liens entrants (quand l'app est déjà ouverte)
+  appLinks.uriLinkStream.listen((Uri uri) {
+    NavigationService.handleDeepLink(uri);
+  }, onError: (e) {
+    print('Erreur lors de la récupération du lien: $e');
+  });
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -43,6 +70,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      navigatorKey: NavigationService.navigatorKey,
       title: 'Vote',
       theme: ThemeData(
         useMaterial3: true,
