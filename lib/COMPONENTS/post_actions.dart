@@ -170,7 +170,7 @@ class _PostActionsState extends State<PostActions> {
                 
             await Share.share(
               text,
-              subject: 'Un post partagé depuis Vote',
+              subject: 'Partagé ce post',
             );
           },
           child: Container(
