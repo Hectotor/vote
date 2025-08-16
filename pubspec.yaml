@@ -29,7 +29,7 @@ dependencies:
   mailer: ^6.4.1
   path_provider: ^2.1.5
   http: ^1.4.0
-  audioplayers: ^6.4.0
+  audioplayers: ^5.2.1
   timeago: ^3.7.1
   share_plus: ^7.2.1
   app_links: ^3.5.0

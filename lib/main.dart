@@ -102,7 +102,7 @@ class MyApp extends StatelessWidget {
           onBackground: Colors.black87,
           onError: Colors.white,
         ),
-        cardTheme: const CardTheme(
+        cardTheme: const CardThemeData(
           color: Colors.white,
           elevation: 4,
         ),

@@ -23,16 +23,60 @@ class PollGridDisplay extends StatefulWidget {
   State<PollGridDisplay> createState() => _PollGridDisplayState();
 }
 
-class _PollGridDisplayState extends State<PollGridDisplay> {
+class _PollGridDisplayState extends State<PollGridDisplay> with SingleTickerProviderStateMixin {
   int _tappedIndex = -1;
   bool _hasVoted = false;
   String? _votedBlocId;
   late final VoteService _voteService;
+  
+  // Contrôleur d'animation pour le mouvement du bloc
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _shakeAnimation;
 
   @override
   void initState() {
     super.initState();
     _voteService = Provider.of<VoteService>(context, listen: false);
+    
+    // Initialiser le contrôleur d'animation
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    
+    // Animation de scale (zoom)
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.08)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.08, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50,
+      ),
+    ]).animate(_animationController);
+    
+    // Animation de secousse légère
+    _shakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.0, end: 0.02)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 25,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.02, end: -0.02)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: -0.02, end: 0.0)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 25,
+      ),
+    ]).animate(_animationController);
     
     // Si forceShowPercentage est true, utiliser directement les valeurs fournies
     if (widget.forceShowPercentage) {
@@ -84,6 +128,10 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
       }
     });
     
+    // Démarrer l'animation
+    _animationController.reset();
+    _animationController.forward();
+    
     // Utiliser la méthode statique qui gère la redirection vers la page de connexion
     final success = await VoteService.voteWithAuthCheck(
       context, 
@@ -112,6 +160,12 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -171,15 +225,29 @@ class _PollGridDisplayState extends State<PollGridDisplay> {
               final blocId = index.toString();
               final isVotedBloc = _votedBlocId == blocId;
               
-              return GestureDetector(
-                onTap: _hasVoted ? null : () => _handleVote(index),
-                child: ImageVoteCard(
-                  bloc: bloc,
-                  showHeart: _tappedIndex == index,
-                  showPercentage: _hasVoted,
-                  percentage: _hasVoted ? calculatePercentage(blocId) : null,
-                  showHeartOnPercentage: isVotedBloc,
-                ),
+              // Appliquer l'animation uniquement au bloc qui vient d'être voté
+              final isAnimating = _tappedIndex == index;
+              
+              return AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return Transform(
+                    transform: Matrix4.identity()
+                      ..scale(isAnimating ? _scaleAnimation.value : 1.0)
+                      ..rotateZ(isAnimating ? _shakeAnimation.value : 0.0),
+                    alignment: Alignment.center,
+                    child: GestureDetector(
+                      onTap: _hasVoted ? null : () => _handleVote(index),
+                      child: ImageVoteCard(
+                        bloc: bloc,
+                        showHeart: _tappedIndex == index,
+                        showPercentage: _hasVoted,
+                        percentage: _hasVoted ? calculatePercentage(blocId) : null,
+                        showHeartOnPercentage: isVotedBloc,
+                      ),
+                    ),
+                  );
+                },
               );
             } catch (e) {
               print('Erreur lors de la création de la carte de vote: $e');
