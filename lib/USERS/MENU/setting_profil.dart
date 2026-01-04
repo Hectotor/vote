@@ -21,6 +21,7 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
   String _selectedGender = '';
   bool _isLoading = false;
   bool _dataLoaded = false;
+  DateTime? _selectedBirthDate; // Date de naissance sélectionnée (DateTime pour sauvegarde)
 
   // Les options de genre sont définies dans CustomGenderRoller
 
@@ -57,7 +58,39 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
           setState(() {
             _firstNameController.text = data['first_name'] ?? '';
             _lastNameController.text = data['last_name'] ?? '';
-            _dateBirthdayController.text = data['dateBirthday'] ?? '';
+            
+            // Gérer dateBirthday : peut être Timestamp ou string (anciennes données)
+            final dateBirthday = data['dateBirthday'];
+            if (dateBirthday != null) {
+              if (dateBirthday is Timestamp) {
+                // Nouveau format : Timestamp
+                _selectedBirthDate = dateBirthday.toDate();
+                final date = _selectedBirthDate!;
+                _dateBirthdayController.text = 
+                    '${date.day.toString().padLeft(2, '0')}/'
+                    '${date.month.toString().padLeft(2, '0')}/'
+                    '${date.year}';
+              } else if (dateBirthday is String) {
+                // Ancien format : string (compatibilité)
+                _dateBirthdayController.text = dateBirthday;
+                // Essayer de parser la string pour avoir la DateTime
+                final parts = dateBirthday.split('/');
+                if (parts.length == 3) {
+                  try {
+                    _selectedBirthDate = DateTime(
+                      int.parse(parts[2]),
+                      int.parse(parts[1]),
+                      int.parse(parts[0]),
+                    );
+                  } catch (e) {
+                    _selectedBirthDate = null;
+                  }
+                }
+              }
+            } else {
+              _dateBirthdayController.text = '';
+              _selectedBirthDate = null;
+            }
             
             // Rechercher le pseudo dans différents champs possibles
             if (data.containsKey('pseudo')) {
@@ -100,13 +133,22 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+        final updateData = <String, dynamic>{
           'first_name': _firstNameController.text.trim(),
           'last_name': _lastNameController.text.trim(),
-          'dateBirthday': _dateBirthdayController.text.trim(),
           'gender': _selectedGender,
           'lastUpdated': FieldValue.serverTimestamp(),
-        });
+        };
+        
+        // Sauvegarder la date de naissance en Timestamp si disponible
+        if (_selectedBirthDate != null) {
+          updateData['dateBirthday'] = Timestamp.fromDate(_selectedBirthDate!);
+        } else if (_dateBirthdayController.text.trim().isEmpty) {
+          // Si vide, supprimer le champ (ou mettre null)
+          updateData['dateBirthday'] = null;
+        }
+        
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).update(updateData);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -290,21 +332,7 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
   }
 
   void _openBirthDateSelector() {
-    DateTime? initialDate;
-    if (_dateBirthdayController.text.isNotEmpty) {
-      final parts = _dateBirthdayController.text.split('/');
-      if (parts.length == 3) {
-        try {
-          initialDate = DateTime(
-            int.parse(parts[2]),
-            int.parse(parts[1]),
-            int.parse(parts[0]),
-          );
-        } catch (e) {
-          // Ignorer l'erreur si la date n'est pas valide
-        }
-      }
-    }
+    DateTime? initialDate = _selectedBirthDate;
     
     CustomDateRoller.show(
       context,
@@ -313,9 +341,12 @@ class _SettingProfilePageState extends State<SettingProfilePage> {
       maxDate: DateTime.now(),
       onDateSelected: (date) {
         setState(() {
+          // Stocker la DateTime pour la sauvegarde
+          _selectedBirthDate = date;
+          // Mettre à jour le TextEditingController pour l'affichage
           _dateBirthdayController.text = 
-              '${date.day.toString().padLeft(2, '0')}/'+
-              '${date.month.toString().padLeft(2, '0')}/'+
+              '${date.day.toString().padLeft(2, '0')}/'
+              '${date.month.toString().padLeft(2, '0')}/'
               '${date.year}';
         });
       },

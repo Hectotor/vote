@@ -29,14 +29,15 @@ class SearchHistoryService {
     };
 
     try {
-      // Référence à la collection d'historique de l'utilisateur
-      final historyRef = _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('search_history');
+      // Ajouter le userId à l'entrée d'historique
+      historyEntry['userId'] = userId;
+
+      // Référence à la collection principale search_history
+      final historyRef = _firestore.collection('search_history');
 
       // Vérifier si cette recherche existe déjà (pour éviter les doublons)
       final existingQuery = await historyRef
+          .where('userId', isEqualTo: userId)
           .where('type', isEqualTo: type)
           .where('itemId', isEqualTo: itemId)
           .get();
@@ -51,8 +52,9 @@ class SearchHistoryService {
         // Ajouter une nouvelle entrée
         await historyRef.add(historyEntry);
 
-        // Récupérer toutes les entrées, triées par date
+        // Récupérer toutes les entrées de l'utilisateur, triées par date
         final allEntries = await historyRef
+            .where('userId', isEqualTo: userId)
             .orderBy('timestamp', descending: true)
             .get();
 
@@ -83,9 +85,8 @@ class SearchHistoryService {
     final String userId = currentUser.uid;
 
     return _firestore
-        .collection('users')
-        .doc(userId)
         .collection('search_history')
+        .where('userId', isEqualTo: userId)
         .orderBy('timestamp', descending: true)
         .limit(_maxHistoryEntries)
         .snapshots();
@@ -96,15 +97,16 @@ class SearchHistoryService {
     final User? currentUser = _auth.currentUser;
     if (currentUser == null) return;
 
-    final String userId = currentUser.uid;
-
     try {
-      await _firestore
-          .collection('users')
-          .doc(userId)
+      // Vérifier que l'entrée appartient bien à l'utilisateur avant de supprimer
+      final doc = await _firestore
           .collection('search_history')
           .doc(entryId)
-          .delete();
+          .get();
+      
+      if (doc.exists && doc.data()?['userId'] == currentUser.uid) {
+        await doc.reference.delete();
+      }
     } catch (e) {
       print('Erreur lors de la suppression de l\'entrée d\'historique: $e');
     }
@@ -119,9 +121,8 @@ class SearchHistoryService {
 
     try {
       final historySnapshot = await _firestore
-          .collection('users')
-          .doc(userId)
           .collection('search_history')
+          .where('userId', isEqualTo: userId)
           .get();
 
       final batch = _firestore.batch();

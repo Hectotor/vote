@@ -1,4 +1,3 @@
-@override
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +19,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
   final TextEditingController _pseudoController = TextEditingController();
   final TextEditingController _genderController = TextEditingController();
   final TextEditingController _dateNaissanceController = TextEditingController();
+  DateTime? _selectedBirthDate; // Date de naissance sélectionnée (DateTime pour sauvegarde)
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -179,7 +179,9 @@ class _InscriptionPageState extends State<InscriptionPage> {
         'pseudo': _pseudoController.text.toLowerCase(),
         'gender': _genderController.text,
         'email': _emailController.text.toLowerCase(),
-        'dateNaissance': _dateNaissanceController.text.trim(),
+        'dateNaissance': _selectedBirthDate != null 
+            ? Timestamp.fromDate(_selectedBirthDate!) 
+            : null,
         'profilePhotoUrl': '',
         'bio': '',
         'emailVerified': false,
@@ -439,11 +441,14 @@ class _InscriptionPageState extends State<InscriptionPage> {
                       FocusScope.of(context).requestFocus(FocusNode());
                       CustomDateRoller.show(
                         context,
-                        initialDate: DateTime(2000, 1, 1),
+                        initialDate: _selectedBirthDate ?? DateTime(2000, 1, 1),
                         minDate: DateTime(1900, 1, 1),
                         maxDate: DateTime.now(),
                         onDateSelected: (picked) {
                           setState(() {
+                            // Stocker la DateTime pour la sauvegarde
+                            _selectedBirthDate = picked;
+                            // Mettre à jour le TextEditingController pour l'affichage
                             _dateNaissanceController.text = "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
                           });
                         },

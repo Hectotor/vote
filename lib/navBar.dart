@@ -22,8 +22,10 @@ class _NavBarState extends State<NavBar> {
   late List<Widget> _pages;
 
   void _onItemTapped(int index) {
-    if (index == 2) {
-      final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser;
+    
+    // Vérifier l'authentification pour Add (index 2), Notifications (index 3) et Profil (index 4)
+    if (index == 2 || index == 3 || index == 4) {
       if (user == null) {
         Navigator.pushReplacement(
           context,
@@ -35,6 +37,9 @@ class _NavBarState extends State<NavBar> {
         );
         return;
       }
+    }
+    
+    if (index == 2) {
       Navigator.push(
         context,
         PageRouteBuilder(

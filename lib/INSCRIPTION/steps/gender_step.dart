@@ -41,22 +41,55 @@ class _GenderStepState extends State<GenderStep> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(
+              Container(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: widget.onOpenGenderSelector,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey.shade100,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.grey.shade300,
+                    width: 1.5,
                   ),
-                  child: Text(
-                    widget.genderController.text.isEmpty
-                        ? 'Choisis ton genre'
-                        : widget.genderController.text,
-                    style: const TextStyle(fontSize: 18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: widget.onOpenGenderSelector,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            widget.genderController.text.isEmpty
+                                ? 'Choisis ton genre'
+                                : widget.genderController.text,
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: widget.genderController.text.isEmpty
+                                  ? FontWeight.w400
+                                  : FontWeight.w500,
+                              color: widget.genderController.text.isEmpty
+                                  ? Colors.grey.shade600
+                                  : const Color(0xFF212121),
+                            ),
+                          ),
+                          Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: Colors.grey.shade600,
+                            size: 24,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),

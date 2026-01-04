@@ -27,6 +27,9 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
   final TextEditingController _dateBirthdayController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  
+  // Date de naissance sélectionnée (DateTime pour sauvegarde)
+  DateTime? _selectedBirthDate;
 
   // États
   bool _isLoading = false;
@@ -137,17 +140,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
 
   // Méthode pour ouvrir le sélecteur de date de naissance
   void _openBirthDateSelector() {
-    DateTime? initialDate;
-    if (_dateBirthdayController.text.isNotEmpty) {
-      final parts = _dateBirthdayController.text.split('/');
-      if (parts.length == 3) {
-        initialDate = DateTime(
-          int.parse(parts[2]),
-          int.parse(parts[1]),
-          int.parse(parts[0]),
-        );
-      }
-    }
+    DateTime? initialDate = _selectedBirthDate;
     
     CustomDateRoller.show(
       context,
@@ -156,6 +149,9 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
       maxDate: DateTime.now(),
       onDateSelected: (date) {
         setState(() {
+          // Stocker la DateTime pour la sauvegarde
+          _selectedBirthDate = date;
+          // Mettre à jour le TextEditingController pour l'affichage
           _dateBirthdayController.text = 
               '${date.day.toString().padLeft(2, '0')}/'
               '${date.month.toString().padLeft(2, '0')}/'
@@ -214,7 +210,7 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
       case 0: // Genre
         return _genderController.text.isNotEmpty;
       case 1: // Date de naissance
-        return _dateBirthdayController.text.isNotEmpty;
+        return _selectedBirthDate != null;
       case 2: // Pseudo
         return _pseudoController.text.length >= 3 && _pseudoErrorMessage == null;
       case 3: // Email
@@ -252,7 +248,9 @@ class _MultiStepInscriptionState extends State<MultiStepInscription> {
         'pseudo': _pseudoController.text.toLowerCase(),
         'gender': _genderController.text,
         'email': _emailController.text.toLowerCase(),
-        'dateBirthday': _dateBirthdayController.text.trim(),
+        'dateBirthday': _selectedBirthDate != null 
+            ? Timestamp.fromDate(_selectedBirthDate!) 
+            : null,
         'profilePhotoUrl': '',
         'bio': '',
         'emailVerified': userCredential.user!.emailVerified,

@@ -61,5 +61,10 @@ service cloud.firestore {
     match /savedPosts/{savedId} {
       allow read, create, delete: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
+
+    // Historique de recherche
+    match /search_history/{historyId} {
+      allow read, create, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
   }
 }

@@ -20,6 +20,15 @@ void main() async {
   
   await Firebase.initializeApp();
   
+  // Configuration de la barre d'état (texte sombre pour fond blanc)
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark, // Texte sombre pour iOS
+      statusBarBrightness: Brightness.light, // Texte sombre pour Android
+    ),
+  );
+  
   // Désactive la rotation de l'écran
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -82,7 +91,11 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.white,
           elevation: 0,
           scrolledUnderElevation: 0,  // Empêche l'élévation lors du défilement
-          systemOverlayStyle: SystemUiOverlayStyle.light,  // Barre d'état claire
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.dark, // Texte sombre pour iOS
+            statusBarBrightness: Brightness.light, // Texte sombre pour Android
+          ),
           iconTheme: IconThemeData(color: Color(0xFF212121)),
           titleTextStyle: TextStyle(
             color: Color(0xFF212121),

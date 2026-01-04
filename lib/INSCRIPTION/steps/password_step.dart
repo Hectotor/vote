@@ -137,7 +137,7 @@ class _PasswordStepState extends State<PasswordStep> {
                                   'profilePhotoUrl': '',
                                   'bio': '',
                                   'gender': '',  // Champ vide car non renseigné dans cette version simplifiée
-                                  'dateBirthday': '',  // Champ vide car non renseigné dans cette version simplifiée
+                                  'dateBirthday': null,  // Champ vide car non renseigné dans cette version simplifiée
                                   'emailVerified': false,
                                   'createdAt': Timestamp.now(),
                                   'lastSeen': Timestamp.now(),
