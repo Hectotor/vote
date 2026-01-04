@@ -27,23 +27,49 @@ class EditableTextCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: padding,
-      child: TextField(
-        controller: TextEditingController(text: initialText),
-        autofocus: false,
-        textAlign: textAlign,
-        textCapitalization: TextCapitalization.sentences,
-        style: style,
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-        ),
-        cursorColor: Colors.white,
-        keyboardType: TextInputType.multiline,
-        maxLines: null,
-        textInputAction: TextInputAction.done,
-        onChanged: onTextChanged,
-        readOnly: isPublished,
-      ),
+      child: isPublished
+          ? Builder(
+              builder: (context) {
+                final words = initialText.split(' ');
+                return Wrap(
+                  alignment: textAlign == TextAlign.center 
+                      ? WrapAlignment.center
+                      : textAlign == TextAlign.end
+                          ? WrapAlignment.end
+                          : WrapAlignment.start,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: words.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final word = entry.value;
+                    return FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.center,
+                      child: Text(
+                        word + (index < words.length - 1 ? ' ' : ''),
+                        style: style,
+                        softWrap: false,
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            )
+          : TextField(
+              controller: TextEditingController(text: initialText),
+              autofocus: false,
+              textAlign: textAlign,
+              textCapitalization: TextCapitalization.sentences,
+              style: style,
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+              cursorColor: Colors.white,
+              keyboardType: TextInputType.multiline,
+              maxLines: null,
+              textInputAction: TextInputAction.done,
+              onChanged: onTextChanged,
+            ),
     );
   }
 }

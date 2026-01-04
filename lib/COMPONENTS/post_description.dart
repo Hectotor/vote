@@ -27,8 +27,9 @@ class PostDescription extends StatelessWidget {
             style: const TextStyle(
               //color: Colors.white,
               fontSize: 18,
-
             ),
+            softWrap: true, // Permet le retour à la ligne sans couper les mots
+            overflow: TextOverflow.visible, // Permet au texte de déborder si nécessaire
           ),
         ],
       ),
